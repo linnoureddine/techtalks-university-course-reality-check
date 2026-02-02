@@ -6,7 +6,7 @@ export default function Home() {
       <section className="mx-auto max-w-6xl">
         <h2 className="text-2xl font-semibold text-[#111827]">Browse Courses</h2>
 
-        <div className="mt-6 grid grid-cols-1 gap-30 md:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-35 md:grid-cols-2">
           <CourseCard
             code="CMPS 204"
             title="Animation Tools"
