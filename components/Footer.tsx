@@ -1,13 +1,9 @@
 export default function Footer() {
   return (
     <footer className="border-t bg-white px-8 py-10">
-     
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
-        
         <div>
-          <h2 className="text-2xl font-bold text-indigo-600">
-            Course Compass
-          </h2>
+          <h2 className="text-2xl font-bold text-indigo-600">Course Compass</h2>
         </div>
 
         <div>
@@ -24,17 +20,14 @@ export default function Footer() {
             Leave Feedback
           </button>
           <p className="text-sm text-gray-500">
-            Did you find what you were looking for?  
-            Share your feedback!
+            Did you find what you were looking for? Share your feedback!
           </p>
         </div>
       </div>
 
       <div className="my-8 border-t"></div>
 
-      <p className="text-center text-sm text-gray-500">
-        © 2026 Course Compass
-      </p>
+      <p className="text-center text-sm text-gray-500">© 2026 Course Compass</p>
     </footer>
   );
 }
