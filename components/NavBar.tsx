@@ -9,7 +9,7 @@ export default function NavBar() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200 px-6 py-2">
+    <nav className="w-full bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <svg
@@ -29,7 +29,7 @@ export default function NavBar() {
             <path d="M8 15h4" />
           </svg>
 
-          <span className="hidden lg:inline text-[#6155F5] text-xl font-bold">
+          <span className="hidden lg:inline text-[#6155F5] text-2xl font-bold">
             Course Compass
           </span>
         </Link>
@@ -41,9 +41,9 @@ export default function NavBar() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
-          <div className="relative h-8 flex items-center w-8">
+          <div className="relative h-9 flex items-center w-9">
             {!searchOpen && (
-              <button onClick={() => setSearchOpen(true)} className="p-2 transition-colors group h-9 w-9 flex items-center justify-center">
+              <button onClick={() => setSearchOpen(true)} className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 text-gray-600 group-hover:text-[#6155F5] transition-colors"
@@ -64,13 +64,13 @@ export default function NavBar() {
                 autoFocus
                 type="text"
                 placeholder="Search..."
-                className="absolute right-0 border border-gray-300 rounded px-3 h-8 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-32 md:w-52"
+                className="absolute right-0 border border-gray-300 rounded px-3 h-9 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-32 md:w-56"
                 onBlur={() => setSearchOpen(false)}
               />
             )}
           </div>
 
-          <button className={`bg-[#6155F5] text-white px-3 h-8 rounded hover:bg-[#503fdc] transition flex items-center ${searchOpen ? 'hidden sm:block' : ''}`}>
+          <button className={`bg-[#6155F5] text-white px-4 h-9 rounded hover:bg-[#503fdc] transition flex items-center ${searchOpen ? 'hidden sm:block' : ''}`}>
             Sign Up
           </button>
 
@@ -82,7 +82,6 @@ export default function NavBar() {
           </button>
         </div>
       </div>
-
       {
         menuOpen && (
           <div className="md:hidden mt-4 flex flex-col gap-3">
