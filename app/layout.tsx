@@ -4,7 +4,7 @@ import "./globals.css";
 import Footer from "../components/Footer";
 
 import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,15 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {/* Navbar */}
         <NavBar />
 
-        {/* Page Content */}
         <main className="flex-grow">
           {children}
         </main>
 
-        {/* Footer */}
         {children}
         <Footer />
       </body>
