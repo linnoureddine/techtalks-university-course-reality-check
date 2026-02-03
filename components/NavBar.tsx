@@ -9,14 +9,12 @@ export default function NavBar() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200 px-6 py-4">
+    <nav className="w-full bg-white border-b border-gray-200 px-6 py-2">
       <div className="flex items-center gap-4">
-        {/* Logo + Name */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          {/* Modern open book icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8 text-[#6155F5] shrink-0"
+            className="h-7 w-7 text-[#6155F5] shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -31,29 +29,24 @@ export default function NavBar() {
             <path d="M8 15h4" />
           </svg>
 
-          {/* Website name (large screens only) */}
-          <span className="hidden lg:inline text-[#6155F5] text-2xl font-bold">
+          <span className="hidden lg:inline text-[#6155F5] text-xl font-bold">
             Course Compass
           </span>
         </Link>
 
-        {/* Desktop Links - Centered */}
         <div className="hidden md:flex gap-6 md:flex-1 md:justify-center">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/courses">Courses</NavLink>
           <NavLink href="/about">About</NavLink>
         </div>
 
-        {/* Right side */}
         <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
-          {/* Search Icon / Input */}
-          <div className="relative h-10 flex items-center w-10">
+          <div className="relative h-8 flex items-center w-8">
             {!searchOpen && (
-              <button onClick={() => setSearchOpen(true)} className="p-2 transition-colors group h-10 w-10 flex items-center justify-center">
-                {/* Modern sleek search icon */}
+              <button onClick={() => setSearchOpen(true)} className="p-2 transition-colors group h-9 w-9 flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-gray-600 group-hover:text-[#6155F5] transition-colors"
+                  className="h-5 w-5 text-gray-600 group-hover:text-[#6155F5] transition-colors"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -71,28 +64,25 @@ export default function NavBar() {
                 autoFocus
                 type="text"
                 placeholder="Search..."
-                className="absolute right-0 border border-gray-300 rounded px-3 h-10 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-32 md:w-56"
+                className="absolute right-0 border border-gray-300 rounded px-3 h-8 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-32 md:w-52"
                 onBlur={() => setSearchOpen(false)}
               />
             )}
           </div>
 
-          {/* Sign Up Button */}
-          <button className={`bg-[#6155F5] text-white px-4 h-10 rounded hover:bg-[#503fdc] transition flex items-center ${searchOpen ? 'hidden sm:block' : ''}`}>
+          <button className={`bg-[#6155F5] text-white px-3 h-8 rounded hover:bg-[#503fdc] transition flex items-center ${searchOpen ? 'hidden sm:block' : ''}`}>
             Sign Up
           </button>
 
-          {/* Hamburger (tablet & mobile only) */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden ml-2 text-xl text-gray-600"
+            className="md:hidden ml-2 text-lg text-gray-600"
           >
             ☰
           </button>
         </div>
       </div>
 
-      {/* Mobile / Tablet menu (links only) */}
       {
         menuOpen && (
           <div className="md:hidden mt-4 flex flex-col gap-3">
