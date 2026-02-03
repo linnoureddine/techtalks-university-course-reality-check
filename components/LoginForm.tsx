@@ -16,18 +16,18 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-xl rounded-2xl bg-[#f3f4f6] p-10 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
-      <h1 className="text-center text-5xl font-extrabold tracking-tight text-[#111827]">
+    <div className="w-full max-w-[520px] rounded-2xl bg-[#f3f4f6] border border-white/40 shadow-[0_20px_60px_rgba(0,0,0,0.25)] px-5 py-7 sm:px-8 sm:py-9">
+      <h1 className="text-center text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111827]">
         Login
       </h1>
 
-      <p className="mt-3 text-center text-base text-gray-500">
+      <p className="mt-2 text-center text-sm sm:text-base text-gray-500">
         Log in to your account to continue
       </p>
 
-      <div className="mt-6 h-px w-full bg-gray-200" />
+      <div className="mt-5 h-px w-full bg-gray-200" />
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <form onSubmit={handleSubmit} className="mt-6 space-y-5">
         <Input
           label="Email"
           type="email"
@@ -46,30 +46,32 @@ export default function LoginForm() {
           autoComplete="current-password"
         />
 
-        <div className="flex items-center justify-between pt-2">
-          <label className="flex items-center gap-3 text-gray-500">
+        <div className="flex items-center justify-between pt-1">
+          <label className="flex items-center gap-2 text-gray-500">
             <input
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
-              className="h-5 w-5 rounded border-gray-400 accent-indigo-600"
+              className="h-4 w-4 rounded border-gray-400 accent-indigo-600"
             />
-            <span className="text-lg">Remember me</span>
+            <span className="text-sm sm:text-base">Remember me</span>
           </label>
 
           <Link
             href="/forgot-password"
-            className="text-lg text-gray-500 hover:text-gray-700"
+            className="text-sm sm:text-base text-gray-500 hover:text-gray-700"
           >
             Forgot password?
           </Link>
         </div>
 
-        <div className="pt-4 flex justify-center">
-          <Button type="submit">Log in</Button>
+        <div className="pt-2 flex justify-center">
+          <Button type="submit" className="px-10 sm:px-14 py-2.5 sm:py-3 text-base sm:text-lg">
+            Log in
+          </Button>
         </div>
 
-        <p className="pt-4 text-center text-lg text-gray-400">
+        <p className="pt-2 text-center text-sm sm:text-base text-gray-400">
           Don’t have an account yet?{" "}
           <Link href="/signup" className="text-indigo-600 hover:underline">
             Sign up
