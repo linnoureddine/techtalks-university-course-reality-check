@@ -126,7 +126,7 @@ export default function CourseCard({
   reviewsLabel,
   className = "",
 }: CourseCardProps) {
-  const slug = code.trim().replace(/\s+/g, "-"); // safer than replace(" ", "-")
+  const slug = code.trim().replace(/\s+/g, "-"); 
 
   return (
     <Link href={`/courses/${slug}`} className="block w-full">
@@ -137,7 +137,6 @@ export default function CourseCard({
   hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)]
   ${className}`}
       >
-        {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h3 className="text-[20px] font-semibold tracking-tight text-[#111827]">
@@ -155,13 +154,9 @@ export default function CourseCard({
             <StarIcon className="h-6 w-6 text-[#F5C542]" />
           </div>
         </div>
-
-        {/* Description */}
         <p className="mt-3 text-[15px] leading-relaxed text-gray-800 line-clamp-4">
           {description}
         </p>
-
-        {/* Metrics: 1 column on mobile, 2 on sm+ */}
         <div className="mt-4 rounded-xl border border-gray-300 p-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
             <div className="flex items-center gap-3">
@@ -193,8 +188,6 @@ export default function CourseCard({
             </div>
           </div>
         </div>
-
-        {/* Reviews: tighter spacing */}
         <div className="mt-3 flex items-center gap-2 text-gray-400">
           <UserIcon className="h-6 w-6" />
           <span className="text-[15px] font-medium">{reviewsLabel}</span>

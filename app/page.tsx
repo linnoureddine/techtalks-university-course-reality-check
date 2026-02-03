@@ -10,8 +10,6 @@ export default function Home() {
         <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-[#111827]">
           Browse Courses
         </h2>
-
-        {/* CENTERED GRID */}
         <div className="mt-8 grid justify-center gap-8 sm:grid-cols-1 md:grid-cols-2">
           <CourseCard
             code="CMPS 204"
