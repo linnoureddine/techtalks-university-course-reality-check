@@ -11,7 +11,7 @@ export default function NavLink({ href, children }: NavLinkProps) {
   return (
     <Link
       href={href}
-      className="text-black transition-colors duration-200"
+      className="text-black text-md transition-colors duration-200"
       style={{ color: "black" }}
       onMouseEnter={(e) => (e.currentTarget.style.color = "#6155F5")}
       onMouseLeave={(e) => (e.currentTarget.style.color = "black")}

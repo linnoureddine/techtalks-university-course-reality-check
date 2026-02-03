@@ -14,7 +14,7 @@ export default function NavBar() {
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8 text-[#6155F5] shrink-0"
+            className="h-7 w-7 text-[#6155F5] shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -76,7 +76,7 @@ export default function NavBar() {
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden ml-2 text-xl text-gray-600"
+            className="md:hidden ml-2 text-lg text-gray-600"
           >
             ☰
           </button>
