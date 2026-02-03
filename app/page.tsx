@@ -3,12 +3,14 @@ import CourseCard from "../components/CourseCard";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#F2F2F7] px-6 py-12">
-      <section className="mx-auto max-w-6xl">
+    <main className="min-h-screen bg-[#F2F2F7] px-6 py-10">
+      <section className="mx-auto max-w-7xl">
         <Stats />
-        <h2 className="text-2xl font-semibold text-[#111827]">Browse Courses</h2>
 
-        <div className="mt-6 grid grid-cols-1 gap-35 md:grid-cols-2">
+        <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-[#111827]">
+          Browse Courses
+        </h2>
+        <div className="mt-8 grid justify-center gap-8 sm:grid-cols-1 md:grid-cols-2">
           <CourseCard
             code="CMPS 204"
             title="Animation Tools"
