@@ -10,6 +10,11 @@ export default function Footer() {
               Course Compass
             </h2>
           </div>
+    <footer className="border-t bg-white px-8 py-10">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+        <div>
+          <h2 className="text-2xl font-bold text-indigo-600">Course Compass</h2>
+        </div>
 
           <div className="text-center md:text-left">
             <h3 className="mb-4 text-lg font-semibold text-black">
@@ -35,6 +40,13 @@ export default function Footer() {
               </p>
             </div>
           </div>
+        <div className="flex flex-col items-start gap-3">
+          <button className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+            Leave Feedback
+          </button>
+          <p className="text-sm text-gray-500">
+            Did you find what you were looking for? Share your feedback!
+          </p>
         </div>
       </div>
 
@@ -45,6 +57,7 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-6 py-8 text-center text-sm text-gray-600 md:px-10">
         © 2026 Course Compass
       </div>
+      <p className="text-center text-sm text-gray-500">© 2026 Course Compass</p>
     </footer>
   );
 }
