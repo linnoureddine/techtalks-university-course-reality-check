@@ -1,6 +1,11 @@
+"use client";
+import { useState } from "react";
 import NavLink from "./NavLink";
+import FeedbackModal from "./FeedbackModal";
+
 
 export default function Footer() {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   return (
     <footer className="w-full border-t border-gray-200 bg-white">
       
@@ -26,7 +31,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col items-center md:items-end text-center md:text-right">
-            <button className="rounded-lg bg-[#6155F5] px-6 py-3 text-white transition-opacity hover:opacity-90 font-medium">
+            <button  onClick={() => setFeedbackOpen(true)} className="rounded-lg bg-[#6155F5] px-6 py-3 text-white transition-opacity hover:opacity-90 font-medium">
               Leave Feedback
             </button>
             <p className="mt-4 max-w-[250px] text-sm leading-relaxed text-gray-500">
@@ -44,6 +49,12 @@ export default function Footer() {
       <div className="py-8 text-center text-sm text-gray-400">
         © 2026 Course Compass
       </div>
+      {feedbackOpen && (
+        <FeedbackModal onClose={() => setFeedbackOpen(false)} />
+      )}
     </footer>
+    
+    
+
   );
 }
