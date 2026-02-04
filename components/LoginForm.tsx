@@ -73,16 +73,12 @@ export default function LoginForm() {
             Forgot?
           </Link>
         </div>
-
-        {/* Button */}
         <button
           type="submit"
           className="w-full h-11 rounded-lg bg-[#6155F5] text-white text-sm font-medium shadow-md hover:bg-[#503fdc] active:scale-[0.99]"
         >
           Log in
         </button>
-
-        {/* Bottom link */}
         <p className="text-center text-sm text-gray-500">
           No account?{" "}
           <Link href="/signup" className="text-[#6155F5] hover:underline">
