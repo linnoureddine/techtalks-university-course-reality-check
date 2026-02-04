@@ -1,7 +1,10 @@
+"use client";
+import { useState } from "react";
 import NavLink from "./NavLink";
 import Button from "./Button";
 
 export default function Footer() {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   return (
     <footer className="w-full border-t border-gray-200 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-12 md:px-10">
@@ -35,6 +38,12 @@ export default function Footer() {
       <div className="py-8 text-center text-sm text-gray-400">
         © 2026 Coursality
       </div>
+      {feedbackOpen && (
+        <FeedbackModal onClose={() => setFeedbackOpen(false)} />
+      )}
     </footer>
+    
+    
+
   );
 }
