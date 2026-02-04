@@ -5,7 +5,9 @@ export default function HowItWorks() {
       <p className="text-gray-500 mb-12">
         Get insights from students who have been there.
       </p>
-      <div className="grid gap-10 sm:grid-cols-3">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {/* Card 1 */}
         <div className="flex flex-col items-center text-center transform transition duration-300 hover:scale-105">
           <div className="bg-purple-200 rounded-lg p-5 mb-4 transition-colors duration-300 hover:bg-purple-300">
             <svg
@@ -29,6 +31,8 @@ export default function HowItWorks() {
             Search for any course by name, code, university, or department.
           </p>
         </div>
+
+        {/* Card 2 */}
         <div className="flex flex-col items-center text-center transform transition duration-300 hover:scale-105">
           <div className="bg-teal-200 rounded-lg p-5 mb-4 transition-colors duration-300 hover:bg-teal-300">
             <svg
@@ -52,6 +56,8 @@ export default function HowItWorks() {
             class.
           </p>
         </div>
+
+        {/* Card 3 */}
         <div className="flex flex-col items-center text-center transform transition duration-300 hover:scale-105">
           <div className="bg-yellow-200 rounded-lg p-5 mb-4 transition-colors duration-300 hover:bg-yellow-300">
             <svg
