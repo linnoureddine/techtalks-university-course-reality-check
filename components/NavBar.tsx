@@ -9,7 +9,7 @@ export default function NavBar() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200 px-6 py-3">
+    <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <svg
@@ -43,7 +43,10 @@ export default function NavBar() {
         <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
           <div className="relative h-9 flex items-center w-9">
             {!searchOpen && (
-              <button onClick={() => setSearchOpen(true)} className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 text-gray-600 group-hover:text-[#6155F5] transition-colors"
@@ -70,7 +73,9 @@ export default function NavBar() {
             )}
           </div>
 
-          <button className={`bg-[#6155F5] text-white px-4 h-9 rounded hover:bg-[#503fdc] transition flex items-center ${searchOpen ? 'hidden sm:block' : ''}`}>
+          <button
+            className={`bg-[#6155F5] text-white px-4 h-9 rounded hover:bg-[#503fdc] transition flex items-center ${searchOpen ? "hidden sm:block" : ""}`}
+          >
             Sign Up
           </button>
 
@@ -82,15 +87,13 @@ export default function NavBar() {
           </button>
         </div>
       </div>
-      {
-        menuOpen && (
-          <div className="md:hidden mt-4 flex flex-col gap-3">
-            <NavLink href="/">Home</NavLink>
-            <NavLink href="/courses">Courses</NavLink>
-            <NavLink href="/about">About</NavLink>
-          </div>
-        )
-      }
-    </nav >
+      {menuOpen && (
+        <div className="md:hidden mt-4 flex flex-col gap-3">
+          <NavLink href="/">Home</NavLink>
+          <NavLink href="/courses">Courses</NavLink>
+          <NavLink href="/about">About</NavLink>
+        </div>
+      )}
+    </nav>
   );
 }

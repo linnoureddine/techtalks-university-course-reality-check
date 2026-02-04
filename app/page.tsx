@@ -1,11 +1,12 @@
-import Stats from "../components/Stats";
+import Hero from "../components/Hero";
 import CourseCard from "../components/CourseCard";
+import HowItWorks from "../components/HowItWorks";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#F2F2F7] px-6 py-10">
       <section className="mx-auto max-w-7xl">
-        <Stats />
+        <Hero />
 
         <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-[#111827]">
           Browse Courses
@@ -36,6 +37,8 @@ export default function Home() {
           />
         </div>
       </section>
+
+      <HowItWorks />
     </main>
   );
 }
