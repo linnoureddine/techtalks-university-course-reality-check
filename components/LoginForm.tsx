@@ -24,7 +24,6 @@ export default function LoginForm() {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-        {/* Email */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             Email
@@ -38,8 +37,6 @@ export default function LoginForm() {
             className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
-
-        {/* Password */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             Password
@@ -53,8 +50,6 @@ export default function LoginForm() {
             className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
-
-        {/* Remember + Forgot */}
         <div className="flex items-center justify-between pt-1">
           <label className="flex items-center gap-2 text-sm text-gray-600">
             <input
