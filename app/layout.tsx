@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Course Compass",
+  title: "Coursality",
   description: "University course reviews and insights",
+  icons: {
+    icon: "../favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -31,9 +34,7 @@ export default function RootLayout({
       >
         <NavBar />
 
-        <main className="flex-grow w-full">
-          {children}
-        </main>
+        <main className="flex-grow w-full">{children}</main>
 
         <Footer />
       </body>
