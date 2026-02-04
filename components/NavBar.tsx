@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import NavLink from "./NavLink";
+import Button from "./Button";
+import Image from "next/image";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,25 +14,10 @@ export default function NavBar() {
     <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-7 w-7 text-[#6155F5] shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            <path d="M8 7h6" />
-            <path d="M8 11h6" />
-            <path d="M8 15h4" />
-          </svg>
+          <Image src="/favicon.ico" alt="Logo" width={32} height={32} />
 
           <span className="hidden lg:inline text-[#6155F5] text-2xl font-bold">
-            Course Compass
+            Coursality
           </span>
         </Link>
 
@@ -73,11 +60,7 @@ export default function NavBar() {
             )}
           </div>
 
-          <button
-            className={`bg-[#6155F5] text-white px-4 h-9 rounded hover:bg-[#503fdc] transition flex items-center ${searchOpen ? "hidden sm:block" : ""}`}
-          >
-            Sign Up
-          </button>
+          <Button variant="primary">Sign Up</Button>
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}

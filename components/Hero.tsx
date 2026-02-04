@@ -1,4 +1,5 @@
 import Stats from "./Stats";
+import Button from "./Button";
 
 export default function Hero() {
   return (
@@ -37,15 +38,12 @@ export default function Hero() {
               <input
                 type="text"
                 placeholder="Search for a course, university, department..."
-                className="w-full pl-10 pr-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none rounded-md border border-gray-300"
+                className="w-full h-11 pl-10 pr-4 text-gray-900 placeholder-gray-400
+                rounded-md border border-gray-300 transition-colors
+                focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
               />
             </div>
-            <button
-              type="submit"
-              className="bg-[#6155F5] text-white text-lg px-6 py-2.5 rounded-md hover:bg-[#503fdc] transition flex items-center "
-            >
-              Search
-            </button>
+            <Button className="h-11 text-xlg">Search</Button>
           </div>
         </form>
       </div>

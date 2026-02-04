@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "feather-icons": "^4.29.2",
     "next": "16.1.6",
     "react": "19.2.3",
