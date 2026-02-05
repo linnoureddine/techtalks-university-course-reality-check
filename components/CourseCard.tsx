@@ -126,16 +126,16 @@ export default function CourseCard({
   reviewsLabel,
   className = "",
 }: CourseCardProps) {
-  const slug = code.trim().replace(/\s+/g, "-"); 
+  const slug = code.trim().replace(/\s+/g, "-");
 
   return (
     <Link href={`/courses/${slug}`} className="block w-full">
       <div
-  className={`w-full max-w-[900px] min-h-[250px] rounded-2xl bg-white p-5
-  shadow-[0_12px_40px_rgba(0,0,0,0.12)]
-  cursor-pointer transition-transform hover:scale-[1.01]
-  hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)]
-  ${className}`}
+        className={`w-full max-w-[900px] min-h-[250px] rounded-2xl bg-white p-5
+      shadow-[0_12px_40px_rgba(0,0,0,0.12)]
+      cursor-pointer transition-transform hover:scale-[1.01]
+      hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)]
+      ${className}`}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">

@@ -4,7 +4,7 @@ import HowItWorks from "../components/HowItWorks";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#F2F2F7] px-6 py-10">
+    <main className="min-h-screen bg-[#FFFFFF] px-6 py-10">
       <section className="mx-auto max-w-7xl">
         <Hero />
 
