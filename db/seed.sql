@@ -1,23 +1,23 @@
--- Initial seed data for Coursality
+/*  Initial seed data for Coursality */
 
+USE course_checker;
+SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
 
---------------------------------------------------
--- 1) UNIVERSITIES
---------------------------------------------------
 
-INSERT INTO university (name) VALUES
-  ('Beirut Arab University'),
-  ('American University of Beirut');
-  ('Lebanese American University');
-  ('Lebanese International University');
-  ('Université Saint-Joseph de Beyrouth');
-  ('University of Balamand');
+/* 1) UNIVERSITIES */
 
 
---------------------------------------------------
--- 2) DEPARTMENTS
---------------------------------------------------
+INSERT INTO university (name) VALUES ('Beirut Arab University');
+INSERT INTO university (name) VALUES ('American University of Beirut');
+INSERT INTO university (name) VALUES ('Lebanese American University');
+INSERT INTO university (name) VALUES ('Lebanese International University');
+INSERT INTO university (name) VALUES ('Université Saint-Joseph de Beyrouth');
+INSERT INTO university (name) VALUES ('University of Balamand');
+
+
+
+/*  2) DEPARTMENTS */
 
 INSERT INTO department (name, university_id)
 SELECT
@@ -62,20 +62,9 @@ FROM university u
 WHERE u.name = 'University of Balamand';
 
 
---------------------------------------------------
--- 3) COURSES
---------------------------------------------------
---BAU Courses
 
-  INSERT INTO course (
-  code,
-  title,
-  description,
-  credits,
-  language,
-  level,
-  department_id
-)
+/*  3) COURSES */
+
 INSERT INTO course (
   code,
   title,
@@ -198,8 +187,7 @@ WHERE d.name = 'Mathematics and Computer Science'
 SELECT
   'CMPS 344',
   'Software Engineering',
-  '
-Different phases of large-scale software development with emphasis on analysis, design, testing, and documentation. Topics include: introduction to software engineering, ethics in software engineering, development processes, requirements developments, object oriented analysis and design using UML, architectural design, testing, and project management. Students work in groups on realistic projects to apply covered techniques. ',
+  'Different phases of large-scale software development with emphasis on analysis, design, testing, and documentation. Topics include: introduction to software engineering, ethics in software engineering, development processes, requirements developments, object oriented analysis and design using UML, architectural design, testing, and project management. Students work in groups on realistic projects to apply covered techniques. ',
   3,
   'English',
   'Undergraduate',
@@ -243,7 +231,7 @@ WHERE d.name = 'Mathematics and Computer Science'
 SELECT
   'CMPS 445',
   'Concept of Programming Languages',
-  'This course will define, analyze and evaluate important concepts found in current programming languages. Its goals are to build an ability to evaluate and compare programming languages, both from the user's and implementor's view. Topics include: syntax, operational semantics, scope of objects and time of binding, type checking, module mechanisms (e.g., blocks, procedures, coroutines), data abstraction, data types, expressions, control structures, subprograms, implementation of subprograms, functional programming, logic programming and object-oriented programming languages. This course includes a team project to learn a novel programming language and use it in implementing an application. ',
+  'This course will define, analyze and evaluate important concepts found in current programming languages. Its goals are to build an ability to evaluate and compare programming languages, both from the user''s and implementor''s view. Topics include: syntax, operational semantics, scope of objects and time of binding, type checking, module mechanisms (e.g., blocks, procedures, coroutines), data abstraction, data types, expressions, control structures, subprograms, implementation of subprograms, functional programming, logic programming and object-oriented programming languages. This course includes a team project to learn a novel programming language and use it in implementing an application. ',
   3,
   'English',
   'Undergraduate',
@@ -265,8 +253,7 @@ WHERE d.name = 'Mathematics and Computer Science'
 SELECT
   'CMPS 442',
   'Operating Systems',
-  '
-Operating systems concepts and functions. Operating systems structures and system Calls. Processes and threads scheduling. Inter-process communication. CPU scheduling algorithms. Process synchronization. Deadlocks. Main memory management. Virtual memory management. File management. I/O subsystem and device management. Selected topics in networking, protection and security, distributed systems.',
+  'Operating systems concepts and functions. Operating systems structures and system Calls. Processes and threads scheduling. Inter-process communication. CPU scheduling algorithms. Process synchronization. Deadlocks. Main memory management. Virtual memory management. File management. I/O subsystem and device management. Selected topics in networking, protection and security, distributed systems.',
   3,
   'English',
   'Undergraduate',
@@ -288,8 +275,7 @@ WHERE d.name = 'Mathematics and Computer Science'
 SELECT
   'CMPS 441',
   'Fundamentals of Algorithms',
-  '
-A systematic study of algorithms and their complexity. Topics include techniques for designing efficient computer algorithms, proving their correctness, analyzing their run-time complexity; as well as Divide and Conquer algorithms, Greedy algorithms, Dynamic Programming algorithms, Sorting and Searching algorithms (Binary search, Radix sort, Bucket sort, Count Sort, Insertion sort, Merge sort, Quick sort and Heap sort), Order statistics, Graph algorithms (Graph traversal, Minimum spanning trees and Shortest path problems). ',
+  'A systematic study of algorithms and their complexity. Topics include techniques for designing efficient computer algorithms, proving their correctness, analyzing their run-time complexity; as well as Divide and Conquer algorithms, Greedy algorithms, Dynamic Programming algorithms, Sorting and Searching algorithms (Binary search, Radix sort, Bucket sort, Count Sort, Insertion sort, Merge sort, Quick sort and Heap sort), Order statistics, Graph algorithms (Graph traversal, Minimum spanning trees and Shortest path problems). ',
   3,
   'English',
   'Undergraduate',
@@ -299,7 +285,7 @@ JOIN university u ON u.university_id = d.university_id
 WHERE d.name = 'Mathematics and Computer Science'
   AND u.name = 'Beirut Arab University';
 
---AUB Courses
+
   INSERT INTO course (
   code,
   title,
@@ -465,7 +451,7 @@ WHERE d.name = 'Computer Science'
 )
 SELECT
   'CMPS 256',
-  'Algorithms and Data Structures]',
+  'Algorithms and Data Structures',
   'A systematic study of algorithms and advanced data structures and their complexity. Topics include techniques for designing efficient computer algorithms, proving their correctness, and analyzing their complexity as well as advanced searching, sorting, selection, priority queues, binary search trees, graph, hash tables, and matrix algorithms.',
   3,
   'English',
@@ -520,7 +506,7 @@ JOIN university u ON u.university_id = d.university_id
 WHERE d.name = 'Computer Science'
   AND u.name = 'American University of Beirut';
 
---LAU Courses
+
   INSERT INTO course (
   code,
   title,
@@ -741,7 +727,7 @@ JOIN university u ON u.university_id = d.university_id
 WHERE d.name = 'Computer Science and Mathematics'
   AND u.name = 'Lebanese American University';
 
---LIU Courses
+
 INSERT INTO course (
   code,
   title,
@@ -931,9 +917,9 @@ SELECT
   'CSCI 430',
   'Operating Systems',
   'Fundamental overview of operating systems. First Quarter: Operating system structures, processes, process synchronization, deadlocks, CPU scheduling, memory management, file systems, secondary storage management. Requires substantial programming projects. ',
-  [PASTE CREDITS OR NULL],
-  '[PASTE LANGUAGE OR NULL]',
-  '[PASTE LEVEL OR NULL]',
+  3,
+  'English',
+  'Undergraduate',
   d.department_id
 FROM department d
 JOIN university u ON u.university_id = d.university_id
@@ -962,7 +948,7 @@ JOIN university u ON u.university_id = d.university_id
 WHERE d.name = 'Computer Science and Information Technology'
   AND u.name = 'Lebanese International University';
 
-  --USJ Courses
+  
   INSERT INTO course (
   code,
   title,
@@ -1181,10 +1167,10 @@ SELECT
   d.department_id
 FROM department d
 JOIN university u ON u.university_id = d.university_id
-WHERE d.name = '[PASTE DEPARTMENT NAME]'
-  AND u.name = '[PASTE UNIVERSITY NAME]';
+WHERE d.name = 'Informatique'
+  AND u.name = 'Université Saint-Joseph de Beyrouth';
 
-  --UOB Courses
+
   INSERT INTO course (
   code,
   title,
@@ -1242,9 +1228,9 @@ SELECT
   'CSIS 206',
   'Principles of Programming',
   'This course is designed to introduce students to the concept of computing and programming principles. It is intended to establish concrete skills in the constructs and algorithmic methods as an essential part of the software development process. The topics include: algorithms, procedural programming, data representation, basic programming control structures (sequence, selection and repetition), functional decomposition, functions call and arrays. ',
-  [PASTE CREDITS OR NULL],
-  '[PASTE LANGUAGE OR NULL]',
-  '[PASTE LEVEL OR NULL]',
+  3,
+  'English',
+  'Undergraduate',
   d.department_id
 FROM department d
 JOIN university u ON u.university_id = d.university_id
@@ -1406,3 +1392,4 @@ WHERE d.name = 'Computer Science'
   AND u.name = 'University of Balamand';
 
 COMMIT;
+SET FOREIGN_KEY_CHECKS = 1;
