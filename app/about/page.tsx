@@ -110,32 +110,39 @@ export default function AboutPage() {
         </div> */}
 
         <div className="rounded-xl p-8 transition-shadow hover:shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Our Approach</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            What Makes Us Different
+          </h2>
 
           <p className="text-gray-700 mb-4 leading-7">
-            Course Compass provides a platform where students can:
+            We&apos;ve built features that prioritize honesty, utility, and
+            student privacy.
           </p>
 
           <ul className="list-disc pl-5 space-y-2 text-gray-700 leading-7">
             <li>
-              <strong>Browse courses</strong> across universities and
-              departments
+              <strong>100% anonymous reviews</strong> — your feedback is
+              completely private
             </li>
             <li>
-              <strong>Read anonymous reviews</strong> from past students
+              <strong>Verified students only</strong> — read authentic reviews
+              from real students
             </li>
             <li>
-              <strong>Compare ratings</strong> for workload, exams, grading, and
-              attendance
+              <strong>Detailed ratings</strong> — evaluate workload, exams,
+              grading, and attendance
             </li>
             <li>
-              <strong>Learn practical tips</strong> from real experiences
+              <strong>Smart filters</strong> — quickly find courses and reviews
+              that match your needs
             </li>
             <li>
-              <strong>Share insights</strong> to help future students
+              <strong>Learn practical tips</strong> — gain insights from real
+              student experiences
             </li>
           </ul>
         </div>
+
         {/* <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Our Vision</h2>
           <p className="text-gray-700 leading-7">
