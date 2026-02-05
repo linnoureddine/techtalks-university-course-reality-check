@@ -1,120 +1,160 @@
+"use client";
+
+import Button from "@/components/Button";
+import HowItWorks from "@/components/HowItWorks";
+import StatsSection from "@/components/StatsSection";
+
+const statsData = {
+  reviews: 50000,
+  students: 15000,
+  universities: 200,
+  rating: 4.3,
+};
+
 export default function AboutPage() {
   return (
-    <main className="bg-[#F2F2F7]">
-      {/* Hero */}
-      <section className="bg-[#6155F5] text-white py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            About Course Compass
+    <main className="bg-[#FFFFFF]">
+      <section className="py-20 px-6 pt-40">
+        <div className="max-w-4xl mx-auto text-center ">
+          <h1 className="text-4xl text-[#111827] sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            Making Course Selection{" "}
+            <span className="bg-gradient-to-r from-[#6155F5] to-teal-500 bg-clip-text text-transparent">
+              Transparent
+            </span>
+            {""}
           </h1>
-          <p className="text-lg text-white/90">
-            Empowering students to make informed course decisions
+
+          <p className="text-l sm:text-l md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+            We believe every student deserves honest insights into their courses
+            before committing. Coursality brings transparency to higher
+            education through authentic peer reviews.
           </p>
         </div>
       </section>
 
-      {/* Content */}
-      <section className="max-w-5xl mx-auto px-6 py-16 space-y-10">
-        {/* Our Mission */}
-        <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Our Mission</h2>
+      <section className="max-w-5xl mx-auto px-6 py-16 space-y-6 mt-0">
+        <div className="rounded-xl p-6 transition-shadow hover:shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">The Problem We Solve</h2>
+          <p className="text-gray-700 leading-7 mb-3">
+            Selecting courses can be overwhelming. Students often lack clear
+            insights into workload, grading fairness, and exam difficulty.
+          </p>
+          <ul className="list-disc pl-5 space-y-2 text-gray-700 leading-7">
+            <li>Unclear exam difficulty and time commitments</li>
+            <li>Limited information on grading and teaching quality</li>
+            <li>Few practical tips from past students</li>
+          </ul>
+        </div>
+
+        <div className="rounded-xl p-6 transition-shadow hover:shadow-lg">
+          <h2 className="text-xl font-semibold">Our Mission</h2>
           <p className="text-gray-700 leading-7">
-            Official university course descriptions often paint an incomplete
-            picture of what students will actually experience. They tell you the
-            topics covered, but not the reality of the workload, the fairness of
-            grading, or how strict attendance policies really are.
-            <br />
-            <br />
-            Course Compass bridges this gap by allowing students to anonymously
-            share honest course experiences, helping others make informed
-            decisions instead of relying on incomplete information.
+            At Coursality, our mission is to make course selection transparent
+            and stress-free. We provide honest, unfiltered student reviews so
+            you can make informed decisions about workload, grading, and
+            teaching quality — no surprises, no guesswork.
           </p>
         </div>
 
-        {/* The Problem */}
-        <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
+        <HowItWorks />
+
+        <div className="rounded-xl p-8 transition-shadow hover:shadow-lg">
           <h2 className="text-xl font-semibold mb-4">
-            The Problem We Are Solving
+            What Makes Us Different
           </h2>
 
-          <p className="text-gray-700 mb-4 leading-7">
-            <strong>Students struggle with course selection.</strong> University
-            course catalogs provide descriptions, prerequisites, and credit
-            hours, but often miss the questions that matter most:
+          <p className="text-gray-700 mb-6 leading-7">
+            We&apos;ve built features that prioritize honesty, utility, and
+            student privacy.
           </p>
 
-          <ul className="list-disc pl-5 space-y-2 text-gray-700 mb-4">
-            <li>How difficult are the exams really?</li>
-            <li>What’s the actual time commitment outside class?</li>
-            <li>Is grading fair and transparent?</li>
-            <li>How strict is attendance enforcement?</li>
-            <li>What tips do past students have for success?</li>
-          </ul>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+            <div className="rounded-lg p-4 bg-gray-50 flex flex-col items-start transition-shadow hover:shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-[#6155F5] mb-3"
+                fill="currentColor"
+                viewBox="0 0 28 28"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <h3 className="text-lg font-semibold mb-2">100% Anonymous</h3>
+              <p className="text-gray-700 text-sm leading-6">
+                Your feedback is completely private, ensuring honest and
+                authentic reviews.
+              </p>
+            </div>
 
-          <p className="text-gray-700 leading-7">
-            Without these insights, students often end up in courses that don’t
-            match their expectations, leading to unnecessary stress, poor
-            grades, or wasted time.
-          </p>
-        </div>
+            <div className="rounded-lg p-4 bg-gray-50 flex flex-col items-start transition-shadow hover:shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-[#6155F5]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+              </svg>
 
-        {/* Our Approach */}
-        <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Our Approach</h2>
+              <h3 className="text-lg font-semibold mb-2">Verified Students</h3>
+              <p className="text-gray-700 text-sm leading-6">
+                All reviews come from real students to ensure authenticity and
+                trust.
+              </p>
+            </div>
 
-          <p className="text-gray-700 mb-4 leading-7">
-            Course Compass provides a platform where students can:
-          </p>
+            <div className="rounded-lg p-4 bg-gray-50 flex flex-col items-start transition-shadow hover:shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-[#6155F5] mb-3"
+                fill="currentColor"
+                viewBox="0 0 28 28"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <h3 className="text-lg font-semibold mb-2">Detailed Ratings</h3>
+              <p className="text-gray-700 text-sm leading-6">
+                Evaluate workload, exams, grading, and attendance in depth.
+              </p>
+            </div>
 
-          <ul className="list-disc pl-5 space-y-2 text-gray-700 leading-7">
-            <li>
-              <strong>Browse courses</strong> across universities and departments
-            </li>
-            <li>
-              <strong>Read anonymous reviews</strong> from past students
-            </li>
-            <li>
-              <strong>Compare ratings</strong> for workload, exams, grading, and
-              attendance
-            </li>
-            <li>
-              <strong>Learn practical tips</strong> from real experiences
-            </li>
-            <li>
-              <strong>Share insights</strong> to help future students
-            </li>
-          </ul>
-        </div>
-
-        {/* Bottom Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Anonymity */}
-          <div className="bg-white rounded-xl p-6 transition-shadow hover:shadow-lg">
-            <h3 className="text-lg font-semibold mb-3">
-              Anonymity & Privacy
-            </h3>
-            <p className="text-gray-700 leading-7">
-              All reviews are completely anonymous. Students can share honest
-              feedback without fear of repercussions, ensuring authentic and
-              trustworthy insights.
-            </p>
+            <div className="rounded-lg p-4 bg-gray-50 flex flex-col items-start transition-shadow hover:shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-[#6155F5] mb-3"
+                fill="currentColor"
+                viewBox="0 0 28 28"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M3.792 2.938A49.069 49.069 0 0 1 12 2.25c2.797 0 5.54.236 8.209.688a1.857 1.857 0 0 1 1.541 1.836v1.044a3 3 0 0 1-.879 2.121l-6.182 6.182a1.5 1.5 0 0 0-.439 1.061v2.927a3 3 0 0 1-1.658 2.684l-1.757.878A.75.75 0 0 1 9.75 21v-5.818a1.5 1.5 0 0 0-.44-1.06L3.13 7.938a3 3 0 0 1-.879-2.121V4.774c0-.897.64-1.683 1.542-1.836Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <h3 className="text-lg font-semibold mb-2">Smart Filters</h3>
+              <p className="text-gray-700 text-sm leading-6">
+                Quickly find courses and reviews that match your exact
+                preferences.
+              </p>
+            </div>
           </div>
-
-          {/* Community */}
-          <div className="bg-white rounded-xl p-6 transition-shadow hover:shadow-lg">
-            <h3 className="text-lg font-semibold mb-3">
-              Community-Driven
-            </h3>
-            <p className="text-gray-700 leading-7">
-              Course Compass grows through student contributions. The more
-              experiences shared, the more valuable the platform becomes for
-              everyone.
-            </p>
-          </div>
         </div>
 
-        {/* Vision */}
-        <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
+        {/* <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Our Vision</h2>
           <p className="text-gray-700 leading-7">
             We envision a future where every student has access to transparent,
@@ -122,30 +162,24 @@ export default function AboutPage() {
             insights, we aim to reduce academic stress and help students build
             schedules that truly fit their goals.
           </p>
-        </div>
+        </div> */}
 
-        {/* CTA */}
+        <StatsSection stats={statsData} />
+
         <div className="text-center pt-10">
-          <h2 className="text-2xl font-semibold mb-2">
-            Join Our Community
+          <h2 className="text-3xl font-bold mb-2">
+            Start Making Better Course Decisions
           </h2>
           <p className="text-gray-600 mb-6">
-            Help us build the most comprehensive course review platform
+            Join thousands of students who use Coursality to navigate their
+            academic journey with confidence.
           </p>
 
           <div className="flex justify-center gap-4 flex-wrap">
-            <a
-              href="/courses"
-              className="rounded-md bg-[#6155F5] px-6 py-3 text-white hover:bg-[#503fdc] transition shadow"
-            >
-              Browse Courses
-            </a>
-            <a
-              href="/feedback"
-              className="rounded-md border border-[#6155F5] px-6 py-3 text-[#6155F5] hover:bg-[#6155F5]/10 transition shadow"
-            >
-              Share Your Experience
-            </a>
+            <Button className="h-13">Browse Courses</Button>
+            <Button className="h-13" variant="elevated">
+              Share your experience
+            </Button>
           </div>
         </div>
       </section>

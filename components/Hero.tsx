@@ -5,13 +5,16 @@ export default function Hero() {
   return (
     <div
       className="max-w-4xl mx-auto px-6 sm:px-8
-      pt-20 sm:pt-24 lg:pt-32
+      pt-20 sm:pt-20 lg:pt-32
       pb-10 sm:pb-12 lg:pb-16"
     >
       <div className="text-center">
-        <h1 className="text-5xl sm:text-6xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-          The <span className="text-[#6155F5]">Real Truth</span> About
-          University Courses
+        <h1 className="text-5xl sm:text-4xl md:text-6xl lg:text-6xl font-bold tracking-tight mb-6">
+          The{" "}
+          <span className="bg-gradient-to-r from-[#6155F5] to-teal-500 bg-clip-text text-transparent">
+            Real Truth
+          </span>{" "}
+          About University Courses
         </h1>
 
         <p className="text-l sm:text-l md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
@@ -43,7 +46,9 @@ export default function Hero() {
                 focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
               />
             </div>
-            <Button className="h-11 text-xlg">Search</Button>
+            <Button className="h-11 text-xlg hidden sm:inline-flex">
+              Search
+            </Button>
           </div>
         </form>
       </div>

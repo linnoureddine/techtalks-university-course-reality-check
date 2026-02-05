@@ -13,8 +13,10 @@
     "feather-icons": "^4.29.2",
     "next": "16.1.6",
     "react": "19.2.3",
+    "react-countup": "^6.5.3",
     "react-dom": "19.2.3",
-    "react-feather": "^2.0.10"
+    "react-feather": "^2.0.10",
+    "react-intersection-observer": "^10.0.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
