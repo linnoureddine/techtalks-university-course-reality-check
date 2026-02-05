@@ -68,7 +68,7 @@ export default function AboutPage() {
             student privacy.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
             <div className="rounded-lg p-4 bg-gray-50 flex flex-col items-start transition-shadow hover:shadow-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -184,20 +184,5 @@ export default function AboutPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function TrustIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      {...props}
-    >
-      <path d="M12 2L4 5v6c0 5 4 9 8 9s8-4 8-9V5l-8-3z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
   );
 }
