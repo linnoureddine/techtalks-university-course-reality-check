@@ -1,21 +1,27 @@
+import Button from "@/components/Button";
+
 export default function AboutPage() {
   return (
     <main className="bg-[#F2F2F7]">
-      {/* Hero */}
-      <section className="bg-[#6155F5] text-white py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            About Course Compass
+      <section className="py-20 px-6 mt-10 sm:mt-12 lg:mt-18">
+        <div className="max-w-4xl mx-auto text-center ">
+          <h1 className="text-4xl text-[#111827] sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            Making Course Selection{" "}
+            <span className="bg-gradient-to-r from-[#6155F5] to-teal-500 bg-clip-text text-transparent">
+              Transparent
+            </span>
+            {""}
           </h1>
-          <p className="text-lg text-white/90">
-            Empowering students to make informed course decisions
+
+          <p className="text-l sm:text-l md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+            We believe every student deserves honest insights into their courses
+            before committing. Coursality brings transparency to higher
+            education through authentic peer reviews.
           </p>
         </div>
       </section>
 
-      {/* Content */}
-      <section className="max-w-5xl mx-auto px-6 py-16 space-y-10">
-        {/* Our Mission */}
+      <section className="max-w-5xl mx-auto px-6 py-16 space-y-10 mt-0">
         <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Our Mission</h2>
           <p className="text-gray-700 leading-7">
@@ -31,7 +37,6 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* The Problem */}
         <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
           <h2 className="text-xl font-semibold mb-4">
             The Problem We Are Solving
@@ -58,7 +63,6 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* Our Approach */}
         <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Our Approach</h2>
 
@@ -68,7 +72,8 @@ export default function AboutPage() {
 
           <ul className="list-disc pl-5 space-y-2 text-gray-700 leading-7">
             <li>
-              <strong>Browse courses</strong> across universities and departments
+              <strong>Browse courses</strong> across universities and
+              departments
             </li>
             <li>
               <strong>Read anonymous reviews</strong> from past students
@@ -86,13 +91,10 @@ export default function AboutPage() {
           </ul>
         </div>
 
-        {/* Bottom Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Anonymity */}
           <div className="bg-white rounded-xl p-6 transition-shadow hover:shadow-lg">
-            <h3 className="text-lg font-semibold mb-3">
-              Anonymity & Privacy
-            </h3>
+            <h3 className="text-lg font-semibold mb-3">Anonymity & Privacy</h3>
             <p className="text-gray-700 leading-7">
               All reviews are completely anonymous. Students can share honest
               feedback without fear of repercussions, ensuring authentic and
@@ -100,11 +102,8 @@ export default function AboutPage() {
             </p>
           </div>
 
-          {/* Community */}
           <div className="bg-white rounded-xl p-6 transition-shadow hover:shadow-lg">
-            <h3 className="text-lg font-semibold mb-3">
-              Community-Driven
-            </h3>
+            <h3 className="text-lg font-semibold mb-3">Community-Driven</h3>
             <p className="text-gray-700 leading-7">
               Course Compass grows through student contributions. The more
               experiences shared, the more valuable the platform becomes for
@@ -113,7 +112,6 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Vision */}
         <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Our Vision</h2>
           <p className="text-gray-700 leading-7">
@@ -124,28 +122,20 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* CTA */}
         <div className="text-center pt-10">
-          <h2 className="text-2xl font-semibold mb-2">
-            Join Our Community
+          <h2 className="text-3xl font-bold mb-2">
+            Start Making Better Course Decisions
           </h2>
           <p className="text-gray-600 mb-6">
-            Help us build the most comprehensive course review platform
+            Join thousands of students who use Coursality to navigate their
+            academic journey with confidence.
           </p>
 
           <div className="flex justify-center gap-4 flex-wrap">
-            <a
-              href="/courses"
-              className="rounded-md bg-[#6155F5] px-6 py-3 text-white hover:bg-[#503fdc] transition shadow"
-            >
-              Browse Courses
-            </a>
-            <a
-              href="/feedback"
-              className="rounded-md border border-[#6155F5] px-6 py-3 text-[#6155F5] hover:bg-[#6155F5]/10 transition shadow"
-            >
-              Share Your Experience
-            </a>
+            <Button className="h-13">Browse Courses</Button>
+            <Button className="h-13" variant="elevated">
+              Share your experience
+            </Button>
           </div>
         </div>
       </section>
