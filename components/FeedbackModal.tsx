@@ -1,27 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-type StarProps = {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-};
-
-function Star({ active, onClick, label }: StarProps) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className={`text-2xl leading-none transition ${
-        active ? "text-gray-900" : "text-gray-300"
-      } hover:text-gray-900`}
-    >
-      ★
-    </button>
-  );
-}
+import StarRating from "./StarRating";
 
 export default function FeedbackModal({ onClose }: { onClose: () => void }) {
   const [rating, setRating] = useState(0);
@@ -59,18 +39,14 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
           Help us improve Coursality!
         </h2>
 
-        <div className="mt-2 flex gap-2">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Star
-              key={i}
-              active={i <= rating}
-              label={`${i} star`}
-              onClick={() => {
-                setRating(i);
-                setError("");
-              }}
-            />
-          ))}
+        <div className="mt-2">
+          <StarRating
+            value={rating}
+            onChange={(val) => {
+              setRating(val);
+              setError("");
+            }}
+          />
         </div>
 
         <textarea
@@ -80,7 +56,7 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
             setError("");
           }}
           placeholder="Write feedback..."
-          className="mt-4 w-full h-32 resize-none rounded-lg border border-gray-300 p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#6155F5]"
+          className="mt-4 h-32 w-full resize-none rounded-lg border border-gray-300 p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#6155F5]"
         />
 
         {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
@@ -92,7 +68,7 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
             className={`rounded-lg px-6 py-2 text-sm font-medium text-white ${
               feedback.trim() && rating > 0
                 ? "bg-[#6155F5] hover:bg-[#503fdc]"
-                : "bg-gray-300 cursor-not-allowed"
+                : "cursor-not-allowed bg-gray-300"
             }`}
           >
             Submit
