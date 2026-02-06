@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import StarRating from "./StarRating";
+import Button from "./Button";
 
 export default function FeedbackModal({ onClose }: { onClose: () => void }) {
   const [rating, setRating] = useState(0);
@@ -22,6 +23,8 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
     console.log({ rating, feedback });
     onClose();
   }
+
+  const isDisabled = !feedback.trim() || rating === 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -62,17 +65,13 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
         {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 
         <div className="mt-4 flex justify-end">
-          <button
+          <Button
             onClick={handleSubmit}
-            disabled={!feedback.trim() || rating === 0}
-            className={`rounded-lg px-6 py-2 text-sm font-medium text-white ${
-              feedback.trim() && rating > 0
-                ? "bg-[#6155F5] hover:bg-[#503fdc]"
-                : "cursor-not-allowed bg-gray-300"
-            }`}
+            disabled={isDisabled}
+            className={isDisabled ? "opacity-50 cursor-not-allowed" : ""}
           >
             Submit
-          </button>
+          </Button>
         </div>
       </div>
     </div>
