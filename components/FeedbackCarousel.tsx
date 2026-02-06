@@ -52,7 +52,7 @@ export default function FeedbackCarousel() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
-    <section className="w-full bg-[#F2F2F7] py-10">
+    <section>
       <div className="mx-auto max-w-6xl px-6">
         <h2 className="text-center text-4xl font-extrabold text-gray-900">
           What Our Users Think
