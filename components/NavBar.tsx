@@ -72,9 +72,15 @@ export default function NavBar() {
       </div>
       {menuOpen && (
         <div className="md:hidden mt-4 flex flex-col gap-3">
-          <NavLink href="/">Home</NavLink>
-          <NavLink href="/courses">Courses</NavLink>
-          <NavLink href="/about">About</NavLink>
+          <div onClick={() => setMenuOpen(false)}>
+            <NavLink href="/">Home</NavLink>
+          </div>
+          <div onClick={() => setMenuOpen(false)}>
+            <NavLink href="/courses">Courses</NavLink>
+          </div>
+          <div onClick={() => setMenuOpen(false)}>
+            <NavLink href="/about">About</NavLink>
+          </div>
         </div>
       )}
     </nav>

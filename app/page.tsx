@@ -1,4 +1,5 @@
 import Hero from "../components/Hero";
+import Link from "next/link";
 import CourseCard from "../components/CourseCard";
 import HowItWorks from "../components/HowItWorks";
 import FeedbackCarousel from "@/components/FeedbackCarousel";
@@ -9,9 +10,29 @@ export default function Home() {
       <section className="mx-auto max-w-7xl">
         <Hero />
 
-        <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-[#111827]">
-          Browse Courses
-        </h2>
+        <Link
+          href="/courses"
+          className="mt-6 flex w-full items-center justify-between text-[#111827]"
+        >
+          <span className="text-xl lg:text-3xl font-extrabold tracking-tight">
+            Browse Courses
+          </span>
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 lg:h-7 lg:w-7 transition-transform duration-200 hover:translate-x-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 12h14" />
+            <path d="M13 5l7 7-7 7" />
+          </svg>
+        </Link>
+
         <div className="mt-8 grid justify-center gap-8 sm:grid-cols-1 md:grid-cols-2">
           <CourseCard
             code="CMPS 204"
@@ -40,7 +61,7 @@ export default function Home() {
       </section>
 
       <HowItWorks />
-      <FeedbackCarousel/>
+      <FeedbackCarousel />
     </main>
   );
 }

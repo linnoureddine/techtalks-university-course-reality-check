@@ -52,7 +52,7 @@ export default function FeedbackCarousel() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
-    <section>
+    <section className="w-full py-10">
       <div className="mx-auto max-w-6xl px-6">
         <h2 className="text-center text-4xl font-extrabold text-gray-900">
           What Our Users Think
@@ -67,13 +67,11 @@ export default function FeedbackCarousel() {
         <div className="mt-8 flex justify-center">
           <Button variant="primary" onClick={() => setFeedbackOpen(true)}>
             Leave Your Feedback
-            </Button>
+          </Button>
         </div>
       </div>
 
-      {feedbackOpen && (
-        <FeedbackModal onClose={() => setFeedbackOpen(false)} />
-      )}
+      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
     </section>
   );
 }
