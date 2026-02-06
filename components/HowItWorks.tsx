@@ -1,7 +1,7 @@
 export default function HowItWorks() {
   return (
     <div className="max-w-6xl mx-auto px-6 sm:px-8 py-12 sm:py-16 lg:py-20 text-center">
-      <h2 className="text-4xl sm:text-5xl font-extrabold mb-2">How It Works</h2>
+      <h2 className="text-4xl sm:text-4xl font-extrabold mb-2">How It Works</h2>
       <p className="text-gray-500 mb-12">
         Get insights from students who have been there.
       </p>
