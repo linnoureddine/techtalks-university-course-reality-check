@@ -3,6 +3,8 @@
 import Button from "@/components/Button";
 import HowItWorks from "@/components/HowItWorks";
 import StatsSection from "@/components/StatsSection";
+import Link from "next/link";
+
 
 const statsData = {
   reviews: 50000,
@@ -174,13 +176,14 @@ export default function AboutPage() {
             Join thousands of students who use Coursality to navigate their
             academic journey with confidence.
           </p>
+        <div className="flex justify-center gap-4 flex-wrap">
+          <Link href="/courses">
+          <Button className="h-13">Browse Courses</Button>
+           </Link>
 
-          <div className="flex justify-center gap-4 flex-wrap">
-            <Button className="h-13">Browse Courses</Button>
-            <Button className="h-13" variant="elevated">
-              Share your experience
-            </Button>
+          
           </div>
+
         </div>
       </section>
     </main>
