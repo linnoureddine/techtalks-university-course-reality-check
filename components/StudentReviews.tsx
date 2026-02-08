@@ -31,7 +31,7 @@ export default function StudentReviews() {
               </p>
             </div>
 
-            <StarRating value={5} />
+            <StarRating value={5} readOnly />
           </div>
 
           <p className="mt-4 text-gray-700 leading-7 text-[15px]">
