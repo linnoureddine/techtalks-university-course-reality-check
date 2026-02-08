@@ -131,7 +131,7 @@ export default function CourseCard({
   return (
     <Link href={`/courses/${slug}`} className="block w-full">
       <div
-        className={`w-full max-w-[900px] min-h-[250px] rounded-2xl bg-white p-5
+        className={`w-full max-w-6xl min-h-[250px] rounded-2xl bg-white p-5
       shadow-[0_12px_40px_rgba(0,0,0,0.12)]
       cursor-pointer transition-transform hover:scale-[1.01]
       hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)]

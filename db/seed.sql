@@ -61,8 +61,6 @@ SELECT
 FROM university u
 WHERE u.name = 'University of Balamand';
 
-
-
 /*  3) COURSES */
 
 INSERT INTO course (
@@ -122,7 +120,7 @@ SELECT
   'CMPS 248',
   'Discrete Structures I',
   'The course introduces basic discrete structures that are backbones of computer science. In particular, this class is meant to introduce logic, proofs, sets, relations, functions, sequences, summations, counting techniques with an emphasis on applications in computer science. ',
- 3,
+  3,
   'English',
   'Undergraduate',
   d.department_id
