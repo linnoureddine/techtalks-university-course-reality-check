@@ -5,7 +5,11 @@ import Button from "@/components/Button";
 import StarRating from "@/components/StarRating";
 import SliderRow from "@/components/SliderRow";
 
-export default function WriteReviewCard() {
+type WriteReviewCardProps = {
+  onSubmit: () => void;
+};
+
+export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
   const [overallRating, setOverallRating] = useState(0);
   const [instructor, setInstructor] = useState("");
   const [semester, setSemester] = useState("");
@@ -16,10 +20,7 @@ export default function WriteReviewCard() {
   const [review, setReview] = useState("");
 
   const canSubmit =
-    overallRating > 0 &&
-    instructor.trim() &&
-    semester.trim() &&
-    review.trim();
+    overallRating > 0 && instructor.trim() && semester.trim() && review.trim();
 
   function handleSubmit() {
     if (!canSubmit) return;
@@ -45,6 +46,8 @@ export default function WriteReviewCard() {
     setWorkload(3);
     setGradingFairness(3);
     setReview("");
+
+    onSubmit();
   }
 
   return (
@@ -71,7 +74,9 @@ export default function WriteReviewCard() {
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700">Semester Taken</div>
+          <div className="text-sm font-medium text-gray-700">
+            Semester Taken
+          </div>
           <input
             value={semester}
             onChange={(e) => setSemester(e.target.value)}
