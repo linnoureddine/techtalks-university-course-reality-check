@@ -1,12 +1,15 @@
+"use client";
+
+import { useState } from "react";
 import StarRating from "@/components/StarRating";
 import ReviewFooterBar from "@/components/ReviewFooterBar";
-
 import { FileText, Briefcase, MapPin, Scale } from "lucide-react";
 
 export default function StudentReviews() {
+  const [rating, setRating] = useState(5);
+
   return (
     <section className="mt-10">
-      {/* header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">
           Student Reviews{" "}
@@ -21,11 +24,9 @@ export default function StudentReviews() {
         </select>
       </div>
 
-      {/* reviews */}
       <div className="space-y-4">
         <div className="rounded-xl bg-white p-7 shadow-sm border border-gray-100">
-          {/* top row */}
-          <div className="flex items-start justify-between gap-6">
+            <div className="flex items-start justify-between gap-6">
             <div>
               <h3 className="font-semibold text-gray-900 text-lg">
                 Student352372
@@ -35,18 +36,15 @@ export default function StudentReviews() {
               </p>
             </div>
 
-            {/* stars */}
-            <StarRating value={5} />
+            <StarRating value={rating} onChange={setRating} />
           </div>
 
-          {/* review text */}
           <p className="mt-4 text-gray-700 leading-7 text-[15px]">
             The Animation Tools course was manageable in terms of difficulty and
             well-structured for beginners. The material was explained clearly,
             and the assignments helped reinforce what we learned...
           </p>
 
-          {/* ratings row */}
           <div className="mt-6 rounded-xl border border-gray-200 bg-white px-6 py-4">
             <div className="grid grid-cols-2 gap-y-4 md:grid-cols-4">
               <div className="flex items-center gap-3 text-gray-600">
@@ -71,7 +69,6 @@ export default function StudentReviews() {
             </div>
           </div>
 
-          {/* footer bar */}
           <ReviewFooterBar initialVotes={24} timeAgo="2 weeks ago" />
         </div>
       </div>
