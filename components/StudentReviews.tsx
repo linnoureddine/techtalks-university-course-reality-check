@@ -12,8 +12,7 @@ export default function StudentReviews() {
     <section className="mt-10">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">
-          Student Reviews{" "}
-          <span className="text-gray-500 font-normal">(2)</span>
+          Student Reviews <span className="text-gray-500 font-normal">(2)</span>
         </h2>
 
         <select className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6155F5]">
@@ -26,7 +25,7 @@ export default function StudentReviews() {
 
       <div className="space-y-4">
         <div className="rounded-xl bg-white p-7 shadow-sm border border-gray-100">
-            <div className="flex items-start justify-between gap-6">
+          <div className="flex items-start justify-between gap-6">
             <div>
               <h3 className="font-semibold text-gray-900 text-lg">
                 Student352372
