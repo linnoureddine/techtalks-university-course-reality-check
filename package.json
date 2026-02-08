@@ -9,9 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "feather-icons": "^4.29.2",
-    "lucide-react": "^0.563.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.16.3",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-countup": "^6.5.3",
@@ -21,6 +23,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
