@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import CourseCard from "@/components/CourseCard";
 
 export default function CoursesPage() {
