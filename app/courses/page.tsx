@@ -2,11 +2,88 @@
 
 import { useState, useMemo } from "react";
 import CourseCard from "@/components/CourseCard";
+import Button from "@/components/Button";
+
+const courses = [
+  {
+    slug: "cmps-204",
+    code: "CMPS 204",
+    title: "Animation Tools",
+    university: "American University of Beirut",
+    department: "Computer Science",
+    credits: "3 cr.",
+    level: "Undergraduate",
+    language: "English",
+    rating: 4.8,
+    description:
+      "This course teaches students the knowledge needed to create digital prototypes of 2D and 3D games...",
+    metrics: { exam: 4, workload: 4, attendance: 3, grading: 5 },
+    reviewsLabel: "350+ Reviews",
+  },
+  {
+    slug: "cmps-201",
+    code: "CMPS 201",
+    title: "Programming Fundamentals",
+    university: "American University of Beirut",
+    department: "Computer Science",
+    credits: "3 cr.",
+    level: "Undergraduate",
+    language: "English",
+    rating: 4.2,
+    description: "An introduction to programming concepts and problem solving.",
+    metrics: { exam: 3, workload: 4, attendance: 4, grading: 4 },
+    reviewsLabel: "200+ Reviews",
+  },
+];
 
 export default function CoursesPage() {
+  const [showFilters, setShowFilters] = useState(false);
+
+  type Filters = {
+    university: string;
+    department: string;
+    language: string;
+    level: string;
+  };
+
+  const [filters, setFilters] = useState<Filters>({
+    university: "",
+    department: "",
+    language: "",
+    level: "",
+  });
+
+  const [draftFilters, setDraftFilters] = useState(filters);
+
+  const handleDraftChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    setDraftFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const filteredCourses = useMemo(() => {
+    return courses.filter((course) => {
+      if (filters.university && course.university !== filters.university)
+        return false;
+
+      if (filters.department && course.department !== filters.department)
+        return false;
+
+      if (filters.language && course.language !== filters.language)
+        return false;
+
+      if (filters.level && course.level !== filters.level) return false;
+
+      return true;
+    });
+  }, [filters]);
+
   return (
-    <main className="min bg-[#FFFFFF] px-6 py-6">
-      <div className="max-w-6xl mx-auto px-6 py-10 flex items-center justify-between">
+    <main className="bg-[#FFFFFF] px-6 py-10">
+      <div className="max-w-6xl mx-auto py-4 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Browse Courses</h1>
           <p className="mt-2 text-gray-500 max-w-xl">
@@ -14,7 +91,10 @@ export default function CoursesPage() {
           </p>
         </div>
 
-        <button className="flex items-center justify-center rounded-lg hover:bg-gray-50 transition">
+        <button
+          className="flex items-center justify-center rounded-lg p-2 hover:bg-gray-50 transition"
+          onClick={() => setShowFilters((prev) => !prev)}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-gray-700"
@@ -32,30 +112,104 @@ export default function CoursesPage() {
         </button>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 mt-8 flex flex-col gap-8">
-        <CourseCard
-          code="CMPS 204"
-          title="Animation Tools"
-          university="American University of Beirut"
-          department="Computer Science"
-          credits="3 cr."
-          rating={4.8}
-          description="This course teaches students the knowledge needed to create digital prototypes of 2D and 3D games. The course covers: the conceptual framework of interactive environments, game programming approaches, techniques and tools, manipulation of visual effects and sound, object animation, movement control, worlds, and interactivity. Prerequisite: CMPS 201"
-          metrics={{ exam: 4, workload: 4, attendance: 3, grading: 5 }}
-          reviewsLabel="350+ Reviews"
-        />
+      {showFilters && (
+        <div className="max-w-6xl mx-auto px-6 pb-6">
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <select
+                name="university"
+                value={draftFilters.university}
+                onChange={handleDraftChange}
+                className="w-full sm:w-auto rounded-lg border border-gray-300 px-4 py-2
+                text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
+              >
+                <option value="">All Universities</option>
+                <option>American University of Beirut</option>
+                <option>University of Balamand</option>
+                <option>Lebanese American University</option>
+                <option>Beirut Arab University</option>
+                <option>Lebanese International University</option>
+                <option>Université Saint-Joseph de Beyrouth</option>
+              </select>
 
-        <CourseCard
-          code="CMPS 204"
-          title="Animation Tools"
-          university="American University of Beirut"
-          department="Computer Science"
-          credits="3 cr."
-          rating={4.8}
-          description="This course teaches students the knowledge needed to create digital prototypes of 2D and 3D games. The course covers: the conceptual framework of interactive environments, game programming approaches, techniques and tools, manipulation of visual effects and sound, object animation, movement control, worlds, and interactivity. Prerequisite: CMPS 201"
-          metrics={{ exam: 4, workload: 4, attendance: 3, grading: 5 }}
-          reviewsLabel="350+ Reviews"
-        />
+              <select
+                name="department"
+                value={draftFilters.department}
+                onChange={handleDraftChange}
+                className="w-full sm:w-auto rounded-lg border border-gray-300 px-4 py-2
+                text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
+              >
+                <option>All Departments</option>
+                <option>Computer Science</option>
+                <option>Mathematics</option>
+              </select>
+
+              <select
+                name="language"
+                value={draftFilters.language}
+                onChange={handleDraftChange}
+                className="w-full sm:w-auto rounded-lg border border-gray-300 px-4 py-2
+                text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
+              >
+                <option>Any Language</option>
+                <option>English</option>
+                <option>Arabic</option>
+                <option>French</option>
+              </select>
+
+              <select
+                name="level"
+                value={draftFilters.level}
+                onChange={handleDraftChange}
+                className="w-full sm:w-auto rounded-lg border border-gray-300 px-4 py-2
+                text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
+              >
+                <option>Any Level</option>
+                <option>Undergraduate</option>
+                <option>Graduate</option>
+                <option>Phd</option>
+              </select>
+
+              <div className="flex-1" />
+              <Button
+                onClick={() => {
+                  setFilters(draftFilters);
+                  setShowFilters(false);
+                }}
+                className="text-sm"
+              >
+                Apply
+              </Button>
+              <Button
+                onClick={() => {
+                  const reset = {
+                    university: "",
+                    department: "",
+                    language: "",
+                    level: "",
+                  };
+                  setDraftFilters(reset);
+                  setFilters(reset);
+                }}
+                className="text-sm bg-gray-100 text-gray-900 hover:bg-gray-200"
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto px-6 mt-6 flex flex-col gap-8">
+        {filteredCourses.map((course) => (
+          <CourseCard key={course.slug} {...course} />
+        ))}
+
+        {filteredCourses.length === 0 && (
+          <p className="text-gray-500 text-center mt-4">
+            No courses match your filters.
+          </p>
+        )}
       </div>
     </main>
   );

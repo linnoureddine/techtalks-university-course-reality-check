@@ -61,8 +61,6 @@ SELECT
 FROM university u
 WHERE u.name = 'University of Balamand';
 
-
-
 /*  3) COURSES */
 
 INSERT INTO course (
