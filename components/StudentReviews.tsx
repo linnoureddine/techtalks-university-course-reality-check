@@ -1,13 +1,8 @@
-"use client";
-
-import { useState } from "react";
 import StarRating from "@/components/StarRating";
 import ReviewFooterBar from "@/components/ReviewFooterBar";
 import { FileText, Briefcase, MapPin, Scale } from "lucide-react";
 
 export default function StudentReviews() {
-  const [rating, setRating] = useState(5);
-
   return (
     <section className="mt-10">
       <div className="flex items-center justify-between mb-4">
@@ -26,7 +21,7 @@ export default function StudentReviews() {
 
       <div className="space-y-4">
         <div className="rounded-xl bg-white p-7 shadow-sm border border-gray-100">
-            <div className="flex items-start justify-between gap-6">
+          <div className="flex items-start justify-between gap-6">
             <div>
               <h3 className="font-semibold text-gray-900 text-lg">
                 Student352372
@@ -36,7 +31,7 @@ export default function StudentReviews() {
               </p>
             </div>
 
-            <StarRating value={rating} onChange={setRating} />
+            <StarRating value={5} />
           </div>
 
           <p className="mt-4 text-gray-700 leading-7 text-[15px]">

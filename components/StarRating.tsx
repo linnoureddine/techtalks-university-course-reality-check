@@ -1,42 +1,38 @@
-"use client";
-
-import { useState } from "react";
-
 type StarRatingProps = {
-  value?: number;
-  onChange?: (value: number) => void;
+  value: number; // 0..5
+  className?: string;
 };
 
-export default function StarRating({ value = 0, onChange }: StarRatingProps) {
-  const [hovered, setHovered] = useState<number | null>(null);
-
-  const displayValue = hovered ?? value;
+export default function StarRating({ value, className = "" }: StarRatingProps) {
+  const safeValue = Math.max(0, Math.min(5, value));
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            onClick={() => onChange?.(star)}
-            onMouseEnter={() => setHovered(star)}
-            onMouseLeave={() => setHovered(null)}
-            className="cursor-pointer"
+    <div
+      className={[
+        "flex items-center gap-1 select-none pointer-events-none",
+        className,
+      ].join(" ")}
+      aria-label={`${safeValue} out of 5 stars`}
+    >
+      {Array.from({ length: 5 }).map((_, i) => {
+        const filled = i < safeValue;
+        return (
+          <span
+            key={i}
+            className={[
+              "leading-none",
+              "text-lg sm:text-xl md:text-2xl",
+              filled ? "text-[#F5B301]" : "text-gray-300",
+            ].join(" ")}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill={star <= displayValue ? "#FBBF24" : "#E5E7EB"}
-              className="h-7 w-7 transition"
-            >
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
-          </button>
-        ))}
-      </div>
+            ★
+          </span>
+        );
+      })}
 
-      <span className="text-lg font-semibold text-gray-900">{value}</span>
+      <span className="ml-2 text-sm sm:text-base font-semibold text-gray-900">
+        {safeValue}
+      </span>
     </div>
   );
 }
