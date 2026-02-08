@@ -1,6 +1,15 @@
 "use client";
 
-import { ArrowLeft, School, GraduationCap, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  School,
+  GraduationCap,
+  Star,
+  FileText,
+  Briefcase,
+  MapPin,
+  Scale,
+} from "lucide-react";
 import Link from "next/link";
 
 const course = [
@@ -80,7 +89,6 @@ export default function CourseInfo() {
       </div>
 
       <div className="my-6 h-px w-full bg-gray-200" />
-
       <div>
         <h2 className="text-lg font-semibold text-gray-900">
           Course Description
@@ -99,6 +107,66 @@ export default function CourseInfo() {
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="text-xs text-gray-400">Language</div>
           <div className="mt-1 font-medium text-gray-900">{data.language}</div>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold text-gray-900">Course Ratings</h2>
+
+        <div className="m-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-500">Exam Difficulty</span>
+              <FileText className="h-5 w-5 text-[#6155F5]" />
+            </div>
+            <div className="text-center">
+              <p className="mt-1 text-2xl font-bold text-gray-900">
+                {data.metrics.exam}.0
+              </p>
+              <p className="text-[12px]">out of 5</p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-500">Workload</span>
+              <Briefcase className="h-5 w-5 text-[#6155F5]" />
+            </div>
+            <div className="text-center">
+              <p className="mt-1 text-2xl font-bold text-gray-900">
+                {data.metrics.workload}.0
+              </p>
+              <p className="text-[12px]">out of 5</p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-500">
+                Attendance Strictness
+              </span>
+              <MapPin className="h-5 w-5 text-[#6155F5]" />
+            </div>
+            <div className="text-center">
+              <p className="mt-1 text-2xl font-bold text-gray-900">
+                {data.metrics.attendance}.0
+              </p>
+              <p className="text-[12px]">out of 5</p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-500">Grading Fairness</span>
+              <Scale className="h-5 w-5 text-[#6155F5]" />
+            </div>
+            <div className="text-center">
+              <p className="mt-1 text-2xl font-bold text-gray-900">
+                {data.metrics.grading}.0
+              </p>
+              <p className="text-[12px]">out of 5</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
