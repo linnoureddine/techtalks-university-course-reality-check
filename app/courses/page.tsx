@@ -21,16 +21,17 @@ const courses = [
     reviewsLabel: "350+ Reviews",
   },
   {
-    slug: "cmps-201",
-    code: "CMPS 201",
-    title: "Programming Fundamentals",
+    slug: "cmps-101",
+    code: "CMPS 101",
+    title: "Introduction to Computer Science",
     university: "American University of Beirut",
     department: "Computer Science",
     credits: "3 cr.",
     level: "Undergraduate",
     language: "English",
     rating: 4.2,
-    description: "An introduction to programming concepts and problem solving.",
+    description:
+      "This course introduces the skills, concepts, and capabilities needed for effective use of information technology (IT). It includes logical reasoning, organization of information, managing complexity, operations of computers and networks, digital representation of information, security principles, and the use of contemporary applications such as effective Web search, spreadsheets, and database systems. Also it includes a basic introduction to programming and problem solving through scripting web applications.",
     metrics: { exam: 3, workload: 4, attendance: 4, grading: 4 },
     reviewsLabel: "200+ Reviews",
   },
@@ -200,7 +201,7 @@ export default function CoursesPage() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-6 mt-6 flex flex-col gap-8">
+      <div className="max-w-7xl md:max-w-6xl mx-auto md:px-6 mt-6 flex flex-col gap-8">
         {filteredCourses.map((course) => (
           <CourseCard key={course.slug} {...course} />
         ))}
@@ -214,4 +215,3 @@ export default function CoursesPage() {
     </main>
   );
 }
-
