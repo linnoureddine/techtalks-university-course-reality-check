@@ -82,7 +82,7 @@ export default function CoursesPage() {
   }, [filters]);
 
   return (
-    <main className="bg-[#FFFFFF] px-6 py-10">
+    <main className="min-h-screen bg-[#FFFFFF] px-6 py-10">
       <div className="max-w-6xl mx-auto py-4 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Browse Courses</h1>
@@ -174,7 +174,6 @@ export default function CoursesPage() {
               <Button
                 onClick={() => {
                   setFilters(draftFilters);
-                  setShowFilters(false);
                 }}
                 className="text-sm"
               >
@@ -190,8 +189,9 @@ export default function CoursesPage() {
                   };
                   setDraftFilters(reset);
                   setFilters(reset);
+                  setShowFilters(false);
                 }}
-                className="text-sm bg-gray-100 text-gray-900 hover:bg-gray-200"
+                variant="elevated"
               >
                 Reset
               </Button>
