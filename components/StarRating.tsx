@@ -1,32 +1,58 @@
+"use client";
+
+import { useState } from "react";
+
 type StarRatingProps = {
-  value: number; // 0..5
+  value: number; 
+  onChange?: (value: number) => void;
+  readOnly?: boolean; 
   className?: string;
 };
 
-export default function StarRating({ value, className = "" }: StarRatingProps) {
+export default function StarRating({
+  value,
+  onChange,
+  readOnly = false,
+  className = "",
+}: StarRatingProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
   const safeValue = Math.max(0, Math.min(5, value));
+  const displayValue = readOnly ? safeValue : hovered ?? safeValue;
 
   return (
-    <div
-      className={[
-        "flex items-center gap-1 select-none pointer-events-none",
-        className,
-      ].join(" ")}
-      aria-label={`${safeValue} out of 5 stars`}
-    >
+    <div className={`flex items-center gap-1 select-none ${className}`}>
       {Array.from({ length: 5 }).map((_, i) => {
-        const filled = i < safeValue;
+        const star = i + 1;
+        const filled = star <= displayValue;
+
         return (
-          <span
-            key={i}
-            className={[
-              "leading-none",
-              "text-lg sm:text-xl md:text-2xl",
-              filled ? "text-[#F5B301]" : "text-gray-300",
-            ].join(" ")}
+          <button
+            key={star}
+            type="button"
+            disabled={readOnly}
+            onClick={() => {
+              if (readOnly) return;
+              onChange?.(star);
+            }}
+            onMouseEnter={() => {
+              if (!readOnly) setHovered(star);
+            }}
+            onMouseLeave={() => {
+              if (!readOnly) setHovered(null);
+            }}
+            className={readOnly ? "cursor-default" : "cursor-pointer"}
+            aria-label={`${star} star`}
           >
-            ★
-          </span>
+            <span
+              className={[
+                "leading-none",
+                "text-lg sm:text-xl md:text-2xl",
+                filled ? "text-[#F5B301]" : "text-gray-300",
+              ].join(" ")}
+            >
+              ★
+            </span>
+          </button>
         );
       })}
 
