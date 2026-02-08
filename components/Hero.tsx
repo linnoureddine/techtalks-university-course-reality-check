@@ -1,12 +1,19 @@
+"use client";
+
 import Stats from "./Stats";
 import Button from "./Button";
 
 export default function Hero() {
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    console.log("Search clicked");
+  }
+
   return (
     <div
       className="max-w-4xl mx-auto px-6 sm:px-8
       pt-20 sm:pt-20 lg:pt-32
-      pb-10 sm:pb-12 lg:pb-16"
+      pb-10 sm:pb-12 lg:pb-12"
     >
       <div className="text-center">
         <h1 className="text-5xl sm:text-4xl md:text-6xl lg:text-6xl font-bold tracking-tight mb-6">
@@ -23,7 +30,7 @@ export default function Hero() {
         </p>
 
         <form
-          action=""
+          onSubmit={handleSearch}
           className="max-w-full sm:max-w-lg md:max-w-xl lg:max-w-xl mx-auto"
         >
           <div className="flex gap-3">
@@ -38,6 +45,7 @@ export default function Hero() {
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
+
               <input
                 type="text"
                 placeholder="Search for a course, university, department..."
@@ -46,12 +54,14 @@ export default function Hero() {
                 focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
               />
             </div>
-            <Button className="h-11 text-xlg hidden sm:inline-flex">
+
+            <Button className="h-11 px-6 py-0 text-sm">
               Search
             </Button>
           </div>
         </form>
       </div>
+
       <Stats />
     </div>
   );

@@ -26,7 +26,12 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col items-center md:items-end text-center md:text-right">
-            <Button onClick={() => setFeedbackOpen(true)}>Leave Feedback</Button>
+            <Button
+              onClick={() => setFeedbackOpen(true)}
+              className="px-6 py-2 text-sm shadow-md"
+            >
+              Leave Feedback
+            </Button>
 
             <p className="mt-4 max-w-[250px] text-sm leading-relaxed text-gray-500">
               Did you find what you were looking for? Share your feedback!

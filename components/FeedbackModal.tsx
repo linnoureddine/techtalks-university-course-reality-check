@@ -65,13 +65,15 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
         {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 
         <div className="mt-4 flex justify-end">
-          <Button
-            onClick={handleSubmit}
-            disabled={isDisabled}
+          {/* نفس Button تبعك بس wiring: إذا disabled منمنع الكبس */}
+          <div
             className={isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+            onClick={() => {
+              if (!isDisabled) handleSubmit();
+            }}
           >
-            Submit
-          </Button>
+            <Button>Submit</Button>
+          </div>
         </div>
       </div>
     </div>
