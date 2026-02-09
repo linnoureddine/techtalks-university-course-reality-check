@@ -59,8 +59,10 @@ export default function NavBar() {
               />
             )}
           </div>
+          <Link href="/signup">
+            <Button variant="primary">Sign Up</Button>
+          </Link>
 
-          <Button variant="primary">Sign Up</Button>
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
