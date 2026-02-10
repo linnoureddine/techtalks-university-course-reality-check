@@ -56,8 +56,6 @@ function QuoteCard({ quote, user }: Feedback) {
   );
 }
 
-
-
 export default function FeedbackCarousel() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
@@ -80,10 +78,8 @@ export default function FeedbackCarousel() {
           What Our Users Think
         </h2>
 
-        {/* Slider */}
         <div className="relative mt-8">
-          {/* Left button */}
-          <button
+            <button
             type="button"
             onClick={slideLeft}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50"
@@ -92,7 +88,6 @@ export default function FeedbackCarousel() {
             ‹
           </button>
 
-          {/* Cards row */}
           <div
             ref={rowRef}
             className="flex gap-6 overflow-x-auto flex-nowrap px-12"
@@ -105,7 +100,6 @@ export default function FeedbackCarousel() {
             ))}
           </div>
 
-          {/* Right button */}
           <button
             type="button"
             onClick={slideRight}
@@ -127,3 +121,4 @@ export default function FeedbackCarousel() {
     </section>
   );
 }
+// carousel tweak
