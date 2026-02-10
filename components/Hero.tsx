@@ -55,9 +55,7 @@ export default function Hero() {
               />
             </div>
 
-            <Button className="h-11 px-6 py-0 text-sm">
-              Search
-            </Button>
+            <Button className="h-11 px-6 py-0 text-sm">Search</Button>
           </div>
         </form>
       </div>
