@@ -10,7 +10,13 @@ interface CourseFilters {
 
 export function filterCourses(
   courses: Course[],
-  { university = "", department = "", language = "", level = "", query = "" },
+  {
+    university = "",
+    department = "",
+    language = "",
+    level = "",
+    query = "",
+  }: CourseFilters,
 ): Course[] {
   const normalizedQuery = query.toLowerCase().trim();
 
@@ -24,12 +30,18 @@ export function filterCourses(
     const matchesLevel = !level || course.level === level;
 
     const matchesQuery =
-      !query ||
-      course.title.toLowerCase().includes(query.toLowerCase()) ||
-      course.code.toLowerCase().includes(query.toLowerCase());
+      !normalizedQuery ||
+      course.title.toLowerCase().includes(normalizedQuery.toLowerCase()) ||
+      course.code.toLowerCase().includes(normalizedQuery.toLowerCase()) ||
+      course.university.toLowerCase().includes(normalizedQuery.toLowerCase()) ||
+      course.department.toLowerCase().includes(normalizedQuery.toLowerCase());
 
     return (
-      matchesUniversity && matchesDepartment && matchesLanguage && matchesQuery
+      matchesUniversity &&
+      matchesDepartment &&
+      matchesLanguage &&
+      matchesLevel &&
+      matchesQuery
     );
   });
 }

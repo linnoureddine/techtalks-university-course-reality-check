@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { filterCourses } from "@/lib/filterCouarese";
 import CourseCard from "@/components/CourseCard";
 import Button from "@/components/Button";
 
@@ -66,20 +67,7 @@ export default function CoursesPage() {
   };
 
   const filteredCourses = useMemo(() => {
-    return courses.filter((course) => {
-      if (filters.university && course.university !== filters.university)
-        return false;
-
-      if (filters.department && course.department !== filters.department)
-        return false;
-
-      if (filters.language && course.language !== filters.language)
-        return false;
-
-      if (filters.level && course.level !== filters.level) return false;
-
-      return true;
-    });
+    return filterCourses(courses, filters);
   }, [filters]);
 
   return (
