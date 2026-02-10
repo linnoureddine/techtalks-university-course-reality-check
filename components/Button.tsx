@@ -17,7 +17,7 @@ export default function Button({
     <button
       className={clsx(
         // shared size & layout
-        "inline-flex h-10 items-center justify-center rounded-lg px-6 text-md transition-all",
+        "h-10 items-center justify-center rounded-lg px-6 text-md transition-all",
         "focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:ring-offset-2",
         "shadow-md hover:shadow-lg",
         variantStyles[variant],

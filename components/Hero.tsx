@@ -1,13 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Stats from "./Stats";
-import Button from "./Button";
+import Searchbar from "./Searchbar";
 
 export default function Hero() {
-  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    console.log("Search clicked");
-  }
+  const [query, setQuery] = useState("");
 
   return (
     <div
@@ -29,35 +27,7 @@ export default function Hero() {
           fairness, exam difficulty, and what professors won&apos;t tell you.
         </p>
 
-        <form
-          onSubmit={handleSearch}
-          className="max-w-full sm:max-w-lg md:max-w-xl lg:max-w-xl mx-auto"
-        >
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <svg
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-
-              <input
-                type="text"
-                placeholder="Search for a course, university, department..."
-                className="w-full h-11 pl-10 pr-4 text-gray-900 placeholder-gray-400
-                rounded-md border border-gray-300 transition-colors
-                focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
-              />
-            </div>
-
-            <Button className="h-11 px-6 py-0 text-sm">Search</Button>
-          </div>
-        </form>
+        <Searchbar query={query} setQuery={setQuery} />
       </div>
 
       <Stats />
