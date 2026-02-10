@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { filterCourses } from "@/lib/filterCouarese";
+import { filterCourses } from "@/lib/filterCourses";
+import { Filters } from "@/types/filters";
+import FiltersPanel from "@/components/FiltersPanel";
 import CourseCard from "@/components/CourseCard";
-import Button from "@/components/Button";
 
 const courses = [
   {
@@ -39,15 +40,6 @@ const courses = [
 ];
 
 export default function CoursesPage() {
-  const [showFilters, setShowFilters] = useState(false);
-
-  type Filters = {
-    university: string;
-    department: string;
-    language: string;
-    level: string;
-  };
-
   const [filters, setFilters] = useState<Filters>({
     university: "",
     department: "",
@@ -55,20 +47,13 @@ export default function CoursesPage() {
     level: "",
   });
 
-  const [draftFilters, setDraftFilters] = useState(filters);
+  const [showFilters, setShowFilters] = useState(false);
 
-  const handleDraftChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-
-    setDraftFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const query = ""; // or get from URL search params
 
   const filteredCourses = useMemo(() => {
-    return filterCourses(courses, filters);
-  }, [filters]);
+    return filterCourses(courses, { ...filters, query });
+  }, [filters, query]);
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] px-6 py-10">
@@ -76,10 +61,10 @@ export default function CoursesPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Browse Courses</h1>
           <p className="mt-2 text-gray-500 max-w-xl">
-            Explore and filter courses by university, department, and rating.
+            Explore and filter courses by university, department, language, and
+            level.
           </p>
         </div>
-
         <button
           className="flex items-center justify-center rounded-lg p-2 hover:bg-gray-50 transition"
           onClick={() => setShowFilters((prev) => !prev)}
@@ -102,87 +87,13 @@ export default function CoursesPage() {
       </div>
 
       {showFilters && (
-        <div className="max-w-6xl mx-auto px-6 pb-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex flex-col md:flex-col lg:flex-row flex-wrap gap-2 lg:gap-4 w-full lg:w-auto">
-                <select
-                  name="university"
-                  value={draftFilters.university}
-                  onChange={handleDraftChange}
-                  className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
-                >
-                  <option value="">All Universities</option>
-                  <option>American University of Beirut</option>
-                  <option>University of Balamand</option>
-                  <option>Lebanese American University</option>
-                  <option>Beirut Arab University</option>
-                  <option>Lebanese International University</option>
-                  <option>Université Saint-Joseph de Beyrouth</option>
-                </select>
-
-                <select
-                  name="department"
-                  value={draftFilters.department}
-                  onChange={handleDraftChange}
-                  className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
-                >
-                  <option value="">All Departments</option>
-                  <option>Computer Science</option>
-                  <option>Mathematics</option>
-                </select>
-
-                <select
-                  name="language"
-                  value={draftFilters.language}
-                  onChange={handleDraftChange}
-                  className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
-                >
-                  <option value="">Any Language</option>
-                  <option>English</option>
-                  <option>Arabic</option>
-                  <option>French</option>
-                </select>
-
-                <select
-                  name="level"
-                  value={draftFilters.level}
-                  onChange={handleDraftChange}
-                  className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
-                >
-                  <option value="">Any Level</option>
-                  <option>Undergraduate</option>
-                  <option>Graduate</option>
-                  <option>Phd</option>
-                </select>
-              </div>
-
-              <div className="flex gap-2 mt-2 lg:mt-0">
-                <Button
-                  onClick={() => setFilters(draftFilters)}
-                  className="text-sm w-full lg:w-auto"
-                >
-                  Apply
-                </Button>
-                <Button
-                  onClick={() => {
-                    const reset = {
-                      university: "",
-                      department: "",
-                      language: "",
-                      level: "",
-                    };
-                    setDraftFilters(reset);
-                    setFilters(reset);
-                  }}
-                  className="text-sm w-full lg:w-auto"
-                  variant="elevated"
-                >
-                  Reset
-                </Button>
-              </div>
-            </div>
-          </div>
+        <div className="max-w-6xl mx-auto px-6">
+          <FiltersPanel
+            filters={filters}
+            setFilters={setFilters}
+            onApply={() => setShowFilters(false)}
+            onReset={() => setShowFilters(false)}
+          />
         </div>
       )}
 

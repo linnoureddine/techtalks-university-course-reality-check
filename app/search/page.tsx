@@ -2,14 +2,14 @@
 
 import { useSearchParams } from "next/navigation";
 import CourseCard from "components/CourseCard";
-// import { filterCourses } from "@/lib/filterCourses";
+import { filterCourses } from "lib/filterCourses";
 // import { courses } from "@/data/courses";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q")?.trim() || "";
 
-  const results = filterCourses(courses, { query });
+  const results = filterCourses(course, { query });
 
   return (
     <main className="min-h-screen px-4 md:px-10 py-8">
