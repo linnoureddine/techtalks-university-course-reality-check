@@ -89,42 +89,6 @@ export default function NavBar() {
             )}
           </div>
 
-          {!user ? (
-            <Link href="/signup">
-              <Button variant="primary">Sign Up</Button>
-            </Link>
-          ) : (
-            <div className="relative" ref={accountRef}>
-              <button
-                type="button"
-                onClick={() => setAccountOpen((v) => !v)}
-                className="h-10 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                {user.name}
-              </button>
-
-              {accountOpen && (
-                <div className="absolute right-0 mt-2 w-44 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
-                  <Link
-                    href="/account"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    onClick={() => setAccountOpen(false)}
-                  >
-                    Account
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden ml-2 text-lg text-gray-600"
