@@ -10,6 +10,14 @@ export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const userName = "Ghalia";
+
+  function handleLogout() {
+    setIsLoggedIn(false);
+    setMenuOpen(false);
+  }
+
   return (
     <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center gap-4">
@@ -59,10 +67,21 @@ export default function NavBar() {
               />
             )}
           </div>
-          <Link href="/signup">
-            <Button variant="primary">Sign Up</Button>
-          </Link>
 
+          {!isLoggedIn ? (
+            <Link href="/signup">
+              <Button variant="primary">Sign Up</Button>
+            </Link>
+          ) : (
+            <div className="hidden sm:flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-700">
+                Hi, {userName}
+              </span>
+              <Button variant="primary" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
+          )}
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -72,6 +91,7 @@ export default function NavBar() {
           </button>
         </div>
       </div>
+
       {menuOpen && (
         <div className="md:hidden mt-4 flex flex-col gap-3">
           <div onClick={() => setMenuOpen(false)}>
@@ -83,6 +103,29 @@ export default function NavBar() {
           <div onClick={() => setMenuOpen(false)}>
             <NavLink href="/about">About</NavLink>
           </div>
+
+          <div className="pt-2 border-t border-gray-100">
+            {!isLoggedIn ? (
+              <Link href="/signup" onClick={() => setMenuOpen(false)}>
+                <Button variant="primary" className="w-full">
+                  Sign Up
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="primary" onClick={handleLogout}>
+
+                Logout
+              </Button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsLoggedIn((v) => !v)}
+            className="text-xs text-gray-400 underline text-left"
+          >
+            (temp) toggle login state
+          </button>
         </div>
       )}
     </nav>
