@@ -63,7 +63,6 @@ export default function NavBar() {
             <Button variant="primary">Sign Up</Button>
           </Link>
 
-
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden ml-2 text-lg text-gray-600"
