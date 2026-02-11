@@ -4,6 +4,8 @@ import { useState } from "react";
 import Button from "@/components/Button";
 import StarRating from "@/components/StarRating";
 import SliderRow from "@/components/SliderRow";
+import { useToast } from "./toast/Toastprovider";
+
 
 type WriteReviewCardProps = {
   onSubmit: () => void;
@@ -19,11 +21,16 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
   const [gradingFairness, setGradingFairness] = useState(3);
   const [review, setReview] = useState("");
 
+  const { toast } = useToast();
+
   const canSubmit =
     overallRating > 0 && instructor.trim() && semester.trim() && review.trim();
 
   function handleSubmit() {
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      toast("Please fill rating, instructor, semester, and review.", "error");
+      return;
+    }
 
     const payload = {
       overallRating,
@@ -37,6 +44,8 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
     };
 
     console.log(payload);
+
+    toast("Your review was posted successfully.", "success");
 
     setOverallRating(0);
     setInstructor("");
@@ -56,9 +65,7 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
 
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700">
-            Overall Rating
-          </div>
+          <div className="text-sm font-medium text-gray-700">Overall Rating</div>
           <StarRating value={overallRating} onChange={setOverallRating} />
         </div>
 
