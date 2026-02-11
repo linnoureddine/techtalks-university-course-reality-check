@@ -11,7 +11,7 @@ export default function NavBar() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const userName = "Ghalia";
+  const userName = "User";
 
   function handleLogout() {
     setIsLoggedIn(false);
