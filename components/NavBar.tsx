@@ -1,21 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import NavLink from "./NavLink";
 import Button from "./Button";
-import Image from "next/image";
+
+type User = {
+  name: string;
+};
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const userName = "User";
+  const [user, setUser] = useState<User | null>(null);
+
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (!accountRef.current) return;
+      if (!accountRef.current.contains(e.target as Node)) setAccountOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+  useEffect(() => {
+    (window as any).__login = () => setUser({ name: "Student" });
+    (window as any).__logout = () => setUser(null);
+  }, []);
 
   function handleLogout() {
-    setIsLoggedIn(false);
-    setMenuOpen(false);
+    setUser(null);
+    setAccountOpen(false);
   }
 
   return (
@@ -23,7 +42,6 @@ export default function NavBar() {
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Image src="/favicon.ico" alt="Logo" width={32} height={32} />
-
           <span className="hidden lg:inline text-[#6155F5] text-2xl font-bold">
             Coursality
           </span>
@@ -41,6 +59,8 @@ export default function NavBar() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center"
+                aria-label="Search"
+                type="button"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -57,6 +77,7 @@ export default function NavBar() {
                 </svg>
               </button>
             )}
+
             {searchOpen && (
               <input
                 autoFocus
@@ -68,24 +89,47 @@ export default function NavBar() {
             )}
           </div>
 
-          {!isLoggedIn ? (
+          {!user ? (
             <Link href="/signup">
               <Button variant="primary">Sign Up</Button>
             </Link>
           ) : (
-            <div className="hidden sm:flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700">
-                Hi, {userName}
-              </span>
-              <Button variant="primary" onClick={handleLogout}>
-                Logout
-              </Button>
+            <div className="relative" ref={accountRef}>
+              <button
+                type="button"
+                onClick={() => setAccountOpen((v) => !v)}
+                className="h-10 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                {user.name}
+              </button>
+
+              {accountOpen && (
+                <div className="absolute right-0 mt-2 w-44 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
+                  <Link
+                    href="/account"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setAccountOpen(false)}
+                  >
+                    Account
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden ml-2 text-lg text-gray-600"
+            aria-label="Menu"
+            type="button"
           >
             ☰
           </button>
@@ -104,28 +148,22 @@ export default function NavBar() {
             <NavLink href="/about">About</NavLink>
           </div>
 
-          <div className="pt-2 border-t border-gray-100">
-            {!isLoggedIn ? (
-              <Link href="/signup" onClick={() => setMenuOpen(false)}>
-                <Button variant="primary" className="w-full">
-                  Sign Up
-                </Button>
+          {!user ? (
+            <Link href="/signup" onClick={() => setMenuOpen(false)}>
+              <Button variant="primary" className="w-full">
+                Sign Up
+              </Button>
+            </Link>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Link href="/account" onClick={() => setMenuOpen(false)}>
+                <Button className="w-full">Account</Button>
               </Link>
-            ) : (
-              <Button variant="primary" onClick={handleLogout}>
-
+              <Button className="w-full" onClick={handleLogout}>
                 Logout
               </Button>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsLoggedIn((v) => !v)}
-            className="text-xs text-gray-400 underline text-left"
-          >
-            (temp) toggle login state
-          </button>
+            </div>
+          )}
         </div>
       )}
     </nav>
