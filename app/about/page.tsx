@@ -180,8 +180,6 @@ export default function AboutPage() {
           <Link href="/courses">
           <Button className="h-13">Browse Courses</Button>
            </Link>
-
-          
           </div>
 
         </div>
