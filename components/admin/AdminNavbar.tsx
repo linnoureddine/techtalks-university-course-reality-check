@@ -15,18 +15,14 @@ export default function AdminNavbar() {
 
   return (
     <>
-      {/* ================= TOP BAR ================= */}
+   
       <header className={`h-16 w-full bg-white border-b ${BORDER}`}>
         <div className="flex h-full items-center px-8">
-
-          {/* Brand */}
           <div className="w-[220px]">
             <span className="text-2xl font-bold text-[#5B5BFF]">
               Coursality
             </span>
           </div>
-
-          {/* Search */}
           <div className="flex-1 flex justify-start">
             <div className="relative w-[380px]">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8A8A8A]">
@@ -39,8 +35,6 @@ export default function AdminNavbar() {
               />
             </div>
           </div>
-
-          {/* Admin User */}
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#5B5BFF] text-sm font-semibold text-white">
               AD
@@ -58,8 +52,6 @@ export default function AdminNavbar() {
 
         </div>
       </header>
-
-      {/* ================= SIDEBAR ================= */}
       <aside
         className={`fixed left-0 top-16 h-[calc(100vh-64px)] w-[220px] bg-white border-r ${BORDER}`}
       >
@@ -116,8 +108,6 @@ export default function AdminNavbar() {
     </>
   );
 }
-
-/* ================= ICON ================= */
 
 function MagnifierIcon() {
   return (
