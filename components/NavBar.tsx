@@ -1,21 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import NavLink from "./NavLink";
 import Button from "./Button";
-import Image from "next/image";
+
+type User = {
+  name: string;
+};
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const [user, setUser] = useState<User | null>(null);
+
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (!accountRef.current) return;
+      if (!accountRef.current.contains(e.target as Node)) setAccountOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+  useEffect(() => {
+    (window as any).__login = () => setUser({ name: "Student" });
+    (window as any).__logout = () => setUser(null);
+  }, []);
+
+  function handleLogout() {
+    setUser(null);
+    setAccountOpen(false);
+  }
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Image src="/favicon.ico" alt="Logo" width={32} height={32} />
-
           <span className="hidden lg:inline text-[#6155F5] text-2xl font-bold">
             Coursality
           </span>
@@ -33,6 +59,8 @@ export default function NavBar() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center"
+                aria-label="Search"
+                type="button"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -49,6 +77,7 @@ export default function NavBar() {
                 </svg>
               </button>
             )}
+
             {searchOpen && (
               <input
                 autoFocus
@@ -59,18 +88,18 @@ export default function NavBar() {
               />
             )}
           </div>
-          <Link href="/signup">
-            <Button variant="primary">Sign Up</Button>
-          </Link>
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden ml-2 text-lg text-gray-600"
+            aria-label="Menu"
+            type="button"
           >
             ☰
           </button>
         </div>
       </div>
+
       {menuOpen && (
         <div className="md:hidden mt-4 flex flex-col gap-3">
           <div onClick={() => setMenuOpen(false)}>
@@ -82,6 +111,23 @@ export default function NavBar() {
           <div onClick={() => setMenuOpen(false)}>
             <NavLink href="/about">About</NavLink>
           </div>
+
+          {!user ? (
+            <Link href="/signup" onClick={() => setMenuOpen(false)}>
+              <Button variant="primary" className="w-full">
+                Sign Up
+              </Button>
+            </Link>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Link href="/account" onClick={() => setMenuOpen(false)}>
+                <Button className="w-full">Account</Button>
+              </Link>
+              <Button className="w-full" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </nav>
