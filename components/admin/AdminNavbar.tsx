@@ -122,16 +122,10 @@ export default function AdminNavbar() {
 
       <aside className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] w-[220px] bg-white border-r ${BORDER}`}>
         <div className="p-6 space-y-2">
-          <div className={`${itemBase} ${inactive} cursor-default`}>
-            <IconDashboard />
-            Dashboard
-            </div>
-
+          <Link href="/admin" className={`${itemBase} ${inactive}`}>
+          <IconDashboard />Dashboard </Link>
           <div className="pt-3 text-xs text-gray-500">Manage</div>
-
-          <Link
-            href="/admin/courses"
-            className={`${itemBase} ${
+          <Link href="/admin/courses" className={`${itemBase} ${
               isActive(pathname, "/admin/courses") ? activePill : inactivePill
             }`}
           >
