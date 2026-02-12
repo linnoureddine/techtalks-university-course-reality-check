@@ -1,8 +1,8 @@
-import Hero from "../components/Hero";
+import Hero from "../../components/Hero";
 import Link from "next/link";
-import CourseCard from "../components/CourseCard";
-import HowItWorks from "../components/HowItWorks";
-import FeedbackCarousel from "../components/FeedbackCarousel";
+import CourseCard from "../../components/CourseCard";
+import HowItWorks from "../../components/HowItWorks";
+import FeedbackCarousel from "../../components/FeedbackCarousel";
 
 export default function Home() {
   return (

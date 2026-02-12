@@ -35,11 +35,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col p-0 m-0`}
       >
         <ToastProvider>
-          <NavBar />
-
           <main className="flex-grow w-full">{children}</main>
-
-          <Footer />
         </ToastProvider>
       </body>
     </html>
