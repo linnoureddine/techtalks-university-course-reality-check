@@ -88,6 +88,7 @@ export default function NavBar() {
               />
             )}
           </div>
+          
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
