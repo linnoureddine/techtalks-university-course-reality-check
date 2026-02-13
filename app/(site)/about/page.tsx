@@ -5,7 +5,6 @@ import HowItWorks from "@/components/HowItWorks";
 import StatsSection from "@/components/StatsSection";
 import Link from "next/link";
 
-
 const statsData = {
   reviews: 50000,
   students: 15000,
@@ -156,16 +155,6 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* <div className="bg-white rounded-xl p-8 transition-shadow hover:shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Our Vision</h2>
-          <p className="text-gray-700 leading-7">
-            We envision a future where every student has access to transparent,
-            honest course information before enrolling. By democratizing course
-            insights, we aim to reduce academic stress and help students build
-            schedules that truly fit their goals.
-          </p>
-        </div> */}
-
         <StatsSection stats={statsData} />
 
         <div className="text-center pt-10">
@@ -176,12 +165,11 @@ export default function AboutPage() {
             Join thousands of students who use Coursality to navigate their
             academic journey with confidence.
           </p>
-        <div className="flex justify-center gap-4 flex-wrap">
-          <Link href="/courses">
-          <Button className="h-13">Browse Courses</Button>
-           </Link>
+          <div className="flex justify-center gap-4 flex-wrap">
+            <Link href="/courses">
+              <Button className="h-13">Browse Courses</Button>
+            </Link>
           </div>
-
         </div>
       </section>
     </main>

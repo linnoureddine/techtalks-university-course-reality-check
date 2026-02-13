@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes } from "react";
 import clsx from "clsx";
 
-type ButtonVariant = "primary" | "elevated";
+type ButtonVariant = "primary" | "elevated" | "plain";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -16,9 +16,7 @@ export default function Button({
   return (
     <button
       className={clsx(
-        // shared size & layout
         "h-10 items-center justify-center rounded-lg px-6 text-md transition-all",
-        "focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:ring-offset-2",
         "shadow-md hover:shadow-lg",
         variantStyles[variant],
         className,
@@ -31,6 +29,9 @@ export default function Button({
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "bg-[#6155F5] text-white hover:bg-[#503fdc]",
-  elevated: "bg-white text-[#6155F5] hover:bg-gray-50",
+  primary:
+    "bg-[#6155F5] text-white hover:bg-[#503fdc] focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:ring-offset-2",
+  elevated:
+    "bg-white text-[#6155F5] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:ring-offset-2",
+  plain: "bg-transparent hover:shadow-none focus:ring-0",
 };
