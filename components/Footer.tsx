@@ -20,7 +20,7 @@ export default function Footer() {
             <h3 className="mb-5 text-lg font-bold text-black">Quick Links</h3>
             <nav className="flex flex-col gap-3">
               <NavLink href="/">Home</NavLink>
-              <NavLink href="/browse">Browse</NavLink>
+              <NavLink href="/courses">Browse</NavLink>
               <NavLink href="/about">About</NavLink>
             </nav>
           </div>
