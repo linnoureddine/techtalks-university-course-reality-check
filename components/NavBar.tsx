@@ -88,7 +88,23 @@ export default function NavBar() {
               />
             )}
           </div>
-          
+
+          <div className="hidden md:flex items-center gap-2 ml-2">
+            {!user ? (
+              <>
+                <Link href="/login">
+                  <Button variant="elevated">Login</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button variant="primary">Sign Up</Button>
+                </Link>
+              </>
+            ) : (
+              <Link href="/account">
+                <Button variant="elevated">Account</Button>
+              </Link>
+            )}
+          </div>
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -114,11 +130,18 @@ export default function NavBar() {
           </div>
 
           {!user ? (
-            <Link href="/signup" onClick={() => setMenuOpen(false)}>
-              <Button variant="primary" className="w-full">
-                Sign Up
-              </Button>
-            </Link>
+            <div>
+              <Link href="/login" onClick={() => setMenuOpen(false)}>
+                <Button variant="elevated" className="w-full">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/signup" onClick={() => setMenuOpen(false)}>
+                <Button variant="primary" className="w-full">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
           ) : (
             <div className="flex flex-col gap-2">
               <Link href="/account" onClick={() => setMenuOpen(false)}>
