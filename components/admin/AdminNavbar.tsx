@@ -5,14 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  BookOpen,
-  LayoutDashboard,
-  Star,
-  Users,
-  Search,
-  ChevronDown,
-} from "lucide-react";
+import { BookOpen, LayoutDashboard, Star, Users, Search, ChevronDown } from "lucide-react";
 
 const BORDER = "border-[#888888]";
 
@@ -143,10 +136,6 @@ export default function AdminNavbar() {
             Dashboard
           </Link>
 
-      <aside className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] w-[220px] bg-white border-r ${BORDER}`}>
-        <div className="p-6 space-y-2">
-          <Link href="/admin" className={`${itemBase} ${inactive}`}>
-          <IconDashboard />Dashboard </Link>
           <div className="pt-3 text-xs text-gray-500">Manage</div>
 
           <Link
@@ -190,9 +179,7 @@ export default function AdminNavbar() {
             onClick={() => setMobileOpen(false)}
           />
 
-          <div
-            className={`absolute left-0 top-0 h-full w-[280px] bg-white border-r ${BORDER}`}
-          >
+          <div className={`absolute left-0 top-0 h-full w-[280px] bg-white border-r ${BORDER}`}>
             <div className={`h-16 border-b ${BORDER} flex items-center px-4`}>
               <button
                 type="button"
@@ -256,18 +243,5 @@ export default function AdminNavbar() {
         </div>
       )}
     </>
-  );
-}
-
-function IconStar() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
-      <path
-        d="M12 3l2.6 5.7 6.2.6-4.7 4 1.4 6-5.5-3.2-5.5 3.2 1.4-6-4.7-4 6.2-.6L12 3z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
