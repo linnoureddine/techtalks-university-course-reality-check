@@ -5,6 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import {
+  BookOpen,
+  LayoutDashboard,
+  Star,
+  Users,
+  Search,
+  ChevronDown,
+} from "lucide-react";
+
 const BORDER = "border-[#888888]";
 
 function isActive(pathname: string, href: string) {
@@ -41,7 +50,6 @@ export default function AdminNavbar() {
   }, []);
 
   const itemBase = "flex items-center gap-3 px-3 py-2 text-sm transition";
-  const inactive = "text-gray-500";
   const activePill = "bg-[#C9C6FF] text-[#5B5BFF] font-medium rounded-lg";
   const inactivePill = "text-gray-600 hover:bg-gray-50 rounded-lg";
 
@@ -65,10 +73,10 @@ export default function AdminNavbar() {
             </span>
           </Link>
 
-          <div className="flex-1 flex justify-center md:justify-center md:ml-16">
+          <div className="flex-1 flex justify-center md:ml-16">
             <div className="relative w-full max-w-[220px] sm:max-w-[320px] md:max-w-[380px]">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8A8A8A]">
-                <MagnifierIcon />
+                <Search size={20} />
               </span>
               <input
                 placeholder="Search..."
@@ -98,7 +106,7 @@ export default function AdminNavbar() {
                   userMenuOpen ? "rotate-180" : ""
                 }`}
               >
-                <CaretDownIcon />
+                <ChevronDown size={18} />
               </span>
             </button>
 
@@ -120,16 +128,34 @@ export default function AdminNavbar() {
         </div>
       </header>
 
+      {/* Desktop Sidebar */}
+      <aside
+        className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] w-[220px] bg-white border-r ${BORDER}`}
+      >
+        <div className="p-6 space-y-2">
+          <Link
+            href="/admin"
+            className={`${itemBase} ${
+              isActive(pathname, "/admin") ? activePill : inactivePill
+            }`}
+          >
+            <LayoutDashboard size={18} className="shrink-0" />
+            Dashboard
+          </Link>
+
       <aside className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] w-[220px] bg-white border-r ${BORDER}`}>
         <div className="p-6 space-y-2">
           <Link href="/admin" className={`${itemBase} ${inactive}`}>
           <IconDashboard />Dashboard </Link>
           <div className="pt-3 text-xs text-gray-500">Manage</div>
-          <Link href="/admin/courses" className={`${itemBase} ${
+
+          <Link
+            href="/admin/courses"
+            className={`${itemBase} ${
               isActive(pathname, "/admin/courses") ? activePill : inactivePill
             }`}
           >
-            <IconCourses />
+            <BookOpen size={18} className="shrink-0" />
             Courses
           </Link>
 
@@ -139,7 +165,7 @@ export default function AdminNavbar() {
               isActive(pathname, "/admin/users") ? activePill : inactivePill
             }`}
           >
-            <IconUsers />
+            <Users size={18} className="shrink-0" />
             Users
           </Link>
 
@@ -149,12 +175,13 @@ export default function AdminNavbar() {
               isActive(pathname, "/admin/reviews") ? activePill : inactivePill
             }`}
           >
-            <IconStar />
+            <Star size={18} className="shrink-0" />
             Reviews
           </Link>
         </div>
       </aside>
 
+      {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-[60]">
           <button
@@ -163,7 +190,9 @@ export default function AdminNavbar() {
             onClick={() => setMobileOpen(false)}
           />
 
-          <div className={`absolute left-0 top-0 h-full w-[280px] bg-white border-r ${BORDER}`}>
+          <div
+            className={`absolute left-0 top-0 h-full w-[280px] bg-white border-r ${BORDER}`}
+          >
             <div className={`h-16 border-b ${BORDER} flex items-center px-4`}>
               <button
                 type="button"
@@ -181,8 +210,13 @@ export default function AdminNavbar() {
             </div>
 
             <div className="p-6 space-y-2">
-              <Link href="/admin" className={`${itemBase} ${inactive}`}>
-                <IconDashboard />
+              <Link
+                href="/admin"
+                className={`${itemBase} ${
+                  isActive(pathname, "/admin") ? activePill : inactivePill
+                }`}
+              >
+                <LayoutDashboard size={18} className="shrink-0" />
                 Dashboard
               </Link>
 
@@ -194,7 +228,7 @@ export default function AdminNavbar() {
                   isActive(pathname, "/admin/courses") ? activePill : inactivePill
                 }`}
               >
-                <IconCourses />
+                <BookOpen size={18} className="shrink-0" />
                 Courses
               </Link>
 
@@ -204,7 +238,7 @@ export default function AdminNavbar() {
                   isActive(pathname, "/admin/users") ? activePill : inactivePill
                 }`}
               >
-                <IconUsers />
+                <Users size={18} className="shrink-0" />
                 Users
               </Link>
 
@@ -214,7 +248,7 @@ export default function AdminNavbar() {
                   isActive(pathname, "/admin/reviews") ? activePill : inactivePill
                 }`}
               >
-                <IconStar />
+                <Star size={18} className="shrink-0" />
                 Reviews
               </Link>
             </div>
@@ -222,77 +256,6 @@ export default function AdminNavbar() {
         </div>
       )}
     </>
-  );
-}
-
-function MagnifierIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2.6" />
-      <path
-        d="M16.2 16.2L21 21"
-        stroke="currentColor"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function CaretDownIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M7 10l5 5 5-5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconDashboard() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
-      <path d="M4 20V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path
-        d="M4 16l5-5 4 4 7-8"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconCourses() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
-      <path
-        d="M6 4h11a2 2 0 012 2v14H8a2 2 0 00-2 2V4z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path d="M6 18h13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconUsers() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
-      <path d="M16 11a4 4 0 10-8 0 4 4 0 008 0z" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M4 20c1.5-3 4.2-5 8-5s6.5 2 8 5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 
