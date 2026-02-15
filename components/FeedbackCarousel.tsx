@@ -1,6 +1,10 @@
 "use client";
 
+<<<<<<< HEAD
+import { useState } from "react";
+=======
 import { useRef, useState } from "react";
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
 import FeedbackModal from "./FeedbackModal";
 import Button from "./Button";
 
@@ -39,6 +43,9 @@ const FEEDBACKS: Feedback[] = [
 
 function QuoteCard({ quote, user }: Feedback) {
   return (
+<<<<<<< HEAD
+    <div className="w-[190px] rounded-xl bg-white px-5 py-5 shadow-sm border border-gray-100">
+=======
     <div
       className="
         w-[230px] rounded-xl bg-white px-6 py-6
@@ -48,6 +55,7 @@ function QuoteCard({ quote, user }: Feedback) {
         hover:-translate-y-1
       "
     >
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
       <p className="text-[13px] font-bold text-gray-900 leading-snug">
         “{quote}”
       </p>
@@ -59,6 +67,8 @@ function QuoteCard({ quote, user }: Feedback) {
 export default function FeedbackCarousel() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
+<<<<<<< HEAD
+=======
   const rowRef = useRef<HTMLDivElement | null>(null);
 
   function slideLeft() {
@@ -71,6 +81,7 @@ export default function FeedbackCarousel() {
     rowRef.current.scrollBy({ left: 220, behavior: "smooth" });
   }
 
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
   return (
     <section className="w-full py-10">
       <div className="mx-auto max-w-6xl px-6">
@@ -78,6 +89,12 @@ export default function FeedbackCarousel() {
           What Our Users Think
         </h2>
 
+<<<<<<< HEAD
+        <div className="mt-8 flex flex-wrap justify-center gap-6">
+          {FEEDBACKS.map((f, idx) => (
+            <QuoteCard key={idx} quote={f.quote} user={f.user} />
+          ))}
+=======
         <div className="relative mt-8">
             <button
             type="button"
@@ -108,6 +125,7 @@ export default function FeedbackCarousel() {
           >
             ›
           </button>
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         </div>
 
         <div className="mt-8 flex justify-center">
@@ -121,4 +139,7 @@ export default function FeedbackCarousel() {
     </section>
   );
 }
+<<<<<<< HEAD
+=======
 // carousel tweak update 
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a

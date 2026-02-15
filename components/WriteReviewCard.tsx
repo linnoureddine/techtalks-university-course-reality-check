@@ -4,6 +4,10 @@ import { useState } from "react";
 import Button from "@/components/Button";
 import StarRating from "@/components/StarRating";
 import SliderRow from "@/components/SliderRow";
+<<<<<<< HEAD
+
+export default function WriteReviewCard() {
+=======
 import { useToast } from "./toast/Toastprovider";
 
 
@@ -12,6 +16,7 @@ type WriteReviewCardProps = {
 };
 
 export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
   const [overallRating, setOverallRating] = useState(0);
   const [instructor, setInstructor] = useState("");
   const [semester, setSemester] = useState("");
@@ -21,6 +26,16 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
   const [gradingFairness, setGradingFairness] = useState(3);
   const [review, setReview] = useState("");
 
+<<<<<<< HEAD
+  const canSubmit =
+    overallRating > 0 &&
+    instructor.trim() &&
+    semester.trim() &&
+    review.trim();
+
+  function handleSubmit() {
+    if (!canSubmit) return;
+=======
   const { toast } = useToast();
 
   const canSubmit =
@@ -31,6 +46,7 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
       toast("Please fill rating, instructor, semester, and review.", "error");
       return;
     }
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
 
     const payload = {
       overallRating,
@@ -45,8 +61,11 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
 
     console.log(payload);
 
+<<<<<<< HEAD
+=======
     toast("Your review was posted successfully.", "success");
 
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
     setOverallRating(0);
     setInstructor("");
     setSemester("");
@@ -55,8 +74,11 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
     setWorkload(3);
     setGradingFairness(3);
     setReview("");
+<<<<<<< HEAD
+=======
 
     onSubmit();
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
   }
 
   return (
@@ -65,7 +87,13 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
 
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">
         <div className="space-y-2">
+<<<<<<< HEAD
+          <div className="text-sm font-medium text-gray-700">
+            Overall Rating
+          </div>
+=======
           <div className="text-sm font-medium text-gray-700">Overall Rating</div>
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
           <StarRating value={overallRating} onChange={setOverallRating} />
         </div>
 
@@ -81,9 +109,13 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
         </div>
 
         <div className="space-y-2">
+<<<<<<< HEAD
+          <div className="text-sm font-medium text-gray-700">Semester Taken</div>
+=======
           <div className="text-sm font-medium text-gray-700">
             Semester Taken
           </div>
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
           <input
             value={semester}
             onChange={(e) => setSemester(e.target.value)}

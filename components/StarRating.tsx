@@ -1,5 +1,11 @@
 "use client";
 
+<<<<<<< HEAD
+type StarRatingProps = {
+  value: number;
+  onChange: (value: number) => void;
+  size?: "sm" | "md";
+=======
 import { useState } from "react";
 
 type StarRatingProps = {
@@ -7,11 +13,33 @@ type StarRatingProps = {
   onChange?: (value: number) => void;
   readOnly?: boolean; 
   className?: string;
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
 };
 
 export default function StarRating({
   value,
   onChange,
+<<<<<<< HEAD
+  size = "md",
+}: StarRatingProps) {
+  const sizeClass = size === "sm" ? "text-xl" : "text-2xl";
+
+  return (
+    <div className="flex gap-2">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <button
+          key={i}
+          type="button"
+          aria-label={`${i} star`}
+          onClick={() => onChange(i)}
+          className={`${sizeClass} leading-none transition ${
+            i <= value ? "text-yellow-400" : "text-gray-300"
+          } hover:text-yellow-400`}
+        >
+          ★
+        </button>
+      ))}
+=======
   readOnly = false,
   className = "",
 }: StarRatingProps) {
@@ -59,6 +87,7 @@ export default function StarRating({
       <span className="ml-2 text-sm sm:text-base font-semibold text-gray-900">
         {safeValue}
       </span>
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
     </div>
   );
 }
