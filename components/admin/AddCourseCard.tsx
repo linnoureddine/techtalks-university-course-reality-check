@@ -14,6 +14,7 @@ type Course = {
   credits: string;
   level: string;
   language: string;
+  rating: number;
   description: string;
 };
 
@@ -43,6 +44,7 @@ export default function AddCourseCard({ onClose, onSave }: Props) {
     credits: "",
     level: "",
     language: "",
+    rating: 0,
     description: "",
   });
 
@@ -60,7 +62,7 @@ export default function AddCourseCard({ onClose, onSave }: Props) {
   }
 
   function handleSubmit() {
-    if (!formData.slug || !formData.code || !formData.title) {
+    if (!formData.code || !formData.title) {
       alert("Please fill required fields");
       return;
     }
@@ -140,7 +142,7 @@ export default function AddCourseCard({ onClose, onSave }: Props) {
           options={level}
           placeholder="Select level"
           onChange={(value) =>
-            setFormData((prev) => ({ ...prev, university: value }))
+            setFormData((prev) => ({ ...prev, level: value }))
           }
         />
 
@@ -149,7 +151,7 @@ export default function AddCourseCard({ onClose, onSave }: Props) {
           options={language}
           placeholder="Select language"
           onChange={(value) =>
-            setFormData((prev) => ({ ...prev, university: value }))
+            setFormData((prev) => ({ ...prev, language: value }))
           }
         />
 

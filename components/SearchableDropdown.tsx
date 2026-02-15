@@ -51,7 +51,6 @@ export default function SearchableDropdownField({
             focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition pr-10"
         />
 
-        {/* Improved Arrow */}
         <div
           className={`absolute right-3 top-1/2 -translate-y-1/2 
             cursor-default pointer-events-none transition-transform duration-200

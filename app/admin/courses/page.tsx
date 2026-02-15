@@ -16,6 +16,12 @@ type Course = {
   language: string;
   rating: number;
   description: string;
+  metrics: {
+    exam: number;
+    workload: number;
+    attendance: number;
+    grading: number;
+  };
 };
 
 export default function AdminCoursesPage() {
@@ -34,6 +40,7 @@ export default function AdminCoursesPage() {
       rating: 4.2,
       description:
         "This course introduces the skills, concepts, and capabilities needed for effective use of information technology.",
+      metrics: { exam: 4, workload: 4, attendance: 3, grading: 5 },
     },
   ]);
 
@@ -90,6 +97,7 @@ export default function AdminCoursesPage() {
               <th className="text-left px-4 py-3">Language</th>
               <th className="text-left px-4 py-3">Credits</th>
               <th className="text-left px-4 py-3">Rating</th>
+              <th className="text-left px-4 py-3">Metrics</th>
               <th className="text-left px-4 py-3">Description</th>
               <th className="text-right px-4 py-3">Actions</th>
             </tr>
@@ -109,7 +117,21 @@ export default function AdminCoursesPage() {
                 <td className="px-4 py-3">{course.language}</td>
                 <td className="px-4 py-3">{course.credits}</td>
                 <td className="px-4 py-3">{course.rating}</td>
-                <td className="px-4 py-3 max-w-xs truncate text-gray-500">
+                <td className="px-4 py-3 grid col-1 gap-1">
+                  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">
+                    Exam:{course.metrics.exam}
+                  </span>
+                  <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">
+                    Workload:{course.metrics.workload}
+                  </span>
+                  <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-medium">
+                    Attendence:{course.metrics.attendance}
+                  </span>
+                  <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs font-medium">
+                    Grading:{course.metrics.grading}
+                  </span>
+                </td>
+                <td className="px-4 py-3 max-w-2 truncate text-gray-500">
                   {course.description}
                 </td>
                 <td className="px-4 py-3">
@@ -182,6 +204,20 @@ export default function AdminCoursesPage() {
               <p>
                 <strong>Rating:</strong> {course.rating}
               </p>
+              <div className="flex flex-wrap gap-1 mt-2">
+                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">
+                  Exam:{course.metrics.exam}
+                </span>
+                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">
+                  Workload:{course.metrics.workload}
+                </span>
+                <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-medium">
+                  Attendence:{course.metrics.attendance}
+                </span>
+                <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs font-medium">
+                  Grading:{course.metrics.grading}
+                </span>
+              </div>
             </div>
 
             <p className="mt-3 text-sm text-gray-500">{course.description}</p>
