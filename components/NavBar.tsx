@@ -1,5 +1,12 @@
 "use client";
 
+<<<<<<< HEAD
+import { useState } from "react";
+import Link from "next/link";
+import NavLink from "./NavLink";
+import Button from "./Button";
+import Image from "next/image";
+=======
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,11 +17,21 @@ import { User, LogOut } from "lucide-react";
 type User = {
   name: string;
 };
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+<<<<<<< HEAD
+  return (
+    <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 px-6 py-3">
+      <div className="flex items-center gap-4">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Image src="/favicon.ico" alt="Logo" width={32} height={32} />
+
+          <span className="hidden lg:inline text-[#6155F5] text-2xl font-bold">
+=======
   const [user, setUser] = useState<User | null>(null);
 
   const [accountOpen, setAccountOpen] = useState(false);
@@ -54,10 +71,25 @@ export default function NavBar() {
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Image src="/favicon.ico" alt="Logo" width={32} height={32} />
           <span className="hidden md:inline text-[#6155F5] text-2xl font-bold">
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
             Coursality
           </span>
         </Link>
 
+<<<<<<< HEAD
+        <div className="hidden md:flex gap-6 md:flex-1 md:justify-center">
+          <NavLink href="/">Home</NavLink>
+          <NavLink href="/courses">Courses</NavLink>
+          <NavLink href="/about">About</NavLink>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
+          <div className="relative h-9 flex items-center w-9">
+            {!searchOpen && (
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center"
+=======
         <div className="flex-1 flex justify-center lg:justify-center">
           <div className="hidden lg:flex gap-6">
             <NavLink href="/">Home</NavLink>
@@ -74,6 +106,7 @@ export default function NavBar() {
                 className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center"
                 aria-label="Search"
                 type="button"
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -89,17 +122,40 @@ export default function NavBar() {
                   <path d="m21 21-4.35-4.35" />
                 </svg>
               </button>
+<<<<<<< HEAD
+            )}
+            {searchOpen && (
+=======
             ) : (
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
               <input
                 autoFocus
                 type="text"
                 placeholder="Search..."
+<<<<<<< HEAD
+                className="absolute right-0 border border-gray-300 rounded px-3 h-9 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-32 md:w-56"
+=======
                 className="border border-gray-300 rounded px-3 h-9 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-32 md:w-56"
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
                 onBlur={() => setSearchOpen(false)}
               />
             )}
           </div>
 
+<<<<<<< HEAD
+          <Button variant="primary">Sign Up</Button>
+
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden ml-2 text-lg text-gray-600"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+      {menuOpen && (
+        <div className="md:hidden mt-4 flex flex-col gap-3">
+=======
           <div className="relative" ref={accountRef}>
             {!user ? (
               <div className="hidden lg:flex gap-2">
@@ -154,6 +210,7 @@ export default function NavBar() {
 
       {menuOpen && (
         <div className="lg:hidden mt-4 flex flex-col gap-3">
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
           <div onClick={() => setMenuOpen(false)}>
             <NavLink href="/">Home</NavLink>
           </div>
@@ -163,6 +220,8 @@ export default function NavBar() {
           <div onClick={() => setMenuOpen(false)}>
             <NavLink href="/about">About</NavLink>
           </div>
+<<<<<<< HEAD
+=======
 
           {!user ? (
             <div className="flex gap-2 mt-2">
@@ -184,6 +243,7 @@ export default function NavBar() {
               </Button>
             </div>
           )}
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         </div>
       )}
     </nav>
