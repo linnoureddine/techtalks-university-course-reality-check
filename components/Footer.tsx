@@ -20,13 +20,26 @@ export default function Footer() {
             <h3 className="mb-5 text-lg font-bold text-black">Quick Links</h3>
             <nav className="flex flex-col gap-3">
               <NavLink href="/">Home</NavLink>
+<<<<<<< HEAD
               <NavLink href="/browse">Browse</NavLink>
+=======
+              <NavLink href="/courses">Browse</NavLink>
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
               <NavLink href="/about">About</NavLink>
             </nav>
           </div>
 
           <div className="flex flex-col items-center md:items-end text-center md:text-right">
+<<<<<<< HEAD
             <Button onClick={() => setFeedbackOpen(true)}>Leave Feedback</Button>
+=======
+            <Button
+              onClick={() => setFeedbackOpen(true)}
+              className="px-6 py-2 text-sm shadow-md"
+            >
+              Leave Feedback
+            </Button>
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
 
             <p className="mt-4 max-w-[250px] text-sm leading-relaxed text-gray-500">
               Did you find what you were looking for? Share your feedback!

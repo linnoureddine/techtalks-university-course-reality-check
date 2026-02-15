@@ -2,8 +2,16 @@
 
 import Link from "next/link";
 import { useState } from "react";
+<<<<<<< HEAD
 
 export default function LoginForm() {
+=======
+import { useRouter } from "next/navigation";
+
+export default function LoginForm() {
+  const router = useRouter();
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -11,6 +19,11 @@ export default function LoginForm() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log({ email, password, remember });
+<<<<<<< HEAD
+=======
+
+    router.push("/");
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
   }
 
   return (
@@ -37,6 +50,10 @@ export default function LoginForm() {
             className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             Password
@@ -50,6 +67,10 @@ export default function LoginForm() {
             className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <div className="flex items-center justify-between pt-1">
           <label className="flex items-center gap-2 text-sm text-gray-600">
             <input
@@ -65,15 +86,26 @@ export default function LoginForm() {
             href="/forgot-password"
             className="text-sm text-gray-600 hover:text-gray-900"
           >
+<<<<<<< HEAD
             Forgot?
           </Link>
         </div>
+=======
+            Forgot password?
+          </Link>
+        </div>
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <button
           type="submit"
           className="w-full h-11 rounded-lg bg-[#6155F5] text-white text-sm font-medium shadow-md hover:bg-[#503fdc] active:scale-[0.99]"
         >
           Log in
         </button>
+<<<<<<< HEAD
+=======
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <p className="text-center text-sm text-gray-500">
           No account?{" "}
           <Link href="/signup" className="text-[#6155F5] hover:underline">

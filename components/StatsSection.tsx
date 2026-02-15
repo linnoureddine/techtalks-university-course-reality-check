@@ -1,7 +1,11 @@
 import CountUp from "react-countup";
+<<<<<<< HEAD
 //npm install react-countup
 import { useInView } from "react-intersection-observer";
 //npm install react-intersection-observer
+=======
+import { useInView } from "react-intersection-observer";
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
 
 type StatsData = {
   reviews: number;
@@ -12,8 +16,13 @@ type StatsData = {
 
 export default function StatsSection({ stats }: { stats: StatsData }) {
   const { ref, inView } = useInView({
+<<<<<<< HEAD
     triggerOnce: true, // only animate once
     threshold: 0.3, // triggers when 30% of element is visible
+=======
+    triggerOnce: true,
+    threshold: 0.3,
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
   });
 
   return (

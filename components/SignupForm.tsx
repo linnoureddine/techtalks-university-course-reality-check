@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+<<<<<<< HEAD
+=======
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
 export default function SignupForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -12,8 +16,14 @@ export default function SignupForm() {
     e.preventDefault();
     console.log({ fullName, email, password, university });
   }
+<<<<<<< HEAD
   return (
     <div className="w-full max-w-[380px] rounded-xl bg-white border border-gray-200 shadow-md px-6 py-6">
+=======
+
+  return (
+    <div className="w-full max-w-[420px] rounded-xl bg-white border border-gray-200 shadow-lg px-6 py-6">
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
       <h1 className="text-center text-2xl font-semibold text-[#111827]">
         Sign up
       </h1>
@@ -23,7 +33,10 @@ export default function SignupForm() {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+<<<<<<< HEAD
         {/* Full name */}
+=======
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             Full name
@@ -33,11 +46,18 @@ export default function SignupForm() {
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Enter your name"
             autoComplete="name"
+<<<<<<< HEAD
             className="w-full h-10 rounded-full border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
 
         {/* Email */}
+=======
+            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
+          />
+        </div>
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             Email
@@ -48,11 +68,18 @@ export default function SignupForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your.email@university.edu"
             autoComplete="email"
+<<<<<<< HEAD
             className="w-full h-10 rounded-full border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
 
         {/* Password */}
+=======
+            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
+          />
+        </div>
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             Password
@@ -63,9 +90,16 @@ export default function SignupForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Create a password"
             autoComplete="new-password"
+<<<<<<< HEAD
             className="w-full h-10 rounded-full border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
+=======
+            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
+          />
+        </div>
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             University
@@ -73,7 +107,11 @@ export default function SignupForm() {
           <select
             value={university}
             onChange={(e) => setUniversity(e.target.value)}
+<<<<<<< HEAD
             className="w-full h-10 rounded-md border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#6155F5]/40"
+=======
+            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
           >
             <option value="" disabled>
               Select your university
@@ -84,12 +122,23 @@ export default function SignupForm() {
             <option value="LIU">LIU</option>
           </select>
         </div>
+<<<<<<< HEAD
         <button
           type="submit"
           className="w-full h-10 rounded-lg bg-[#6155F5] text-white text-sm font-medium shadow-sm hover:bg-[#503fdc] active:scale-[0.99]"
         >
           Sign up
         </button>
+=======
+
+        <button
+          type="submit"
+          className="w-full h-11 rounded-lg bg-[#6155F5] text-white text-sm font-medium shadow-md hover:bg-[#503fdc] active:scale-[0.99]"
+        >
+          Sign up
+        </button>
+
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
         <p className="text-center text-sm text-gray-500">
           Already have an account?{" "}
           <Link href="/login" className="text-[#6155F5] hover:underline">

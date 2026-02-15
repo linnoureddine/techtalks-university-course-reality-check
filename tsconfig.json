@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+<<<<<<< HEAD
+=======
+    "baseUrl": ".",
+>>>>>>> d7521b97bc811563e52ba027d57abf2af19f818a
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
