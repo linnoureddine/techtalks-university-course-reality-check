@@ -3,7 +3,7 @@ import AdminNavbar from "@/components/admin/AdminNavbar";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#F2F2F7]">
+    <div className="min-h-screen bg-white">
       <AdminNavbar />
 
       <div className="flex">
