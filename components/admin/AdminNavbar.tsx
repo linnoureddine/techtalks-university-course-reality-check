@@ -30,18 +30,15 @@ export default function AdminNavbar() {
 
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
-  /* ✅ Restore sidebar state */
   useEffect(() => {
     const saved = localStorage.getItem("admin-sidebar");
     if (saved) setCollapsed(saved === "collapsed");
   }, []);
 
-  /* ✅ Persist sidebar state */
   useEffect(() => {
     localStorage.setItem("admin-sidebar", collapsed ? "collapsed" : "expanded");
   }, [collapsed]);
 
-  /* ✅ Update CSS variable for layout spacing */
   useEffect(() => {
     const sidebarWidth = collapsed ? "72px" : "220px";
     document.documentElement.style.setProperty(
@@ -73,15 +70,14 @@ export default function AdminNavbar() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  const mobileItem = `flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition w-full`;
   const itemBase = `flex items-center gap-3 px-3 py-2 text-sm transition rounded-lg
   ${collapsed ? "justify-center" : ""}`;
-
   const activePill = "bg-[#C9C6FF] text-[#5B5BFF] font-medium";
   const inactivePill = "text-gray-600 hover:bg-gray-50";
 
   return (
     <>
-      {/* ================= HEADER ================= */}
       <header className="sticky top-0 z-50 h-16 w-full bg-white border-b border-gray-200">
         <div className="flex h-full items-center px-4 md:px-8 gap-3">
           <button
@@ -111,7 +107,6 @@ export default function AdminNavbar() {
             </div>
           </div>
 
-          {/* ================= USER MENU ================= */}
           <div className="ml-auto relative" ref={userMenuRef}>
             <button
               className="flex items-center gap-3 rounded-lg px-2 py-1 hover:bg-gray-50"
@@ -151,7 +146,6 @@ export default function AdminNavbar() {
         </div>
       </header>
 
-      {/* ================= SIDEBAR ================= */}
       <aside
         className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] bg-white border-r border-gray-200
         ${collapsed ? "w-[72px]" : "w-[220px]"} transition-all duration-300`}
@@ -224,16 +218,84 @@ export default function AdminNavbar() {
         </div>
       </aside>
 
-      {/* ================= MOBILE MENU ================= */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-60">
           <button
             className="absolute inset-0 bg-black/40"
+            aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           />
 
-          <div className="absolute left-0 top-0 h-full w-[280px] bg-white border-r border-gray-200">
-            {/* mobile content unchanged */}
+          <div
+            className={`absolute left-0 top-0 h-full w-55 bg-white border-r border-grey-200`}
+          >
+            <div
+              className={`h-16 border-b border-grey-200 flex items-center px-4`}
+            >
+              <button
+                type="button"
+                className="mr-3 inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100"
+                aria-label="Close menu"
+                onClick={() => setMobileOpen(false)}
+              >
+                ✕
+              </button>
+
+              <div className="flex items-center gap-2">
+                <Image src="/favicon.ico" alt="Logo" width={28} height={28} />
+                <span className="text-xl font-bold text-[#6155F5]">
+                  Coursality
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-2">
+              <Link
+                href="/admin"
+                className={`${mobileItem} ${
+                  isActive(pathname, "/admin") ? activePill : inactivePill
+                }`}
+              >
+                <LayoutDashboard size={18} className="shrink-0" />
+                Dashboard
+              </Link>
+
+              <div className="pt-3 text-xs text-gray-500">Manage</div>
+
+              <Link
+                href="/admin/courses"
+                className={`${mobileItem} ${
+                  isActive(pathname, "/admin/courses")
+                    ? activePill
+                    : inactivePill
+                }`}
+              >
+                <BookOpen size={18} className="shrink-0" />
+                Courses
+              </Link>
+
+              <Link
+                href="/admin/users"
+                className={`${mobileItem} ${
+                  isActive(pathname, "/admin/users") ? activePill : inactivePill
+                }`}
+              >
+                <Users size={18} className="shrink-0" />
+                Users
+              </Link>
+
+              <Link
+                href="/admin/reviews"
+                className={`${mobileItem} ${
+                  isActive(pathname, "/admin/reviews")
+                    ? activePill
+                    : inactivePill
+                }`}
+              >
+                <Star size={18} className="shrink-0" />
+                Reviews
+              </Link>
+            </div>
           </div>
         </div>
       )}
