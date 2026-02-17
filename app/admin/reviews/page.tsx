@@ -39,9 +39,7 @@ export default function AdminReviewsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-black">
-        Admin Dashboard
-      </h1>
+      <h1 className="text-2xl font-semibold text-black">Admin Dashboard</h1>
 
       <p className="mt-1 text-sm text-gray-500">
         Manage platform content and monitor activity
@@ -62,9 +60,7 @@ export default function AdminReviewsPage() {
                 <h3 className="text-lg font-semibold text-black">
                   {review.course}
                 </h3>
-                <p className="text-sm text-gray-400">
-                  {review.professor}
-                </p>
+                <p className="text-sm text-gray-400">{review.professor}</p>
               </div>
 
               <button
@@ -75,9 +71,7 @@ export default function AdminReviewsPage() {
               </button>
             </div>
 
-            <p className="mt-3 text-sm text-gray-600">
-              {review.content}
-            </p>
+            <p className="mt-3 text-sm text-gray-600">{review.content}</p>
 
             <div className="mt-4 flex justify-between text-sm text-gray-500">
               <span>{review.upvotes} upvotes</span>
