@@ -14,14 +14,20 @@ export default function Page() {
     <main className="min-h-screen bg-[#FFFFFF] px-6 py-10">
       <section className="mx-auto max-w-5xl">
         <CourseInfo />
-        <div>
+        <div className="mt-6">
           {!showWriteReview && (
-            <Button onClick={() => setShowWriteReview(true)} variant="primary">
+            <Button
+              onClick={() => setShowWriteReview(true)}
+              variant="primary"
+            >
               Leave a review
             </Button>
           )}
           {showWriteReview && (
-            <WriteReviewCard onSubmit={() => setShowWriteReview(false)} />
+            <WriteReviewCard
+              onSubmit={() => setShowWriteReview(false)}
+              onCancel={() => setShowWriteReview(false)}
+            />
           )}
         </div>
         <StudentReviews />
