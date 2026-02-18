@@ -14,12 +14,9 @@ export default function Page() {
     <main className="min-h-screen bg-[#FFFFFF] px-6 py-10">
       <section className="mx-auto max-w-5xl">
         <CourseInfo />
-        <div className="mt-6">
+        <div>
           {!showWriteReview && (
-            <Button
-              onClick={() => setShowWriteReview(true)}
-              variant="primary"
-            >
+            <Button onClick={() => setShowWriteReview(true)} variant="primary">
               Leave a review
             </Button>
           )}
