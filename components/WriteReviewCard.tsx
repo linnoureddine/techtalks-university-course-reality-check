@@ -4,14 +4,16 @@ import { useState } from "react";
 import Button from "@/components/Button";
 import StarRating from "@/components/StarRating";
 import SliderRow from "@/components/SliderRow";
-import { useToast } from "./toast/Toastprovider";
-
 
 type WriteReviewCardProps = {
   onSubmit: () => void;
+  onCancel: () => void;
 };
 
-export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
+export default function WriteReviewCard({
+  onSubmit,
+  onCancel,
+}: WriteReviewCardProps) {
   const [overallRating, setOverallRating] = useState(0);
   const [instructor, setInstructor] = useState("");
   const [semester, setSemester] = useState("");
@@ -21,16 +23,25 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
   const [gradingFairness, setGradingFairness] = useState(3);
   const [review, setReview] = useState("");
 
-  const { toast } = useToast();
-
   const canSubmit =
-    overallRating > 0 && instructor.trim() && semester.trim() && review.trim();
+    overallRating > 0 &&
+    instructor.trim() &&
+    semester.trim() &&
+    review.trim();
+
+  function resetForm() {
+    setOverallRating(0);
+    setInstructor("");
+    setSemester("");
+    setExamDifficulty(3);
+    setAttendanceStrictness(3);
+    setWorkload(3);
+    setGradingFairness(3);
+    setReview("");
+  }
 
   function handleSubmit() {
-    if (!canSubmit) {
-      toast("Please fill rating, instructor, semester, and review.", "error");
-      return;
-    }
+    if (!canSubmit) return;
 
     const payload = {
       overallRating,
@@ -45,27 +56,26 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
 
     console.log(payload);
 
-    toast("Your review was posted successfully.", "success");
-
-    setOverallRating(0);
-    setInstructor("");
-    setSemester("");
-    setExamDifficulty(3);
-    setAttendanceStrictness(3);
-    setWorkload(3);
-    setGradingFairness(3);
-    setReview("");
-
+    resetForm();
     onSubmit();
+  }
+
+  function handleCancel() {
+    resetForm();
+    onCancel();
   }
 
   return (
     <div className="w-full rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
-      <h2 className="text-xl font-semibold text-gray-900">Leave Your Review</h2>
+      <h2 className="text-xl font-semibold text-gray-900">
+        Leave Your Review
+      </h2>
 
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700">Overall Rating</div>
+          <div className="text-sm font-medium text-gray-700">
+            Overall Rating
+          </div>
           <StarRating value={overallRating} onChange={setOverallRating} />
         </div>
 
@@ -124,7 +134,9 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
       </div>
 
       <div className="mt-6 space-y-2">
-        <div className="text-sm font-medium text-gray-700">Your Review</div>
+        <div className="text-sm font-medium text-gray-700">
+          Your Review
+        </div>
         <textarea
           value={review}
           onChange={(e) => setReview(e.target.value)}
@@ -133,7 +145,14 @@ export default function WriteReviewCard({ onSubmit }: WriteReviewCardProps) {
         />
       </div>
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex justify-end gap-3">
+        <Button
+          variant="elevated"
+          onClick={handleCancel}
+        >
+          Cancel
+        </Button>
+
         <Button
           variant="primary"
           onClick={handleSubmit}
