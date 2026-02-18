@@ -1,6 +1,9 @@
 "use client";
 
 import { Users, BookOpen, Star, TrendingUp } from "lucide-react";
+import UserGrowthChart from "@/components/admin/charts/UserGrowthChart";
+import ReviewTrendChart from "@/components/admin/charts/ReviewTrendChart";
+import RatingsDistributionChart from "@/components/admin/charts/RatingsDistributionChart";
 
 export default function AdminDashboardPage() {
   const stats = [
@@ -14,7 +17,7 @@ export default function AdminDashboardPage() {
     {
       value: "248",
       label: "Total Courses",
-      Icon: BookOpen, 
+      Icon: BookOpen,
       iconBg: "bg-[#FFE9EE]",
       iconColor: "text-[#EB5757]",
     },
@@ -38,7 +41,8 @@ export default function AdminDashboardPage() {
     <div>
       <h1 className="text-2xl font-semibold text-black">Overview</h1>
       <p className="mt-1 text-sm text-gray-500">
-        Welcome Back! Here&apos;s what&apos;s happening with your platform today.
+        Welcome Back! Here&apos;s what&apos;s happening with your platform
+        today.
       </p>
 
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -57,6 +61,11 @@ export default function AdminDashboardPage() {
             <div className="text-xs text-gray-700">{label}</div>
           </div>
         ))}
+      </div>
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <UserGrowthChart />
+        <ReviewTrendChart />
+        <RatingsDistributionChart />
       </div>
     </div>
   );

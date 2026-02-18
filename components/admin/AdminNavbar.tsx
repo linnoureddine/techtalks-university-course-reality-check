@@ -96,7 +96,7 @@ export default function AdminNavbar() {
           </Link>
 
           <div className="flex-1 flex justify-center md:ml-16">
-            <div className="relative w-full max-w-[220px] sm:max-w-[320px] md:max-w-[380px]">
+            <div className="relative w-full max-w-55 sm:max-w-[320px] md:max-w-95">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8A8A8A]">
                 <Search size={20} />
               </span>
@@ -148,7 +148,7 @@ export default function AdminNavbar() {
 
       <aside
         className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] bg-white border-r border-gray-200
-        ${collapsed ? "w-[72px]" : "w-[220px]"} transition-all duration-300`}
+        ${collapsed ? "w-18" : "w-55"} transition-all duration-300`}
       >
         <div className={`${collapsed ? "p-3" : "p-6"} space-y-2`}>
           <div
