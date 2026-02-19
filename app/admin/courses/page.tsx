@@ -73,9 +73,19 @@ export default function AdminCoursesPage() {
     });
   }, [courses, searchQuery, filters]);
 
-  function handleSaveCourse(course: Course) {
-    setCourses((prev) => [...prev, course]);
-  }
+  type NewCourseInput = Omit<Course, "metrics"> & {
+  metrics?: Course["metrics"];
+};
+
+function handleSaveCourse(course: NewCourseInput) {
+  const normalized: Course = {
+    ...course,
+    metrics: course.metrics ?? { exam: 0, workload: 0, attendance: 0, grading: 0 },
+  };
+
+  setCourses((prev) => [...prev, normalized]);
+}
+
 
   function handleDelete(slug: string) {
     alert(`Delete ${slug}`);
