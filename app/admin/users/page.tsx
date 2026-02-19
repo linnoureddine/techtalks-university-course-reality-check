@@ -95,7 +95,7 @@ export default function AdminUsersPage() {
   function handleDelete(user: UserRow) {
     if (user.protected) return;
     alert(`Delete ${user.email} (connect later)`);
-    // setUsers((prev) => prev.filter((x) => x.id !== user.id));
+
   }
 
   function resetFilters() {
@@ -105,7 +105,6 @@ export default function AdminUsersPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Header (matches Courses page layout) */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-black">User Management</h1>
@@ -124,8 +123,6 @@ export default function AdminUsersPage() {
           </Button>
         </div>
       </div>
-
-      {/* Search + Filter row (same styling as Courses page) */}
       <div className="mt-4 flex flex-row gap-2 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -164,8 +161,6 @@ export default function AdminUsersPage() {
           </svg>
         </button>
       </div>
-
-      {/* Filters panel (simple, same card vibe) */}
       {showFilters && (
         <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -231,8 +226,6 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
-
-      {/* Desktop table (same table card style as Courses page) */}
       <div className="hidden md:block mt-6 rounded-xl border border-gray-200 bg-white overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
@@ -292,8 +285,6 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
-
-      {/* Mobile cards (same pattern as Courses page) */}
       <div className="md:hidden mt-6 flex flex-col gap-4">
         {filteredUsers.map((u) => (
           <div
