@@ -16,7 +16,7 @@ export default function StatsSection({ stats }: { stats: StatsData }) {
 
   return (
     <section className="text-[#6155F5] py-16" ref={ref}>
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
         <div>
           <h2 className="text-4xl sm:text-4xl font-bold">
             {inView ? (

@@ -1,6 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, ChangeEvent } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { filterCourses } from "@/lib/filterCourses";
 import { Filters } from "@/types/filters";
 import FiltersPanel from "@/components/FiltersPanel";
@@ -33,13 +37,19 @@ const courses = [
     language: "English",
     rating: 4.2,
     description:
-      "This course introduces the skills, concepts, and capabilities needed for effective use of information technology (IT). It includes logical reasoning, organization of information, managing complexity, operations of computers and networks, digital representation of information, security principles, and the use of contemporary applications such as effective Web search, spreadsheets, and database systems. Also it includes a basic introduction to programming and problem solving through scripting web applications.",
+      "This course introduces the skills, concepts, and capabilities needed for effective use of information technology...",
     metrics: { exam: 3, workload: 4, attendance: 4, grading: 4 },
     reviewsLabel: "200+ Reviews",
   },
 ];
 
 export default function CoursesPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const initialQuery = searchParams.get("query") || "";
+  const [query, setQuery] = useState(initialQuery);
+
   const [filters, setFilters] = useState<Filters>({
     university: "",
     department: "",
@@ -49,64 +59,89 @@ export default function CoursesPage() {
 
   const [showFilters, setShowFilters] = useState(false);
 
-  const query = ""; // or get from URL search params
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query) params.set("query", query);
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+
+    router.replace(`/courses?${params.toString()}`);
+  }, [query, filters, router]);
 
   const filteredCourses = useMemo(() => {
     return filterCourses(courses, { ...filters, query });
   }, [filters, query]);
 
+  const isSearching = !!query;
+
   return (
-    <main className="min-h-screen bg-[#FFFFFF] px-6 py-10">
-      <div className="max-w-6xl mx-auto py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Browse Courses</h1>
-          <p className="mt-2 text-gray-500 max-w-xl">
-            Explore and filter courses by university, department, language, and
-            level.
-          </p>
-        </div>
-        <button
-          className="flex items-center justify-center rounded-lg p-2 hover:bg-gray-50 transition"
-          onClick={() => setShowFilters((prev) => !prev)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-gray-700"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 12.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 019 17V12.414L3.293 6.707A1 1 0 013 6V4z"
+    <main className="min-h-screen bg-white px-4 md:px-8 py-10">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900">
+          {isSearching ? `Search Results for "${query}"` : "Browse Courses"}
+        </h1>
+        <p className="mt-2 text-gray-500 max-w-xl">
+          Explore and filter courses by university, department, language, and
+          level.
+        </p>
+
+        <div className="mt-6 flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search courses, codes, universities..."
+              value={query}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setQuery(e.target.value)
+              }
+              className="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-2.5
+                        focus:outline-none focus:ring-2 focus:ring-[#6155F5]
+                        focus:border-transparent transition"
             />
-          </svg>
-        </button>
-      </div>
+          </div>
 
-      {showFilters && (
-        <div className="max-w-6xl mx-auto px-6">
-          <FiltersPanel
-            filters={filters}
-            setFilters={setFilters}
-            onApply={() => setShowFilters(false)}
-            onReset={() => setShowFilters(false)}
-          />
+          <button
+            onClick={() => setShowFilters((prev) => !prev)}
+            className="flex items-center justify-center rounded-xl border border-gray-300
+                        p-2.5 hover:bg-gray-50 transition"
+          >
+            <SlidersHorizontal className="h-5 w-5 text-gray-700" />
+          </button>
         </div>
-      )}
 
-      <div className="max-w-7xl md:max-w-6xl mx-auto md:px-6 mt-6 flex flex-col gap-6">
-        {filteredCourses.map((course) => (
-          <CourseCard key={course.slug} {...course} />
-        ))}
+        <AnimatePresence initial={false}>
+          {showFilters && (
+            <motion.div
+              key="filters"
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="overflow-hidden mb-6 mt-6"
+            >
+              <FiltersPanel
+                filters={filters}
+                setFilters={setFilters}
+                onApply={() => setShowFilters(false)}
+                onReset={() => setShowFilters(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {filteredCourses.length === 0 && (
-          <p className="text-gray-500 text-center mt-4">
-            No courses match your filters.
-          </p>
-        )}
+        <div className="flex flex-col gap-6 mt-8">
+          {filteredCourses.length === 0 ? (
+            <p className="text-gray-500 text-center py-10">
+              No courses match your search or filters.
+            </p>
+          ) : (
+            filteredCourses.map((course) => (
+              <CourseCard key={course.slug} {...course} />
+            ))
+          )}
+        </div>
       </div>
     </main>
   );

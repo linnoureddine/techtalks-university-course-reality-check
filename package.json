@@ -13,6 +13,7 @@
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "feather-icons": "^4.29.2",
+    "framer-motion": "^12.34.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.563.0",
     "mysql2": "^3.16.3",

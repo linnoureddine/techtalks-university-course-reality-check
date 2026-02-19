@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, ChangeEvent } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import Searchbar from "@/components/Searchbar";
 import CourseCard from "@/components/CourseCard";
 import FiltersPanel from "@/components/FiltersPanel";
@@ -44,9 +45,12 @@ const courses = [
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
   const initialQuery = searchParams.get("query") || "";
+
   const [query, setQuery] = useState(initialQuery);
   const [showFilters, setShowFilters] = useState(false);
+
   const [filters, setFilters] = useState<Filters>({
     university: "",
     department: "",
@@ -56,10 +60,13 @@ export default function SearchPage() {
 
   useEffect(() => {
     const params = new URLSearchParams();
+
     if (query) params.set("query", query);
+
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
+
     router.replace(`/search?${params.toString()}`);
   }, [query, filters, router]);
 
@@ -68,12 +75,16 @@ export default function SearchPage() {
   }, [query, filters]);
 
   return (
-    <main className="min-h-screen px-4 md:px-10 py-8">
+    <main className="min-h-screen bg-white px-4 md:px-8 py-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between mb-6 gap-10 md:gap-20">
-          <Searchbar query={query} setQuery={setQuery} />
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1">
+            <Searchbar query={query} setQuery={setQuery} />
+          </div>
+
           <button
-            className="flex items-center justify-center rounded-lg p-2 hover:bg-gray-50 transition"
+            className="flex items-center justify-center rounded-xl border border-gray-300 
+                        p-2.5 hover:bg-gray-50 transition"
             onClick={() => setShowFilters((prev) => !prev)}
           >
             <svg
@@ -93,21 +104,32 @@ export default function SearchPage() {
           </button>
         </div>
 
-        {showFilters && (
-          <FiltersPanel
-            filters={filters}
-            setFilters={setFilters}
-            onApply={() => setShowFilters(false)}
-            onReset={() => setShowFilters(false)}
-          />
-        )}
+        <AnimatePresence initial={false}>
+          {showFilters && (
+            <motion.div
+              key="filters"
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden mb-6"
+            >
+              <FiltersPanel
+                filters={filters}
+                setFilters={setFilters}
+                onApply={() => setShowFilters(false)}
+                onReset={() => setShowFilters(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {filteredCourses.length === 0 ? (
           <div className="mt-10 text-center text-gray-500">
             No courses found.
           </div>
         ) : (
-          <div className="max-w-7xl md:max-w-6xl mx-auto md:px-6 mt-6 flex flex-col gap-6">
+          <div className="flex flex-col gap-6">
             {filteredCourses.map((course) => (
               <CourseCard key={course.slug} {...course} />
             ))}

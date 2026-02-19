@@ -1,4 +1,10 @@
-import { Dispatch, SetStateAction, SyntheticEvent, ChangeEvent } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  SyntheticEvent,
+  ChangeEvent,
+  useEffect,
+} from "react";
 import Button from "@/components/Button";
 import { Search } from "react-feather";
 import { useRouter } from "next/navigation";
@@ -11,15 +17,21 @@ interface SearchbarProps {
 export default function SearchPage({ query, setQuery }: SearchbarProps) {
   const router = useRouter();
 
+  useEffect(() => {
+    router.prefetch("/courses");
+  }, [router]);
+
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!query.trim()) return;
-    router.push(`/search?query=${encodeURIComponent(query)}`);
+
+    router.push(`/courses?query=${encodeURIComponent(query)}`);
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
+
   return (
     <form onSubmit={handleSubmit} className="flex-1">
       <div className="flex gap-3">
@@ -32,8 +44,9 @@ export default function SearchPage({ query, setQuery }: SearchbarProps) {
             onChange={handleChange}
             placeholder="Search for a course, university, department..."
             className="w-full h-11 pl-10 pr-4 text-gray-900 placeholder-gray-400
-                    rounded-md border border-gray-300 transition-colors
-                    focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
+                      rounded-md border border-gray-300 transition-colors
+                      focus:outline-none focus:border-[#6155F5] 
+                      focus:ring-2 focus:ring-[#6155F5]"
           />
         </div>
 
