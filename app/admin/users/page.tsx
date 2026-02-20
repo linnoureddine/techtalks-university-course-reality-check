@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import Button from "@/components/Button";
 import { Plus, Search, Trash2, Shield } from "lucide-react";
+import AddAdminCard from "@/components/admin/AddAdminCard";
+
 
 type UserRow = {
   id: string;
@@ -48,7 +50,7 @@ const initialUsers: UserRow[] = [
   {
     id: "4",
     name: "Jane Smith",
-    email: "jane@gmail.ca",
+    email: "jane@gmail.com",
     university: "LIU",
     role: "Student",
     joined: "2024-03-20",
@@ -56,6 +58,7 @@ const initialUsers: UserRow[] = [
 ];
 
 export default function AdminUsersPage() {
+  const [showAdminForm, setShowAdminForm] = useState(false);
   const [users, setUsers] = useState<UserRow[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -87,11 +90,6 @@ export default function AdminUsersPage() {
       return matchesSearch && matchesRole && matchesUniversity;
     });
   }, [users, searchQuery, filters]);
-
-  function handleAddAdmins() {
-    alert("Add Admins clicked (connect later)");
-  }
-
   function handleDelete(user: UserRow) {
     if (user.protected) return;
     alert(`Delete ${user.email} (connect later)`);
@@ -114,12 +112,8 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="flex justify-center sm:justify-start items-center">
-          <Button
-            variant="primary"
-            onClick={handleAddAdmins}
-            className="flex items-center justify-center gap-2"
-          >
-            <Plus size={18} /> Add Admins
+          <Button variant="primary" onClick={() => setShowAdminForm(true)} className="flex items-center gap-2" >
+            <Plus size={18} className="shrink-0"/> Add Admin
           </Button>
         </div>
       </div>
@@ -144,7 +138,6 @@ export default function AdminUsersPage() {
           onClick={() => setShowFilters((prev) => !prev)}
           aria-label="Toggle filters"
         >
-          {/* same funnel icon as Courses page */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-gray-700"
@@ -161,6 +154,11 @@ export default function AdminUsersPage() {
           </svg>
         </button>
       </div>
+      {showAdminForm && (<AddAdminCard onClose={() => setShowAdminForm(false)}onSave={(admin) => {
+        setShowAdminForm(false);
+    }}
+  />
+)}
       {showFilters && (
         <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -231,6 +229,7 @@ export default function AdminUsersPage() {
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="text-left px-4 py-3">User</th>
+              <th className="text-left px-4 py-3">Email</th>
               <th className="text-left px-4 py-3">University</th>
               <th className="text-left px-4 py-3">Role</th>
               <th className="text-left px-4 py-3">Joined</th>
@@ -246,7 +245,9 @@ export default function AdminUsersPage() {
               >
                 <td className="px-4 py-3">
                   <div className="font-medium text-gray-900">{u.name}</div>
-                  <div className="text-xs text-gray-500">{u.email}</div>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="px-4 py-3 text-gray-700 max-w-[220px] truncate" title={u.email}>{u.email}</div>
                 </td>
 
                 <td className="px-4 py-3">{u.university}</td>
