@@ -9,30 +9,49 @@ export async function POST(req: Request) {
     const fullName = body?.fullName;
     const email = body?.email;
     const password = body?.password;
-    const universityName = body?.universityName;
+    const universityName = body?.universityName; 
 
     if (!fullName || typeof fullName !== "string") {
-      return NextResponse.json({ success: false, message: "fullName is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "fullName is required" },
+        { status: 400 }
+      );
     }
 
     if (!email || typeof email !== "string") {
-      return NextResponse.json({ success: false, message: "email is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "email is required" },
+        { status: 400 }
+      );
     }
 
     if (!password || typeof password !== "string") {
-      return NextResponse.json({ success: false, message: "password is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "password is required" },
+        { status: 400 }
+      );
     }
 
-    if (!universityName || typeof universityName !== "string") {
-      return NextResponse.json({ success: false, message: "universityName is required" }, { status: 400 });
+    
+    if (universityName && typeof universityName !== "string") {
+      return NextResponse.json(
+        { success: false, message: "universityName must be a string" },
+        { status: 400 }
+      );
     }
 
     if (!email.includes("@")) {
-      return NextResponse.json({ success: false, message: "email must be valid" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "email must be valid" },
+        { status: 400 }
+      );
     }
 
     if (password.length < 6) {
-      return NextResponse.json({ success: false, message: "password must be at least 6 characters" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "password must be at least 6 characters" },
+        { status: 400 }
+      );
     }
 
     const [existing]: any = await pool.query(
@@ -41,7 +60,10 @@ export async function POST(req: Request) {
     );
 
     if (existing.length > 0) {
-      return NextResponse.json({ success: false, message: "Email already registered" }, { status: 409 });
+      return NextResponse.json(
+        { success: false, message: "Email already registered" },
+        { status: 409 }
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -58,8 +80,8 @@ export async function POST(req: Request) {
         user: {
           id: result.insertId,
           fullName,
-          email
-        }
+          email,
+        },
       },
       { status: 201 }
     );
