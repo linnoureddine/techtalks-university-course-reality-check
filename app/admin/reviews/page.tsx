@@ -251,7 +251,7 @@ export default function AdminReviewsPage() {
                       <span
                         key={m.label}
                         className={`px-2 py-0.5 rounded-md text-xs ${toneClasses(
-                          m.tone
+                          m.tone,
                         )}`}
                       >
                         {m.label}:{m.value}
@@ -349,7 +349,7 @@ export default function AdminReviewsPage() {
                     <span
                       key={m.label}
                       className={`px-3 py-1 rounded-lg text-sm ${toneClasses(
-                        m.tone
+                        m.tone,
                       )}`}
                     >
                       {m.label}:{m.value}
