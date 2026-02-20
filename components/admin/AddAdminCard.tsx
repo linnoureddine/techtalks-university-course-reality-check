@@ -8,25 +8,15 @@ import { useState } from "react";
 export type AdminUser = {
   name: string;
   email: string;
-  university: string;
+  password: string;
   role: string;
   status: string;
-  notes: string;
 };
 
 type Props = {
   onClose: () => void;
   onSave: (admin: AdminUser) => void;
 };
-
-const universities = [
-  "American University of Beirut",
-  "Lebanese American University",
-  "Université Saint-Joseph",
-  "Lebanese University",
-  "N/A",
-];
-
 const roles = ["Super Admin", "Admin"];
 const statuses = ["Active", "Pending", "Disabled"];
 
@@ -34,10 +24,9 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
   const [formData, setFormData] = useState<AdminUser>({
     name: "",
     email: "",
-    university: "",
+    password:"",
     role: "",
     status: "Active",
-    notes: "",
   });
 
   function handleChange(
@@ -54,7 +43,7 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
   }
 
   function handleSubmit() {
-    if (!formData.name || !formData.email || !formData.role) {
+    if (!formData.name || !formData.email || !formData.role || !formData.password) {
       alert("Please fill required fields");
       return;
     }
@@ -95,20 +84,20 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="Email (admin@coursecompass.com)"
+          placeholder="Email (admin@coursality.com)"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm 
         bg-white focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
         />
-
-        <SearchableDropdownField
-          value={formData.university}
-          options={universities}
-          placeholder="Select university"
-          onChange={(value) =>
-            setFormData((prev) => ({ ...prev, university: value }))
-          }
+        <input
+        type="password" 
+        name="password"
+        value={formData.password}
+        onChange={handleChange}
+        placeholder="Enter password"
+        autoComplete="new-password"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm 
+        bg-white focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
         />
-
         <SearchableDropdownField
           value={formData.role}
           options={roles}
@@ -125,15 +114,7 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
           }
         />
 
-        <textarea
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
-          placeholder="Notes (optional)"
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm 
-        bg-white focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition md:col-span-2 resize-none"
-        />
+       
       </div>
 
       <div className="flex justify-end gap-3 mt-4">

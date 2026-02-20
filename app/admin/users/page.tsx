@@ -110,6 +110,7 @@ export default function AdminUsersPage() {
             Manage platform users and admin access
           </p>
         </div>
+    
 
         <div className="flex justify-center sm:justify-start items-center">
           <Button variant="primary" onClick={() => setShowAdminForm(true)} className="flex items-center gap-2" >
@@ -117,6 +118,12 @@ export default function AdminUsersPage() {
           </Button>
         </div>
       </div>
+      {showAdminForm && (<AddAdminCard onClose={() => setShowAdminForm(false)}onSave={(admin) => {
+        setShowAdminForm(false);
+    }}
+  />
+)}
+      
       <div className="mt-4 flex flex-row gap-2 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -154,11 +161,7 @@ export default function AdminUsersPage() {
           </svg>
         </button>
       </div>
-      {showAdminForm && (<AddAdminCard onClose={() => setShowAdminForm(false)}onSave={(admin) => {
-        setShowAdminForm(false);
-    }}
-  />
-)}
+      
       {showFilters && (
         <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -246,8 +249,8 @@ export default function AdminUsersPage() {
                 <td className="px-4 py-3">
                   <div className="font-medium text-gray-900">{u.name}</div>
                 </td>
-                <td className="px-4 py-3">
-                  <div className="px-4 py-3 text-gray-700 max-w-[220px] truncate" title={u.email}>{u.email}</div>
+                <td className="px-4 py-3 text-gray-700 max-w-[220px] truncate" title={u.email}>
+                  {u.email}
                 </td>
 
                 <td className="px-4 py-3">{u.university}</td>
