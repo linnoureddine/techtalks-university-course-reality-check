@@ -10,7 +10,6 @@ export type AdminUser = {
   email: string;
   password: string;
   role: string;
-  status: string;
 };
 
 type Props = {
@@ -26,7 +25,6 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
     email: "",
     password:"",
     role: "",
-    status: "Active",
   });
 
   function handleChange(
@@ -104,17 +102,6 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
           placeholder="Select role"
           onChange={(value) => setFormData((prev) => ({ ...prev, role: value }))}
         />
-
-        <SearchableDropdownField
-          value={formData.status}
-          options={statuses}
-          placeholder="Select status"
-          onChange={(value) =>
-            setFormData((prev) => ({ ...prev, status: value }))
-          }
-        />
-
-       
       </div>
 
       <div className="flex justify-end gap-3 mt-4">
