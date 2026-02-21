@@ -23,7 +23,8 @@
     "react-dom": "19.2.3",
     "react-feather": "^2.0.10",
     "react-intersection-observer": "^10.0.2",
-    "recharts": "^3.7.0"
+    "recharts": "^3.7.0",
+    "resend": "^6.9.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
