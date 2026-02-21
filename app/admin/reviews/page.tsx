@@ -674,7 +674,12 @@ export default function AdminReviewsPage() {
                     </p>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
-                    {r.instructor_name}
+                    <p className="whitespace-nowrap font-medium text-gray-800">
+                      {r.instructor_name}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate max-w-37.5">
+                      {r.university}
+                    </p>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
                     {r.semester_taken}
