@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   Search,
   Star,
@@ -8,47 +8,55 @@ import {
   ChevronDown,
   ArrowBigUp,
   ArrowBigDown,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
-type Metric = {
-  label: string;
-  value: number;
-  tone: "blue" | "green" | "yellow" | "purple";
-};
-
+// Matches: review JOIN user JOIN course JOIN department JOIN university + aggregated review_vote counts
 type ReviewRow = {
-  id: string;
-  course: string;
-  professor: string;
-  reviewText: string;
-  rating: number;
-  metrics: Metric[];
+  review_id: string;
+  reviewer_name: string;
+  reviewer_email: string;
+  course_code: string;
+  course_title: string;
+  university: string;
+  department: string;
+  semester_taken: string;
+  review_text: string;
+  instructor_name: string;
+  overall_rating: number;
+  grading_rating: number;
+  workload_rating: number;
+  attendance_rating: number;
+  exam_difficulty_rating: number;
   upvotes: number;
   downvotes: number;
-  date: string;
-  reviewUser: string;
-  commentUser: string;
+  created_at: string;
 };
 
-function toneClasses(tone: Metric["tone"]) {
-  switch (tone) {
-    case "blue":
-      return "bg-blue-100 text-blue-700";
-    case "green":
-      return "bg-green-100 text-green-700";
-    case "yellow":
-      return "bg-yellow-100 text-yellow-800";
-    case "purple":
-      return "bg-purple-100 text-purple-700";
-  }
+type SortKey =
+  | "newest"
+  | "oldest"
+  | "rating_high"
+  | "rating_low"
+  | "most_votes";
+
+function unique<T>(arr: T[]): T[] {
+  return Array.from(new Set(arr));
 }
 
-function clampText(text: string, max = 44) {
-  if (text.length <= max) return text;
-  return text.slice(0, max).trimEnd() + "…";
+function RatingStars({ value, size = 13 }: { value: number; size?: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Star size={size} className="text-amber-400 fill-amber-400" />
+      <span className="font-medium text-gray-800 text-sm">
+        {value.toFixed(2)}
+      </span>
+    </div>
+  );
 }
 
-function VotesDisplay({
+function VoteDisplay({
   upvotes,
   downvotes,
 }: {
@@ -56,320 +64,766 @@ function VotesDisplay({
   downvotes: number;
 }) {
   const score = upvotes - downvotes;
-
   return (
-    <div className="inline-flex items-center gap-2 text-gray-700">
-      <ArrowBigUp size={20} className="text-gray-400" />
-      <span className="min-w-[22px] text-center font-semibold text-gray-800">
-        {score}
-      </span>
-      <ArrowBigDown size={20} className="text-gray-400" />
+    <div className="flex items-center gap-1 text-gray-600">
+      <ArrowBigUp size={15} className="text-gray-400" />
+      <span className="text-sm font-semibold w-5 text-center">{score}</span>
+      <ArrowBigDown size={15} className="text-gray-400" />
     </div>
   );
 }
 
-export default function AdminReviewsPage() {
-  const [query, setQuery] = useState("");
-  const [ratingFilter, setRatingFilter] = useState<
-    "all" | "5" | "4" | "3" | "2" | "1"
-  >("all");
+function MetricBadge({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${color}`}
+    >
+      {label}: {value}
+    </span>
+  );
+}
 
-  const reviews: ReviewRow[] = [
-    {
-      id: "r1",
-      course: "Data Structure and Algorithms",
-      professor: "Dr. Sarah Mitchell",
-      reviewText:
-        "This course was tough but rewarding. Dr. Mitchell is passionate about the subject and genuinely wants students to succeed.",
-      rating: 4.6,
-      metrics: [
-        { label: "Exam", value: 4, tone: "blue" },
-        { label: "Workload", value: 4, tone: "green" },
-        { label: "Attendance", value: 3, tone: "yellow" },
-        { label: "Grading", value: 5, tone: "purple" },
-      ],
-      upvotes: 47,
-      downvotes: 23,
-      date: "1/15/2024",
-      reviewUser: "Aya Harb",
-      commentUser: "Rein El Zein",
-    },
-    {
-      id: "r2",
-      course: "Calculus II",
-      professor: "Dr. John Smith",
-      reviewText:
-        "Great explanations and lots of practice problems. Highly recommended.",
-      rating: 4.2,
-      metrics: [
-        { label: "Exam", value: 3, tone: "blue" },
-        { label: "Workload", value: 4, tone: "green" },
-        { label: "Attendance", value: 2, tone: "yellow" },
-        { label: "Grading", value: 4, tone: "purple" },
-      ],
-      upvotes: 31,
-      downvotes: 6,
-      date: "2/03/2024",
-      reviewUser: "Nour Haddad",
-      commentUser: "Aya Harb",
-    },
-  ];
+function ReviewDetailModal({
+  review,
+  onClose,
+  onDelete,
+}: {
+  review: ReviewRow;
+  onClose: () => void;
+  onDelete: (id: string) => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-
-    return reviews.filter((r) => {
-      const matchesQuery =
-        !q ||
-        r.course.toLowerCase().includes(q) ||
-        r.professor.toLowerCase().includes(q) ||
-        r.reviewText.toLowerCase().includes(q) ||
-        r.reviewUser.toLowerCase().includes(q) ||
-        r.commentUser.toLowerCase().includes(q);
-
-      const matchesRating =
-        ratingFilter === "all"
-          ? true
-          : Math.floor(r.rating).toString() === ratingFilter;
-
-      return matchesQuery && matchesRating;
-    });
-  }, [query, ratingFilter, reviews]);
+  const netVotes = review.upvotes - review.downvotes;
 
   return (
-    <div className="w-full overflow-x-hidden">
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 p-5 border-b border-gray-100">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-black">
-              Review Management
-            </h1>
-            <p className="mt-2 text-gray-500">
-              Manage platform reviews and moderate content.
+            <p className="font-semibold text-gray-900">
+              {review.course_code} — {review.course_title}
+            </p>
+            <p className="text-sm text-gray-400 mt-0.5">
+              {review.department} · {review.university}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Reviewer</p>
+              <p className="text-gray-800 font-medium">
+                {review.reviewer_name}
+              </p>
+              <p className="text-xs text-gray-400">{review.reviewer_email}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Instructor</p>
+              <p className="text-gray-800 font-medium">
+                {review.instructor_name}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Semester</p>
+              <p className="text-gray-800 font-medium">
+                {review.semester_taken}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Submitted</p>
+              <p className="text-gray-800 font-medium">{review.created_at}</p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-400 mb-1.5">Review</p>
+            <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-lg p-3 border border-gray-100">
+              {review.review_text}
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-            {/* Search */}
-            <div className="relative w-full sm:w-[340px]">
-              <Search
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search reviews..."
-                className="w-full h-11 rounded-2xl border border-gray-200 bg-white pl-11 pr-4 text-sm outline-none"
-              />
+          <div className="flex items-center gap-6">
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Overall rating</p>
+              <RatingStars value={review.overall_rating} size={16} />
             </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Community votes</p>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="flex items-center gap-1 text-green-600">
+                  <ArrowBigUp size={16} /> {review.upvotes}
+                </span>
+                <span className="flex items-center gap-1 text-red-500">
+                  <ArrowBigDown size={16} /> {review.downvotes}
+                </span>
+                <span className="text-gray-500">
+                  Net:{" "}
+                  <span className="font-semibold text-gray-800">
+                    {netVotes > 0 ? `+${netVotes}` : netVotes}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
 
-            {/* Filter */}
-            <div className="relative w-full sm:w-[170px]">
-              <select
-                value={ratingFilter}
-                onChange={(e) => setRatingFilter(e.target.value as any)}
-                className="w-full h-11 rounded-2xl border border-gray-200 bg-white px-4 pr-10 text-sm text-gray-700 outline-none appearance-none"
-              >
-                <option value="all">All ratings</option>
-                <option value="5">5+</option>
-                <option value="4">4+</option>
-                <option value="3">3+</option>
-                <option value="2">2+</option>
-                <option value="1">1+</option>
-              </select>
-              <ChevronDown
-                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
-              />
+          <div>
+            <p className="text-xs text-gray-400 mb-2">Rating breakdown</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                {
+                  label: "Exam difficulty",
+                  value: review.exam_difficulty_rating,
+                  color: "bg-blue-100 text-blue-800",
+                },
+                {
+                  label: "Workload",
+                  value: review.workload_rating,
+                  color: "bg-green-100 text-green-800",
+                },
+                {
+                  label: "Attendance",
+                  value: review.attendance_rating,
+                  color: "bg-yellow-100 text-yellow-800",
+                },
+                {
+                  label: "Grading",
+                  value: review.grading_rating,
+                  color: "bg-purple-100 text-purple-800",
+                },
+              ].map((m) => (
+                <div
+                  key={m.label}
+                  className={`rounded-lg px-3 py-2 ${m.color}`}
+                >
+                  <p className="text-[11px] opacity-70">{m.label}</p>
+                  <p className="text-base font-semibold">
+                    {m.value}{" "}
+                    <span className="text-xs font-normal opacity-60">/ 5</span>
+                  </p>
+                </div>
+              ))}
             </div>
+          </div>
+
+          <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2.5 text-xs text-gray-400">
+            review_id:{" "}
+            <span className="text-gray-600 font-mono">{review.review_id}</span>
           </div>
         </div>
 
-        {/* Table container */}
-        <div className="mt-6 rounded-2xl border border-gray-200 bg-white overflow-hidden">
-          {/* Desktop table */}
-          <div className="hidden lg:block">
-            <div className="grid grid-cols-[220px_150px_220px_110px_220px_90px_95px_70px] px-6 py-4 text-xs text-gray-500">
-              <div>Course</div>
-              <div>Professor</div>
-              <div>Review</div>
-              <div>Rating</div>
-              <div>Metrics</div>
-              <div>Votes</div>
-              <div>Date</div>
-              <div className="text-right">Actions</div>
-            </div>
+        <div className="flex justify-end gap-3 px-5 py-4 border-t border-gray-100">
+          <button
+            onClick={() => {
+              onDelete(review.review_id);
+              onClose();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md text-red-600 border border-red-200 hover:bg-red-50 transition"
+          >
+            <Trash2 size={14} /> Delete review
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            <div className="h-px bg-gray-100" />
+// ---------------------------------------------------------------------------
+// Seed data — defined at module level so it is referentially stable.
+// TO INTEGRATE: remove SEED_REVIEWS entirely and initialise reviews state
+// from your API: useState<ReviewRow[]>([]) + useEffect fetch call below.
+// ---------------------------------------------------------------------------
+const SEED_REVIEWS: ReviewRow[] = [
+  {
+    review_id: "r1",
+    reviewer_name: "Aya Harb",
+    reviewer_email: "aya.harb@aub.edu.lb",
+    course_code: "CMPS 214",
+    course_title: "Data Structures and Algorithms",
+    university: "American University of Beirut",
+    department: "Computer Science",
+    semester_taken: "Fall 2023",
+    review_text:
+      "This course was tough but rewarding. Dr. Mitchell is passionate about the subject and genuinely wants students to succeed. The assignments pushed me to think algorithmically in ways I hadn't before. Office hours were incredibly helpful and the TAs were knowledgeable.",
+    instructor_name: "Dr. Sarah Mitchell",
+    overall_rating: 4.6,
+    grading_rating: 5.0,
+    workload_rating: 4.0,
+    attendance_rating: 3.0,
+    exam_difficulty_rating: 4.0,
+    upvotes: 47,
+    downvotes: 23,
+    created_at: "2024-01-15",
+  },
+  {
+    review_id: "r2",
+    reviewer_name: "Nour Haddad",
+    reviewer_email: "nour.haddad@aub.edu.lb",
+    course_code: "MATH 201",
+    course_title: "Calculus II",
+    university: "American University of Beirut",
+    department: "Mathematics",
+    semester_taken: "Spring 2024",
+    review_text:
+      "Great explanations and lots of practice problems. Highly recommended for anyone serious about math. Dr. Smith breaks down complex topics in an approachable way and the weekly problem sets are well designed.",
+    instructor_name: "Dr. John Smith",
+    overall_rating: 4.2,
+    grading_rating: 4.0,
+    workload_rating: 4.0,
+    attendance_rating: 2.0,
+    exam_difficulty_rating: 3.0,
+    upvotes: 31,
+    downvotes: 6,
+    created_at: "2024-02-03",
+  },
+  {
+    review_id: "r3",
+    reviewer_name: "Rami Khoury",
+    reviewer_email: "rami.khoury@lau.edu.lb",
+    course_code: "ECON 101",
+    course_title: "Principles of Microeconomics",
+    university: "Lebanese American University",
+    department: "Economics",
+    semester_taken: "Fall 2023",
+    review_text:
+      "Dry material but the professor made it engaging. Exams were tricky and required deep understanding beyond memorization. Grading was harsh on partial credit.",
+    instructor_name: "Dr. Lara Nassar",
+    overall_rating: 2.8,
+    grading_rating: 2.0,
+    workload_rating: 3.0,
+    attendance_rating: 4.0,
+    exam_difficulty_rating: 2.0,
+    upvotes: 8,
+    downvotes: 14,
+    created_at: "2024-03-10",
+  },
+];
 
-            {filtered.map((r) => (
-              <div key={r.id}>
-                <div className="grid grid-cols-[220px_150px_220px_110px_220px_90px_95px_70px] px-6 py-5 items-center text-sm">
-                  {/* Course + users */}
-                  <div className="min-w-0">
-                    <div className="font-semibold text-black leading-snug break-words">
-                      {r.course}
-                    </div>
+export default function AdminReviewsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [ratingFilter, setRatingFilter] = useState<
+    "all" | "5" | "4" | "3" | "2" | "1"
+  >("all");
+  const [universityFilter, setUniversityFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [semesterFilter, setSemesterFilter] = useState("all");
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [detailReview, setDetailReview] = useState<ReviewRow | null>(null);
 
-                    <div className="mt-2 text-[11px] text-gray-500 space-y-1">
-                      <div className="truncate">
-                        Review by{" "}
-                        <span className="font-medium text-gray-700">
-                          {r.reviewUser}
-                        </span>
-                      </div>
-                      <div className="truncate">
-                        Comment by{" "}
-                        <span className="font-medium text-gray-700">
-                          {r.commentUser}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+  // Stable state — React Compiler can track this correctly as a useMemo dependency.
+  // TO INTEGRATE: replace SEED_REVIEWS with [] and add:
+  //   useEffect(() => {
+  //     fetch("/api/admin/reviews")
+  //       .then((r) => r.json())
+  //       .then((data: ReviewRow[]) => setReviews(data))
+  //       .catch(() => {/* handle error */});
+  //   }, []);
+  const [reviews, setReviews] = useState<ReviewRow[]>(SEED_REVIEWS);
 
-                  {/* Professor */}
-                  <div className="text-gray-700 truncate min-w-0">
-                    {r.professor}
-                  </div>
+  const universities = unique(reviews.map((r) => r.university));
+  const departments = unique(
+    reviews
+      .filter(
+        (r) => universityFilter === "all" || r.university === universityFilter,
+      )
+      .map((r) => r.department),
+  );
+  const semesters = unique(reviews.map((r) => r.semester_taken));
 
-                  {/* Review */}
-                  <div className="text-gray-700 min-w-0">
-                    {clampText(r.reviewText, 34)}
-                  </div>
+  const activeFilterCount = [
+    ratingFilter !== "all",
+    universityFilter !== "all",
+    departmentFilter !== "all",
+    semesterFilter !== "all",
+    sortKey !== "newest",
+  ].filter(Boolean).length;
 
-                  {/* Rating */}
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Star size={16} className="text-gray-400" />
-                    <span className="font-medium">{r.rating.toFixed(1)}</span>
-                  </div>
+  function resetFilters() {
+    setRatingFilter("all");
+    setUniversityFilter("all");
+    setDepartmentFilter("all");
+    setSemesterFilter("all");
+    setSortKey("newest");
+  }
 
-                  {/* Metrics */}
-                  <div className="flex flex-wrap gap-1.5 min-w-0">
-                    {r.metrics.map((m) => (
-                      <span
-                        key={m.label}
-                        className={`px-2 py-0.5 rounded-md text-xs ${toneClasses(
-                          m.tone
-                        )}`}
-                      >
-                        {m.label}:{m.value}
-                      </span>
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    let result = reviews.filter((r) => {
+      const matchesSearch =
+        !q ||
+        r.course_title.toLowerCase().includes(q) ||
+        r.course_code.toLowerCase().includes(q) ||
+        r.reviewer_name.toLowerCase().includes(q) ||
+        r.instructor_name.toLowerCase().includes(q) ||
+        r.university.toLowerCase().includes(q) ||
+        r.department.toLowerCase().includes(q) ||
+        r.review_text.toLowerCase().includes(q);
+      return (
+        matchesSearch &&
+        (ratingFilter === "all" ||
+          Math.floor(r.overall_rating).toString() === ratingFilter) &&
+        (universityFilter === "all" || r.university === universityFilter) &&
+        (departmentFilter === "all" || r.department === departmentFilter) &&
+        (semesterFilter === "all" || r.semester_taken === semesterFilter)
+      );
+    });
+    return [...result].sort((a, b) => {
+      switch (sortKey) {
+        case "newest":
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        case "oldest":
+          return (
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        case "rating_high":
+          return b.overall_rating - a.overall_rating;
+        case "rating_low":
+          return a.overall_rating - b.overall_rating;
+        case "most_votes":
+          return b.upvotes + b.downvotes - (a.upvotes + a.downvotes);
+        default:
+          return 0;
+      }
+    });
+  }, [
+    reviews,
+    searchQuery,
+    ratingFilter,
+    universityFilter,
+    departmentFilter,
+    semesterFilter,
+    sortKey,
+  ]);
+
+  // TO INTEGRATE: replace body with fetch DELETE then remove from state, e.g.:
+  //   await fetch(`/api/admin/reviews/${review_id}`, { method: "DELETE" });
+  //   setReviews((prev) => prev.filter((r) => r.review_id !== review_id));
+  function handleDelete(review_id: string) {
+    setPendingDelete(null);
+    setReviews((prev) => prev.filter((r) => r.review_id !== review_id));
+  }
+
+  const closeDetail = useCallback(() => setDetailReview(null), []);
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-6">
+      {detailReview && (
+        <ReviewDetailModal
+          review={detailReview}
+          onClose={closeDetail}
+          onDelete={(id) => {
+            setDetailReview(null);
+            handleDelete(id);
+          }}
+        />
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-black">
+            Review Management
+          </h1>
+          <p className="text-sm text-gray-500">
+            Moderate and manage student reviews
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-row gap-2 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by course, reviewer, instructor, university..."
+            className="w-full h-11 pl-10 pr-4 text-gray-900 placeholder-gray-400 rounded-md border border-gray-300 transition-colors focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
+          />
+        </div>
+        <div className="relative hidden sm:block">
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="h-11 pl-3 pr-9 rounded-md border border-gray-300 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="rating_high">Highest rated</option>
+            <option value="rating_low">Lowest rated</option>
+            <option value="most_votes">Most voted</option>
+          </select>
+          <ChevronDown
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+            size={15}
+          />
+        </div>
+        <button
+          onClick={() => setShowFilters((p) => !p)}
+          className="relative h-11 px-3 flex items-center justify-center gap-1.5 rounded-md border border-gray-300 hover:bg-gray-50 transition text-sm text-gray-700"
+        >
+          <SlidersHorizontal size={16} />
+          <span className="hidden sm:inline">Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 h-4 w-4 flex items-center justify-center rounded-full bg-[#6155F5] text-white text-[10px] font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {showFilters && (
+        <div className="mt-3 p-4 rounded-xl border border-gray-200 bg-gray-50">
+          <div className="flex flex-wrap gap-3 items-end">
+            {[
+              {
+                label: "Overall rating",
+                value: ratingFilter,
+                onChange: setRatingFilter,
+                options: [
+                  { value: "all", label: "All ratings" },
+                  ...["5", "4", "3", "2", "1"].map((v) => ({
+                    value: v,
+                    label: `${v} ★`,
+                  })),
+                ],
+              },
+              {
+                label: "University",
+                value: universityFilter,
+                onChange: (v: string) => {
+                  setUniversityFilter(v);
+                  setDepartmentFilter("all");
+                },
+                options: [
+                  { value: "all", label: "All universities" },
+                  ...universities.map((u) => ({ value: u, label: u })),
+                ],
+              },
+              {
+                label: "Department",
+                value: departmentFilter,
+                onChange: setDepartmentFilter,
+                options: [
+                  { value: "all", label: "All departments" },
+                  ...departments.map((d) => ({ value: d, label: d })),
+                ],
+              },
+              {
+                label: "Semester",
+                value: semesterFilter,
+                onChange: setSemesterFilter,
+                options: [
+                  { value: "all", label: "All semesters" },
+                  ...semesters.map((s) => ({ value: s, label: s })),
+                ],
+              },
+            ].map(({ label, value, onChange, options }) => (
+              <div key={label} className="flex flex-col gap-1">
+                <label className="text-xs text-gray-500 font-medium">
+                  {label}
+                </label>
+                <div className="relative">
+                  <select
+                    value={value}
+                    onChange={(e) =>
+                      (onChange as (v: string) => void)(e.target.value)
+                    }
+                    className="h-9 pl-3 pr-8 rounded-md border border-gray-300 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:border-[#6155F5]"
+                  >
+                    {options.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
                     ))}
-                  </div>
-
-                  {/* Votes */}
-                  <VotesDisplay upvotes={r.upvotes} downvotes={r.downvotes} />
-
-                  {/* Date */}
-                  <div className="text-gray-700 text-xs">{r.date}</div>
-
-                  {/* Actions */}
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      className="p-2 rounded-lg hover:bg-gray-50"
-                      aria-label="Delete review"
-                      onClick={() =>
-                        alert(`Delete clicked for ${r.id} (hook API later).`)
-                      }
-                    >
-                      <Trash2 size={16} className="text-gray-500" />
-                    </button>
-                  </div>
+                  </select>
+                  <ChevronDown
+                    className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={13}
+                  />
                 </div>
-
-                <div className="h-px bg-gray-100" />
               </div>
             ))}
-
-            {filtered.length === 0 && (
-              <div className="py-10 text-center text-sm text-gray-500">
-                No reviews found.
+            <div className="flex flex-col gap-1 sm:hidden">
+              <label className="text-xs text-gray-500 font-medium">
+                Sort by
+              </label>
+              <div className="relative">
+                <select
+                  value={sortKey}
+                  onChange={(e) => setSortKey(e.target.value as SortKey)}
+                  className="h-9 pl-3 pr-8 rounded-md border border-gray-300 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:border-[#6155F5]"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="rating_high">Highest rated</option>
+                  <option value="rating_low">Lowest rated</option>
+                  <option value="most_votes">Most voted</option>
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={13}
+                />
               </div>
+            </div>
+            {activeFilterCount > 0 && (
+              <button
+                onClick={resetFilters}
+                className="h-9 px-3 flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition"
+              >
+                <X size={13} /> Reset
+              </button>
             )}
           </div>
+        </div>
+      )}
 
-          {/* Mobile cards */}
-          <div className="lg:hidden p-4 sm:p-6 space-y-4">
-            {filtered.map((r) => (
-              <div
-                key={r.id}
-                className="rounded-2xl border border-gray-200 bg-white p-5"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="text-lg font-semibold text-black break-words">
-                      {r.course}
-                    </div>
-                    <div className="mt-1 text-sm text-gray-500">
-                      {r.professor}
-                    </div>
+      <p className="mt-3 text-xs text-gray-400">
+        {filtered.length} review{filtered.length !== 1 ? "s" : ""} found
+      </p>
 
-                    <div className="mt-2 text-xs text-gray-500 space-y-1">
-                      <div>
-                        Review by{" "}
-                        <span className="font-medium text-gray-700">
-                          {r.reviewUser}
-                        </span>
-                      </div>
-                      <div>
-                        Comment by{" "}
-                        <span className="font-medium text-gray-700">
-                          {r.commentUser}
-                        </span>
-                      </div>
+      <div className="hidden md:block mt-2 rounded-xl border border-gray-200 bg-white overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-500">
+            <tr>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Course</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">
+                Reviewer
+              </th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">
+                Instructor
+              </th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">
+                Semester
+              </th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Review</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Overall</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Metrics</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Votes</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Date</th>
+              <th className="text-right px-4 py-3 whitespace-nowrap">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={10}
+                  className="px-4 py-12 text-center text-gray-400 text-sm"
+                >
+                  No reviews match your search or filters.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((r) => (
+                <tr
+                  key={r.review_id}
+                  onClick={() => setDetailReview(r)}
+                  className="border-t border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-gray-900 whitespace-nowrap">
+                      {r.course_code}
+                    </p>
+                    <p className="text-xs text-gray-500 max-w-40 truncate">
+                      {r.course_title}
+                    </p>
+                    <p className="text-xs text-gray-400 max-w-40 truncate">
+                      {r.department}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="whitespace-nowrap font-medium text-gray-800">
+                      {r.reviewer_name}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate max-w-37.5">
+                      {r.reviewer_email}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-700">
+                    {r.instructor_name}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-700">
+                    {r.semester_taken}
+                  </td>
+                  <td className="px-4 py-3 max-w-50">
+                    <p className="text-gray-600 text-xs line-clamp-2">
+                      {r.review_text}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <RatingStars value={r.overall_rating} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="grid grid-cols-1 gap-1">
+                      <MetricBadge
+                        label="Exam"
+                        value={r.exam_difficulty_rating}
+                        color="bg-blue-100 text-blue-800"
+                      />
+                      <MetricBadge
+                        label="Workload"
+                        value={r.workload_rating}
+                        color="bg-green-100 text-green-800"
+                      />
+                      <MetricBadge
+                        label="Attendance"
+                        value={r.attendance_rating}
+                        color="bg-yellow-100 text-yellow-800"
+                      />
+                      <MetricBadge
+                        label="Grading"
+                        value={r.grading_rating}
+                        color="bg-purple-100 text-purple-800"
+                      />
                     </div>
-                  </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <VoteDisplay upvotes={r.upvotes} downvotes={r.downvotes} />
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-xs">
+                    {r.created_at}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div
+                      className="flex justify-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => handleDelete(r.review_id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label="Delete review"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
+      <div className="md:hidden mt-2 flex flex-col gap-4">
+        {filtered.length === 0 ? (
+          <p className="text-gray-400 text-sm text-center py-8">
+            No reviews match your search or filters.
+          </p>
+        ) : (
+          filtered.map((r) => (
+            <div
+              key={r.review_id}
+              onClick={() => setDetailReview(r)}
+              className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm cursor-pointer hover:border-gray-300 transition-colors"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {r.course_code}
+                  </h3>
+                  <p className="text-sm text-gray-500">{r.course_title}</p>
+                  <p className="text-xs text-gray-400">
+                    {r.department} · {r.university}
+                  </p>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
                   <button
-                    type="button"
-                    className="p-2 rounded-lg hover:bg-gray-50"
+                    onClick={() => handleDelete(r.review_id)}
+                    className="text-gray-400 hover:text-red-500 transition-colors p-1"
                     aria-label="Delete review"
-                    onClick={() =>
-                      alert(`Delete clicked for ${r.id} (hook API later).`)
-                    }
                   >
-                    <Trash2 size={18} className="text-gray-500" />
+                    <Trash2 size={16} />
                   </button>
                 </div>
-
-                <p className="mt-4 text-gray-700">{r.reviewText}</p>
-
-                <div className="mt-4 flex items-center gap-2 text-gray-700">
-                  <Star size={18} className="text-gray-400" />
-                  <span className="font-medium">{r.rating.toFixed(1)}</span>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600">{r.date}</span>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {r.metrics.map((m) => (
-                    <span
-                      key={m.label}
-                      className={`px-3 py-1 rounded-lg text-sm ${toneClasses(
-                        m.tone
-                      )}`}
-                    >
-                      {m.label}:{m.value}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="mt-4">
-                  <VotesDisplay upvotes={r.upvotes} downvotes={r.downvotes} />
-                </div>
               </div>
-            ))}
-
-            {filtered.length === 0 && (
-              <div className="text-center text-sm text-gray-500 py-10">
-                No reviews found.
+              <div className="mt-3 text-sm text-gray-600 space-y-1">
+                <p>
+                  <span className="text-gray-400">Reviewer:</span>{" "}
+                  <span className="font-medium text-gray-800">
+                    {r.reviewer_name}
+                  </span>
+                  <span className="text-gray-400 text-xs ml-1">
+                    ({r.reviewer_email})
+                  </span>
+                </p>
+                <p>
+                  <span className="text-gray-400">Instructor:</span>{" "}
+                  {r.instructor_name}
+                </p>
+                <p>
+                  <span className="text-gray-400">Semester:</span>{" "}
+                  {r.semester_taken}
+                </p>
+                <p>
+                  <span className="text-gray-400">Date:</span> {r.created_at}
+                </p>
               </div>
-            )}
-          </div>
-        </div>
+              <p className="mt-3 text-sm text-gray-600 line-clamp-2">
+                {r.review_text}
+              </p>
+              <div className="mt-3 flex items-center gap-4">
+                <RatingStars value={r.overall_rating} />
+                <VoteDisplay upvotes={r.upvotes} downvotes={r.downvotes} />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <MetricBadge
+                  label="Exam"
+                  value={r.exam_difficulty_rating}
+                  color="bg-blue-100 text-blue-800"
+                />
+                <MetricBadge
+                  label="Workload"
+                  value={r.workload_rating}
+                  color="bg-green-100 text-green-800"
+                />
+                <MetricBadge
+                  label="Attendance"
+                  value={r.attendance_rating}
+                  color="bg-yellow-100 text-yellow-800"
+                />
+                <MetricBadge
+                  label="Grading"
+                  value={r.grading_rating}
+                  color="bg-purple-100 text-purple-800"
+                />
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
