@@ -70,11 +70,11 @@ export async function POST(req: Request) {
       // Upsert the token — one pending reset per user at a time
       await pool.query(
         `INSERT INTO password_reset_token (user_id, token, expires_at, used_at)
-         VALUES (?, ?, ?, NULL)
-         ON DUPLICATE KEY UPDATE
-           token      = VALUES(token),
-           expires_at = VALUES(expires_at),
-           used_at    = NULL`,
+          VALUES (?, ?, ?, NULL)
+          ON DUPLICATE KEY UPDATE
+            token      = VALUES(token),
+            expires_at = VALUES(expires_at),
+            used_at    = NULL`,
         [user.user_id, resetToken, expiresAt],
       );
 
