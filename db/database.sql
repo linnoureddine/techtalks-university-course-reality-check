@@ -1,292 +1,176 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Jan 31, 2026 at 04:15 PM
--- Server version: 8.0.41
--- PHP Version: 8.2.12
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+-- --------------------------------------------------------
+-- Coursality Database Schema
+-- --------------------------------------------------------
+SET SQL_MODE = "STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `course_checker`
---
+CREATE DATABASE IF NOT EXISTS coursality;
+USE coursality;
 
 -- --------------------------------------------------------
-
---
--- Table structure for table `course`
---
-
-CREATE TABLE `course` (
-  `course_id` int NOT NULL,
-  `code` varchar(50) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `description` text,
-  `credits` int DEFAULT NULL,
-  `language` varchar(100) DEFAULT NULL,
-  `level` varchar(100) DEFAULT NULL,
-  `department_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
+-- Table: university
 -- --------------------------------------------------------
-
---
--- Table structure for table `course_prerequisite`
---
-
-CREATE TABLE `course_prerequisite` (
-  `course_id` int NOT NULL,
-  `prereq_course_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `department`
---
-
-CREATE TABLE `department` (
-  `department_id` int NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `university_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `feedback`
---
-
-CREATE TABLE `feedback` (
-  `feedback_id` int NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `rating` int DEFAULT NULL,
-  `message` text,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `user_id` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `review`
---
-
-CREATE TABLE `review` (
-  `review_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `course_id` int NOT NULL,
-  `semester_taken` varchar(100) DEFAULT NULL,
-  `review_text` text,
-  `instructor_name` varchar(255) DEFAULT NULL,
-  `overall_rating` decimal(3,2) DEFAULT NULL,
-  `grading_rating` decimal(3,2) DEFAULT NULL,
-  `workload_rating` decimal(3,2) DEFAULT NULL,
-  `attendance_rating` decimal(3,2) DEFAULT NULL,
-  `exam_difficulty_rating` decimal(3,2) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `review_vote`
---
-
-CREATE TABLE `review_vote` (
-  `review_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `vote_value` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `university`
---
-
 CREATE TABLE `university` (
-  `university_id` int NOT NULL,
-  `name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `university_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`university_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Table: department
+-- --------------------------------------------------------
+CREATE TABLE `department` (
+  `department_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `university_id` INT UNSIGNED NOT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`department_id`),
+  KEY `idx_department_university` (`university_id`),
+  CONSTRAINT `fk_department_university`
+    FOREIGN KEY (`university_id`) REFERENCES `university`(`university_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `user`
---
-
+-- --------------------------------------------------------
+-- Table: user
+-- --------------------------------------------------------
 CREATE TABLE `user` (
-  `user_id` int NOT NULL,
-  `full_name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `role` varchar(50) DEFAULT NULL,
-  `university_id` int DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `full_name` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  `role` ENUM('student','super_admin') NOT NULL DEFAULT 'student',
+  `university_id` INT UNSIGNED DEFAULT NULL,
+  -- Email verification: token is set on registration, cleared on verification
+  `email_verified_at` TIMESTAMP NULL DEFAULT NULL,
+  `email_verification_token` VARCHAR(255) NULL DEFAULT NULL,
+  -- Password reset support
+  `password_reset_token` VARCHAR(255) NULL DEFAULT NULL,
+  `password_reset_expires_at` TIMESTAMP NULL DEFAULT NULL,
+  -- Soft delete
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `uniq_user_email` (`email`),
+  KEY `idx_user_university` (`university_id`),
+  KEY `idx_user_email_verified` (`email_verified_at`),
+  CONSTRAINT `fk_user_university`
+    FOREIGN KEY (`university_id`) REFERENCES `university`(`university_id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for dumped tables
---
+-- --------------------------------------------------------
+-- Table: course
+-- --------------------------------------------------------
+CREATE TABLE `course` (
+  `course_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(50) NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `description` TEXT NOT NULL,
+  `credits` TINYINT UNSIGNED NOT NULL,   -- credits realistically 1-9; TINYINT saves space and rejects negatives
+  `language` ENUM('English','Arabic','French','German','Spanish','Other') NOT NULL DEFAULT 'English',
+  `level` ENUM('undergraduate','graduate','doctoral','professional') NOT NULL,
+  `department_id` INT UNSIGNED NOT NULL,
+  -- Soft delete: preserves reviews when a course is retired
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`course_id`),
+  UNIQUE KEY `uniq_course_code_department` (`code`, `department_id`),
+  KEY `idx_course_department` (`department_id`),
+  KEY `idx_course_level` (`level`),
+  CONSTRAINT `fk_course_department`
+    FOREIGN KEY (`department_id`) REFERENCES `department`(`department_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `course`
---
-ALTER TABLE `course`
-  ADD PRIMARY KEY (`course_id`),
-  ADD KEY `department_id` (`department_id`);
+-- --------------------------------------------------------
+-- Table: course_prerequisite
+-- --------------------------------------------------------
+CREATE TABLE `course_prerequisite` (
+  `course_id` INT UNSIGNED NOT NULL,
+  `prereq_course_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`course_id`, `prereq_course_id`),
+  KEY `idx_prereq_course` (`prereq_course_id`),
+  CONSTRAINT `fk_prereq_course`
+    FOREIGN KEY (`course_id`) REFERENCES `course`(`course_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_prereq_prereq_course`
+    FOREIGN KEY (`prereq_course_id`) REFERENCES `course`(`course_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `course_prerequisite`
---
-ALTER TABLE `course_prerequisite`
-  ADD PRIMARY KEY (`course_id`,`prereq_course_id`),
-  ADD KEY `prereq_course_id` (`prereq_course_id`);
+-- --------------------------------------------------------
+-- Table: review
+-- --------------------------------------------------------
+CREATE TABLE `review` (
+  `review_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `course_id` INT UNSIGNED NOT NULL,
+  `semester_taken` VARCHAR(50) NOT NULL,
+  `review_text` TEXT NOT NULL,
+  `instructor_name` VARCHAR(255) NOT NULL,
+  -- All ratings use DECIMAL(3,2) consistently, range 0.00–5.00
+  `overall_rating` DECIMAL(3,2) NOT NULL CHECK (`overall_rating` BETWEEN 0 AND 5),
+  `grading_rating` DECIMAL(3,2) NOT NULL CHECK (`grading_rating` BETWEEN 0 AND 5),
+  `workload_rating` DECIMAL(3,2) NOT NULL CHECK (`workload_rating` BETWEEN 0 AND 5),
+  `attendance_rating` DECIMAL(3,2) NOT NULL CHECK (`attendance_rating` BETWEEN 0 AND 5),
+  `exam_difficulty_rating` DECIMAL(3,2) NOT NULL CHECK (`exam_difficulty_rating` BETWEEN 0 AND 5),
+  -- Soft delete: allows moderation without destroying vote history
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`review_id`),
+  -- One review per user per course
+  UNIQUE KEY `uniq_review_user_course` (`user_id`, `course_id`),
+  KEY `idx_review_user` (`user_id`),
+  KEY `idx_review_course` (`course_id`),
+  CONSTRAINT `fk_review_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_review_course`
+    FOREIGN KEY (`course_id`) REFERENCES `course`(`course_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `department`
---
-ALTER TABLE `department`
-  ADD PRIMARY KEY (`department_id`),
-  ADD KEY `university_id` (`university_id`);
+-- --------------------------------------------------------
+-- Table: review_vote
+-- --------------------------------------------------------
+CREATE TABLE `review_vote` (
+  `review_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `vote_value` TINYINT NOT NULL CHECK (`vote_value` IN (-1, 1)),
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`review_id`, `user_id`),
+  KEY `idx_vote_user` (`user_id`),
+  CONSTRAINT `fk_vote_review`
+    FOREIGN KEY (`review_id`) REFERENCES `review`(`review_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_vote_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `feedback`
---
-ALTER TABLE `feedback`
-  ADD PRIMARY KEY (`feedback_id`),
-  ADD KEY `user_id` (`user_id`);
+-- --------------------------------------------------------
+-- Table: feedback
+-- --------------------------------------------------------
+CREATE TABLE `feedback` (
+  `feedback_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `rating` DECIMAL(3,2) NOT NULL CHECK (`rating` BETWEEN 0 AND 5),  -- aligned with review ratings
+  `message` TEXT NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`feedback_id`),
+  KEY `idx_feedback_user` (`user_id`),
+  CONSTRAINT `fk_feedback_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `review`
---
-ALTER TABLE `review`
-  ADD PRIMARY KEY (`review_id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `course_id` (`course_id`);
-
---
--- Indexes for table `review_vote`
---
-ALTER TABLE `review_vote`
-  ADD PRIMARY KEY (`review_id`,`user_id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Indexes for table `university`
---
-ALTER TABLE `university`
-  ADD PRIMARY KEY (`university_id`);
-
---
--- Indexes for table `user`
---
-ALTER TABLE `user`
-  ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `university_id` (`university_id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `course`
---
-ALTER TABLE `course`
-  MODIFY `course_id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `department`
---
-ALTER TABLE `department`
-  MODIFY `department_id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `feedback`
---
-ALTER TABLE `feedback`
-  MODIFY `feedback_id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `review`
---
-ALTER TABLE `review`
-  MODIFY `review_id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `university`
---
-ALTER TABLE `university`
-  MODIFY `university_id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `user`
---
-ALTER TABLE `user`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `course`
---
-ALTER TABLE `course`
-  ADD CONSTRAINT `course_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `department` (`department_id`);
-
---
--- Constraints for table `course_prerequisite`
---
-ALTER TABLE `course_prerequisite`
-  ADD CONSTRAINT `course_prerequisite_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `course` (`course_id`),
-  ADD CONSTRAINT `course_prerequisite_ibfk_2` FOREIGN KEY (`prereq_course_id`) REFERENCES `course` (`course_id`);
-
---
--- Constraints for table `department`
---
-ALTER TABLE `department`
-  ADD CONSTRAINT `department_ibfk_1` FOREIGN KEY (`university_id`) REFERENCES `university` (`university_id`);
-
---
--- Constraints for table `feedback`
---
-ALTER TABLE `feedback`
-  ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
-
---
--- Constraints for table `review`
---
-ALTER TABLE `review`
-  ADD CONSTRAINT `review_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
-  ADD CONSTRAINT `review_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `course` (`course_id`);
-
---
--- Constraints for table `review_vote`
---
-ALTER TABLE `review_vote`
-  ADD CONSTRAINT `review_vote_ibfk_1` FOREIGN KEY (`review_id`) REFERENCES `review` (`review_id`),
-  ADD CONSTRAINT `review_vote_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
-
---
--- Constraints for table `user`
---
-ALTER TABLE `user`
-  ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`university_id`) REFERENCES `university` (`university_id`);
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
