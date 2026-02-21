@@ -13,7 +13,6 @@ type User = {
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const [user, setUser] = useState<User | null>(null);
 
@@ -41,7 +40,6 @@ export default function NavBar() {
   return (
     <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center gap-4 w-full">
-        {/* Hamburger Menu - always on the left */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="lg:hidden text-lg text-gray-600"
@@ -67,38 +65,7 @@ export default function NavBar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center h-9">
-            {!searchOpen ? (
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="p-1.5 transition-colors group h-9 w-9 flex items-center justify-center"
-                aria-label="Search"
-                type="button"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-600 group-hover:text-[#6155F5] transition-colors"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </button>
-            ) : (
-              <input
-                autoFocus
-                type="text"
-                placeholder="Search..."
-                className="border border-gray-300 rounded px-3 h-9 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-32 md:w-56"
-                onBlur={() => setSearchOpen(false)}
-              />
-            )}
-          </div>
+          
 
           <div className="relative" ref={accountRef}>
             {!user ? (

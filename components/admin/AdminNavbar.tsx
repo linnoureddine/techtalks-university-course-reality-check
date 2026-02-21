@@ -11,7 +11,6 @@ import {
   Star,
   Users,
   MessageSquare,
-  Search,
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
@@ -95,18 +94,6 @@ export default function AdminNavbar() {
               Coursality
             </span>
           </Link>
-
-          <div className="flex-1 flex justify-center md:ml-16">
-            <div className="relative w-full max-w-55 sm:max-w-[320px] md:max-w-95">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8A8A8A]">
-                <Search size={20} />
-              </span>
-              <input
-                placeholder="Search..."
-                className="w-full h-11 rounded-2xl border border-gray-200 bg-white pl-12 pr-4 text-sm outline-none"
-              />
-            </div>
-          </div>
 
           <div className="ml-auto relative" ref={userMenuRef}>
             <button
