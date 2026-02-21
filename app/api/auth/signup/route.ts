@@ -39,7 +39,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const eduLbEmailRegex = /^[^\s@]+@[^\s@]+\.edu\.lb$/i;
+    const eduLbEmailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.edu\.lb$/i;
     if (!eduLbEmailRegex.test(email)) {
       return NextResponse.json(
         {
@@ -51,9 +52,29 @@ export async function POST(req: Request) {
       );
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       return NextResponse.json(
-        { success: false, message: "password must be at least 6 characters" },
+        { success: false, message: "Password must be at least 8 characters" },
+        { status: 400 },
+      );
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Password must contain at least one number",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Password must contain at least one special character",
+        },
         { status: 400 },
       );
     }
