@@ -1,0 +1,642 @@
+"use client";
+
+import { useMemo, useState, useEffect, useCallback } from "react";
+import {
+  Search,
+  Star,
+  Trash2,
+  ChevronDown,
+  SlidersHorizontal,
+  X,
+  MessageSquare,
+} from "lucide-react";
+
+// Matches: feedback JOIN user
+type FeedbackRow = {
+  feedback_id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  rating: number; // DECIMAL(3,2), 0–5
+  message: string;
+  created_at: string;
+};
+
+type SortKey = "newest" | "oldest" | "rating_high" | "rating_low";
+
+function RatingStars({
+  value,
+  large = false,
+}: {
+  value: number;
+  large?: boolean;
+}) {
+  const filled = Math.round(value);
+  const sz = large ? 16 : 12;
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="flex gap-0.5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            size={sz}
+            className={
+              i < filled
+                ? "text-amber-400 fill-amber-400"
+                : "text-gray-200 fill-gray-200"
+            }
+          />
+        ))}
+      </div>
+      <span
+        className={`font-medium text-gray-700 ${large ? "text-base" : "text-sm"}`}
+      >
+        {value.toFixed(2)}
+      </span>
+    </div>
+  );
+}
+
+function RatingBadge({ value }: { value: number }) {
+  if (value >= 4)
+    return (
+      <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+        Positive
+      </span>
+    );
+  if (value >= 3)
+    return (
+      <span className="px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+        Neutral
+      </span>
+    );
+  return (
+    <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+      Negative
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Detail modal
+// ---------------------------------------------------------------------------
+function FeedbackDetailModal({
+  feedback,
+  onClose,
+  onDelete,
+}: {
+  feedback: FeedbackRow;
+  onClose: () => void;
+  onDelete: (id: string) => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 p-5 border-b border-gray-100">
+          <div>
+            <p className="font-semibold text-gray-900">{feedback.full_name}</p>
+            <p className="text-sm text-gray-400 mt-0.5">{feedback.email}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 space-y-5">
+          {/* Rating + sentiment + date */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Rating</p>
+              <RatingStars value={feedback.rating} large />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Sentiment</p>
+              <RatingBadge value={feedback.rating} />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Submitted</p>
+              <p className="text-gray-800 font-medium">{feedback.created_at}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Score</p>
+              <p className="text-gray-800 font-medium">
+                {feedback.rating.toFixed(2)} / 5.00
+              </p>
+            </div>
+          </div>
+
+          {/* Message */}
+          <div>
+            <p className="text-xs text-gray-400 mb-1.5">Message</p>
+            <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-lg p-3 border border-gray-100 whitespace-pre-wrap">
+              {feedback.message}
+            </p>
+          </div>
+
+          {/* ID */}
+          <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2.5 text-xs text-gray-400 space-y-0.5">
+            <p>
+              feedback_id:{" "}
+              <span className="text-gray-600 font-mono">
+                {feedback.feedback_id}
+              </span>
+            </p>
+            <p>
+              user_id:{" "}
+              <span className="text-gray-600 font-mono">
+                {feedback.user_id}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 px-5 py-4 border-t border-gray-100">
+          <button
+            onClick={() => {
+              onDelete(feedback.feedback_id);
+              onClose();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md text-red-600 border border-red-200 hover:bg-red-50 transition"
+          >
+            <Trash2 size={14} /> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Seed data — defined at module level so it is referentially stable.
+// TO INTEGRATE: remove SEED_FEEDBACK entirely and initialise feedbackList
+// from your API: useState<FeedbackRow[]>([]) + useEffect fetch call below.
+// ---------------------------------------------------------------------------
+const SEED_FEEDBACK: FeedbackRow[] = [
+  {
+    feedback_id: "f1",
+    user_id: "u1",
+    full_name: "Aya Harb",
+    email: "aya.harb@aub.edu.lb",
+    rating: 4.5,
+    message:
+      "The platform is really useful for finding good courses. I'd love to see a feature to compare two courses side by side. Also, it would be great if we could filter by professor name directly. Overall a great tool for students registering each semester.",
+    created_at: "2024-01-20",
+  },
+  {
+    feedback_id: "f2",
+    user_id: "u2",
+    full_name: "Nour Haddad",
+    email: "nour.haddad@aub.edu.lb",
+    rating: 2.0,
+    message:
+      "The search is slow and sometimes the filters don't reset properly. Needs improvement. I also noticed that some course descriptions are outdated and don't reflect what's actually taught.",
+    created_at: "2024-02-10",
+  },
+  {
+    feedback_id: "f3",
+    user_id: "u3",
+    full_name: "Rami Khoury",
+    email: "rami.khoury@lau.edu.lb",
+    rating: 5.0,
+    message:
+      "Exactly what I needed before registering. Saved me from picking the wrong courses. Thank you! The review system is very helpful and I appreciate that you can see individual metric ratings for each course.",
+    created_at: "2024-03-05",
+  },
+  {
+    feedback_id: "f4",
+    user_id: "u4",
+    full_name: "Lara Nassar",
+    email: "lara.nassar@lau.edu.lb",
+    rating: 3.0,
+    message:
+      "Good concept, but the UI on mobile could be better. Some buttons are hard to tap and the text is a bit small on smaller screens. The core functionality is solid though.",
+    created_at: "2024-03-18",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+export default function AdminFeedbackPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [ratingFilter, setRatingFilter] = useState<
+    "all" | "positive" | "neutral" | "negative"
+  >("all");
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [detailFeedback, setDetailFeedback] = useState<FeedbackRow | null>(
+    null,
+  );
+
+  // Stable state — React Compiler can track this correctly as a useMemo dependency.
+  // TO INTEGRATE: replace SEED_FEEDBACK with [] and add:
+  //   useEffect(() => {
+  //     fetch("/api/admin/feedback")
+  //       .then((r) => r.json())
+  //       .then((data: FeedbackRow[]) => setFeedbackList(data))
+  //       .catch(() => {/* handle error */});
+  //   }, []);
+  const [feedbackList, setFeedbackList] =
+    useState<FeedbackRow[]>(SEED_FEEDBACK);
+
+  const avgRating = feedbackList.length
+    ? (
+        feedbackList.reduce((s, f) => s + f.rating, 0) / feedbackList.length
+      ).toFixed(2)
+    : "—";
+  const positiveCount = feedbackList.filter((f) => f.rating >= 4).length;
+  const negativeCount = feedbackList.filter((f) => f.rating < 3).length;
+
+  const activeFilterCount = [
+    ratingFilter !== "all",
+    sortKey !== "newest",
+  ].filter(Boolean).length;
+
+  function resetFilters() {
+    setRatingFilter("all");
+    setSortKey("newest");
+  }
+
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    let result = feedbackList.filter((f) => {
+      const matchesSearch =
+        !q ||
+        f.full_name.toLowerCase().includes(q) ||
+        f.email.toLowerCase().includes(q) ||
+        f.message.toLowerCase().includes(q);
+      const matchesRating =
+        ratingFilter === "all" ||
+        (ratingFilter === "positive" && f.rating >= 4) ||
+        (ratingFilter === "neutral" && f.rating >= 3 && f.rating < 4) ||
+        (ratingFilter === "negative" && f.rating < 3);
+      return matchesSearch && matchesRating;
+    });
+    return [...result].sort((a, b) => {
+      switch (sortKey) {
+        case "newest":
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        case "oldest":
+          return (
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        case "rating_high":
+          return b.rating - a.rating;
+        case "rating_low":
+          return a.rating - b.rating;
+        default:
+          return 0;
+      }
+    });
+  }, [feedbackList, searchQuery, ratingFilter, sortKey]);
+
+  // TO INTEGRATE: replace body with fetch DELETE then remove from state, e.g.:
+  //   await fetch(`/api/admin/feedback/${feedback_id}`, { method: "DELETE" });
+  //   setFeedbackList((prev) => prev.filter((f) => f.feedback_id !== feedback_id));
+  function handleDelete(feedback_id: string) {
+    setPendingDelete(null);
+    setFeedbackList((prev) =>
+      prev.filter((f) => f.feedback_id !== feedback_id),
+    );
+  }
+
+  const closeDetail = useCallback(() => setDetailFeedback(null), []);
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-6">
+      {detailFeedback && (
+        <FeedbackDetailModal
+          feedback={detailFeedback}
+          onClose={closeDetail}
+          onDelete={(id) => {
+            setDetailFeedback(null);
+            handleDelete(id);
+          }}
+        />
+      )}
+
+      {/* Delete confirmation modal */}
+      {pendingDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-base font-semibold text-gray-900">
+              Delete feedback?
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              This entry will be permanently removed. This cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => setPendingDelete(null)}
+                className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(pendingDelete)}
+                className="px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-black">Feedback</h1>
+          <p className="text-sm text-gray-500">
+            Platform feedback submitted by users
+          </p>
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          {
+            label: "Total submissions",
+            value: feedbackList.length,
+            icon: <MessageSquare size={16} className="text-gray-400" />,
+          },
+          {
+            label: "Avg. rating",
+            value: avgRating,
+            icon: <Star size={16} className="text-amber-400 fill-amber-400" />,
+          },
+          {
+            label: "Positive (≥4★)",
+            value: positiveCount,
+            icon: <span className="text-green-500 text-base font-bold">↑</span>,
+          },
+          {
+            label: "Negative (<3★)",
+            value: negativeCount,
+            icon: <span className="text-red-500 text-base font-bold">↓</span>,
+          },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-xl border border-gray-200 bg-white px-4 py-3 flex items-center gap-3"
+          >
+            <div>{stat.icon}</div>
+            <div>
+              <p className="text-xs text-gray-400">{stat.label}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {stat.value}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Search + sort + filter toggle */}
+      <div className="mt-4 flex flex-row gap-2 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name, email, or message..."
+            className="w-full h-11 pl-10 pr-4 text-gray-900 placeholder-gray-400 rounded-md border border-gray-300 transition-colors focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
+          />
+        </div>
+        <div className="relative hidden sm:block">
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="h-11 pl-3 pr-9 rounded-md border border-gray-300 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="rating_high">Highest rated</option>
+            <option value="rating_low">Lowest rated</option>
+          </select>
+          <ChevronDown
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+            size={15}
+          />
+        </div>
+        <button
+          onClick={() => setShowFilters((p) => !p)}
+          className="relative h-11 px-3 flex items-center justify-center gap-1.5 rounded-md border border-gray-300 hover:bg-gray-50 transition text-sm text-gray-700"
+        >
+          <SlidersHorizontal size={16} />
+          <span className="hidden sm:inline">Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 h-4 w-4 flex items-center justify-center rounded-full bg-[#6155F5] text-white text-[10px] font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Filter panel */}
+      {showFilters && (
+        <div className="mt-3 p-4 rounded-xl border border-gray-200 bg-gray-50">
+          <div className="flex flex-wrap gap-3 items-end">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-500 font-medium">
+                Sentiment
+              </label>
+              <div className="relative">
+                <select
+                  value={ratingFilter}
+                  onChange={(e) =>
+                    setRatingFilter(e.target.value as typeof ratingFilter)
+                  }
+                  className="h-9 pl-3 pr-8 rounded-md border border-gray-300 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:border-[#6155F5]"
+                >
+                  <option value="all">All</option>
+                  <option value="positive">Positive (≥ 4★)</option>
+                  <option value="neutral">Neutral (3–4★)</option>
+                  <option value="negative">Negative (&lt; 3★)</option>
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={13}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1 sm:hidden">
+              <label className="text-xs text-gray-500 font-medium">
+                Sort by
+              </label>
+              <div className="relative">
+                <select
+                  value={sortKey}
+                  onChange={(e) => setSortKey(e.target.value as SortKey)}
+                  className="h-9 pl-3 pr-8 rounded-md border border-gray-300 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:border-[#6155F5]"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="rating_high">Highest rated</option>
+                  <option value="rating_low">Lowest rated</option>
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={13}
+                />
+              </div>
+            </div>
+            {activeFilterCount > 0 && (
+              <button
+                onClick={resetFilters}
+                className="h-9 px-3 flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition"
+              >
+                <X size={13} /> Reset
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <p className="mt-3 text-xs text-gray-400">
+        {filtered.length} entr{filtered.length !== 1 ? "ies" : "y"} found
+      </p>
+
+      {/* Desktop table */}
+      <div className="hidden md:block mt-2 rounded-xl border border-gray-200 bg-white overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-500">
+            <tr>
+              <th className="text-left px-4 py-3 whitespace-nowrap">User</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Rating</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">
+                Sentiment
+              </th>
+              <th className="text-left px-4 py-3">Message</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Date</th>
+              <th className="text-right px-4 py-3 whitespace-nowrap">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-4 py-12 text-center text-gray-400 text-sm"
+                >
+                  No feedback entries match your search or filters.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((f) => (
+                <tr
+                  key={f.feedback_id}
+                  onClick={() => setDetailFeedback(f)}
+                  className="border-t border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-gray-900 whitespace-nowrap">
+                      {f.full_name}
+                    </p>
+                    <p className="text-xs text-gray-400">{f.email}</p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <RatingStars value={f.rating} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <RatingBadge value={f.rating} />
+                  </td>
+                  <td className="px-4 py-3 max-w-100">
+                    <p className="text-gray-600 text-xs line-clamp-2">
+                      {f.message}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-xs">
+                    {f.created_at}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div
+                      className="flex justify-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => setPendingDelete(f.feedback_id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label="Delete feedback"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden mt-2 flex flex-col gap-4">
+        {filtered.length === 0 ? (
+          <p className="text-gray-400 text-sm text-center py-8">
+            No feedback entries match your search or filters.
+          </p>
+        ) : (
+          filtered.map((f) => (
+            <div
+              key={f.feedback_id}
+              onClick={() => setDetailFeedback(f)}
+              className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm cursor-pointer hover:border-gray-300 transition-colors"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{f.full_name}</h3>
+                  <p className="text-xs text-gray-400">{f.email}</p>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => setPendingDelete(f.feedback_id)}
+                    className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                    aria-label="Delete feedback"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <RatingStars value={f.rating} />
+                <RatingBadge value={f.rating} />
+              </div>
+              <p className="mt-3 text-sm text-gray-600 line-clamp-2">
+                {f.message}
+              </p>
+              <p className="mt-3 text-xs text-gray-400">{f.created_at}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

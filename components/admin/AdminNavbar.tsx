@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Star,
   Users,
+  MessageSquare,
   Search,
   ChevronDown,
   PanelLeftClose,
@@ -214,6 +215,16 @@ export default function AdminNavbar() {
           >
             <Star size={18} />
             {!collapsed && "Reviews"}
+          </Link>
+
+          <Link
+            href="/admin/feedback"
+            className={`${itemBase} ${
+              isActive(pathname, "/admin/feedback") ? activePill : inactivePill
+            }`}
+          >
+            <MessageSquare size={18} />
+            {!collapsed && "Feedback"}
           </Link>
         </div>
       </aside>
