@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import pool from "@/db";
 
-
 //get courses (home page)
 export async function GET(req: Request) {
   try {
@@ -19,6 +18,8 @@ export async function GET(req: Request) {
         c.title,
         c.description,
         c.credits,
+        c.level,
+        c.language,
         d.name AS department,
         u.name AS university,
 
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
       ORDER BY reviewCount DESC, c.course_id DESC
       LIMIT ? OFFSET ?
       `,
-      [limit, offset]
+      [limit, offset],
     );
 
     const data = rows.map((row: any) => ({
@@ -48,22 +49,31 @@ export async function GET(req: Request) {
       title: row.title,
       description: row.description,
       credits: row.credits,
+      level: row.level,
+      language: row.language,
       university: row.university,
       department: row.department,
       reviewCount: Number(row.reviewCount) || 0,
       averageRating:
-        row.avgOverall === null ? null : Number(Number(row.avgOverall).toFixed(1)),
+        row.avgOverall === null
+          ? null
+          : Number(Number(row.avgOverall).toFixed(1)),
       ratings: {
-        exam: row.avgExam === null ? null : Number(Number(row.avgExam).toFixed(1)),
+        exam:
+          row.avgExam === null ? null : Number(Number(row.avgExam).toFixed(1)),
         workload:
-          row.avgWorkload === null ? null : Number(Number(row.avgWorkload).toFixed(1)),
+          row.avgWorkload === null
+            ? null
+            : Number(Number(row.avgWorkload).toFixed(1)),
         attendance:
           row.avgAttendance === null
             ? null
             : Number(Number(row.avgAttendance).toFixed(1)),
         grading:
-          row.avgGrading === null ? null : Number(Number(row.avgGrading).toFixed(1))
-      }
+          row.avgGrading === null
+            ? null
+            : Number(Number(row.avgGrading).toFixed(1)),
+      },
     }));
 
     return NextResponse.json({
@@ -71,13 +81,13 @@ export async function GET(req: Request) {
       page,
       limit,
       count: data.length,
-      courses: data
+      courses: data,
     });
   } catch (error: any) {
     console.error("COURSES GET ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch courses" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

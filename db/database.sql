@@ -173,4 +173,17 @@ CREATE TABLE `feedback` (
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `password_reset_token` (
+  `user_id`    INT          NOT NULL,
+  `token`      TEXT         NOT NULL,          -- The raw JWT (can exceed 255 chars)
+  `expires_at` DATETIME     NOT NULL,
+  `used_at`    DATETIME     DEFAULT NULL,       -- Set when consumed; NULL = still valid
+  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`user_id`),                      -- One pending reset per user at a time
+  CONSTRAINT `fk_prt_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+    ON DELETE CASCADE
+);
+
 COMMIT;
