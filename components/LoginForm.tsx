@@ -11,11 +11,52 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    console.log({ email, password, remember });
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    router.push("/");
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    setErrorMsg(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.message || "Login failed");
+        return;
+      }
+
+      // Store token
+      if (remember) {
+        localStorage.setItem("token", data.token);
+      } else {
+        sessionStorage.setItem("token", data.token);
+      }
+
+      // Optionally store user info
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect
+      router.push("/");
+
+    } catch (error) {
+      setErrorMsg("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -29,6 +70,13 @@ export default function LoginForm() {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+
+        {errorMsg && (
+          <div className="rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 text-center">
+            {errorMsg}
+          </div>
+        )}
+
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-[#111827]">
             Email
@@ -39,7 +87,8 @@ export default function LoginForm() {
             placeholder="your.email@university.edu"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
+            required
+            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
 
@@ -53,7 +102,8 @@ export default function LoginForm() {
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
+            required
+            className="w-full h-11 rounded-full border border-gray-200 bg-[#EEF4FF] px-4 text-sm text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-[#6155F5]/40"
           />
         </div>
 
@@ -78,9 +128,10 @@ export default function LoginForm() {
 
         <button
           type="submit"
-          className="w-full h-11 rounded-lg bg-[#6155F5] text-white text-sm font-medium shadow-md hover:bg-[#503fdc] active:scale-[0.99]"
+          disabled={loading}
+          className="w-full h-11 rounded-lg bg-[#6155F5] text-white text-sm font-medium shadow-md hover:bg-[#503fdc] disabled:opacity-60"
         >
-          Log in
+          {loading ? "Logging in..." : "Log in"}
         </button>
 
         <p className="text-center text-sm text-gray-500">
