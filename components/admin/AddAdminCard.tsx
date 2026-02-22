@@ -8,10 +8,7 @@ import { useState } from "react";
 export type AdminUser = {
   name: string;
   email: string;
-  university: string;
-  role: string;
-  status: string;
-  notes: string;
+  role: "Super Admin" | "Admin";
 };
 
 type Props = {
@@ -19,47 +16,37 @@ type Props = {
   onSave: (admin: AdminUser) => void;
 };
 
-const universities = [
-  "American University of Beirut",
-  "Lebanese American University",
-  "Université Saint-Joseph",
-  "Lebanese University",
-  "N/A",
-];
-
-const roles = ["Super Admin", "Admin"];
-const statuses = ["Active", "Pending", "Disabled"];
+const roles: AdminUser["role"][] = ["Super Admin", "Admin"];
 
 export default function AddAdminCard({ onClose, onSave }: Props) {
   const [formData, setFormData] = useState<AdminUser>({
     name: "",
     email: "",
-    university: "",
-    role: "",
-    status: "Active",
-    notes: "",
+    role: "Admin",
   });
 
   function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
   function handleSubmit() {
-    if (!formData.name || !formData.email || !formData.role) {
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+
+    if (!name || !email || !formData.role) {
       alert("Please fill required fields");
       return;
     }
 
-    onSave(formData);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert("Please enter a valid email");
+      return;
+    }
+
+    onSave({ ...formData, name, email: email.toLowerCase() });
     onClose();
   }
 
@@ -76,6 +63,7 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
         <button
           onClick={onClose}
           className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
+          aria-label="Close"
         >
           <X size={18} />
         </button>
@@ -84,55 +72,35 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
           name="name"
+          type="text"
+          autoComplete="name"
           value={formData.name}
           onChange={handleChange}
           placeholder="Full Name"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm 
-        bg-white focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
+            focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
         />
 
         <input
           name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
           value={formData.email}
           onChange={handleChange}
+          pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
           placeholder="Email (admin@coursecompass.com)"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm 
-        bg-white focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
-        />
-
-        <SearchableDropdownField
-          value={formData.university}
-          options={universities}
-          placeholder="Select university"
-          onChange={(value) =>
-            setFormData((prev) => ({ ...prev, university: value }))
-          }
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
+            focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
         />
 
         <SearchableDropdownField
           value={formData.role}
           options={roles}
           placeholder="Select role"
-          onChange={(value) => setFormData((prev) => ({ ...prev, role: value }))}
-        />
-
-        <SearchableDropdownField
-          value={formData.status}
-          options={statuses}
-          placeholder="Select status"
           onChange={(value) =>
-            setFormData((prev) => ({ ...prev, status: value }))
+            setFormData((prev) => ({ ...prev, role: value as AdminUser["role"] }))
           }
-        />
-
-        <textarea
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
-          placeholder="Notes (optional)"
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm 
-        bg-white focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition md:col-span-2 resize-none"
         />
       </div>
 
@@ -140,7 +108,6 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
         <Button onClick={onClose} variant="elevated">
           Cancel
         </Button>
-
         <Button onClick={handleSubmit} variant="primary">
           Save Admin
         </Button>

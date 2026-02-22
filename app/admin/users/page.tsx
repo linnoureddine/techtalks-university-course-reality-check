@@ -3,22 +3,20 @@
 import { useMemo, useState } from "react";
 import Button from "@/components/Button";
 import { Plus, Search, Trash2, Shield } from "lucide-react";
-import AddAdminCard from "@/components/admin/AddAdminCard";
-
+import AddAdminCard, { type AdminUser } from "@/components/admin/AddAdminCard";
 
 type UserRow = {
   id: string;
   name: string;
   email: string;
   university: string;
-  role: "Super Admin" | "Admin" | "Student";
+  role: "Super Admin" | "Admin";
   joined: string;
   protected?: boolean;
 };
 
 type UserFilters = {
   role: "" | UserRow["role"];
-  university: string;
 };
 
 const initialUsers: UserRow[] = [
@@ -31,31 +29,13 @@ const initialUsers: UserRow[] = [
     joined: "2024-01-01",
     protected: true,
   },
-  {
-    id: "2",
-    name: "sara admin",
-    email: "sara@coursecompass.com",
-    university: "N/A",
-    role: "Admin",
-    joined: "2024-02-01",
-  },
-  {
-    id: "3",
-    name: "John Doe",
-    email: "john@university.edu",
-    university: "Lebanese University",
-    role: "Student",
-    joined: "2024-01-15",
-  },
-  {
-    id: "4",
-    name: "Jane Smith",
-    email: "jane@gmail.com",
-    university: "LIU",
-    role: "Student",
-    joined: "2024-03-20",
-  },
 ];
+
+function isValidEmail(email: string) {
+  const trimmed = email.trim();
+  const re = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  return re.test(trimmed);
+}
 
 export default function AdminUsersPage() {
   const [pendingDelete, setPendingDelete] = useState<UserRow | null>(null);
@@ -63,15 +43,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<UserFilters>({
-    role: "",
-    university: "",
-  });
-
-  const universities = useMemo(() => {
-    const set = new Set(users.map((u) => u.university).filter(Boolean));
-    return Array.from(set).sort();
-  }, [users]);
+  const [filters, setFilters] = useState<UserFilters>({ role: "" });
 
   const filteredUsers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -81,53 +53,69 @@ export default function AdminUsersPage() {
         !q ||
         u.name.toLowerCase().includes(q) ||
         u.email.toLowerCase().includes(q) ||
-        u.university.toLowerCase().includes(q) ||
-        u.role.toLowerCase().includes(q);
+        u.role.toLowerCase().includes(q) ||
+        u.university.toLowerCase().includes(q);
 
       const matchesRole = !filters.role || u.role === filters.role;
-      const matchesUniversity =
-        !filters.university || u.university === filters.university;
 
-      return matchesSearch && matchesRole && matchesUniversity;
+      return matchesSearch && matchesRole;
     });
   }, [users, searchQuery, filters]);
+
+  // ✅ NEW: protected always on top
+  const displayUsers = useMemo(() => {
+    return [...filteredUsers].sort((a, b) => {
+      const ap = a.protected ? 1 : 0;
+      const bp = b.protected ? 1 : 0;
+      // protected first
+      if (ap !== bp) return bp - ap;
+      // keep current order for non-protected (stable enough in modern JS engines)
+      return 0;
+    });
+  }, [filteredUsers]);
+
   function handleDelete(user: UserRow) {
-  if (user.protected) return;
-  setPendingDelete(user);
-}
-function handleConfirmDelete() {
-  if (!pendingDelete) return;
-  setUsers((prev) => prev.filter((u) => u.id !== pendingDelete.id));
-  setPendingDelete(null);
-}
+    if (user.protected) return;
+    setPendingDelete(user);
+  }
+
+  function handleConfirmDelete() {
+    if (!pendingDelete) return;
+    setUsers((prev) => prev.filter((u) => u.id !== pendingDelete.id));
+    setPendingDelete(null);
+  }
 
   function resetFilters() {
-    setFilters({ role: "", university: "" });
+    setFilters({ role: "" });
     setShowFilters(false);
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {pendingDelete && (
-      <ConfirmModal
-        title="Delete user?"
-        description={
-          <>
-            Are you sure you want to delete{" "}
-            <span className="font-medium text-gray-700">
-              {pendingDelete.name}
-            </span>{" "}
-            (<span className="font-mono text-gray-600">{pendingDelete.email}</span>)?
-            This action cannot be undone.
-          </>
-        }
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
-        onCancel={() => setPendingDelete(null)}
-        onConfirm={handleConfirmDelete}
-      />
-    )}
+        <ConfirmModal
+          title="Delete user?"
+          description={
+            <>
+              Are you sure you want to delete{" "}
+              <span className="font-medium text-gray-700">
+                {pendingDelete.name}
+              </span>{" "}
+              (
+              <span className="font-mono text-gray-600">
+                {pendingDelete.email}
+              </span>
+              )? This action cannot be undone.
+            </>
+          }
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
+
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-black">User Management</h1>
@@ -137,11 +125,47 @@ function handleConfirmDelete() {
         </div>
 
         <div className="flex justify-center sm:justify-start items-center">
-          <Button variant="primary" onClick={() => setShowAdminForm(true)} className="flex items-center gap-2" >
-            <Plus size={18} className="shrink-0"/> Add Admin
+          <Button
+            variant="primary"
+            onClick={() => setShowAdminForm(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus size={18} className="shrink-0" /> Add Admin
           </Button>
         </div>
       </div>
+
+      {/* ✅ Add Admin Card FIRST */}
+      {showAdminForm && (
+        <div className="mt-4">
+          <AddAdminCard
+            onClose={() => setShowAdminForm(false)}
+            onSave={(admin: AdminUser) => {
+              const cleanEmail = admin.email.trim();
+
+              if (!isValidEmail(cleanEmail)) {
+                alert("Please enter a valid email (example: name@domain.com)");
+                return;
+              }
+
+              const newUser: UserRow = {
+                id: String(Date.now()),
+                name: admin.name.trim(),
+                email: cleanEmail,
+                university: "N/A",
+                role: admin.role as UserRow["role"],
+                joined: new Date().toISOString().slice(0, 10),
+                protected: false,
+              };
+
+              setUsers((prev) => [newUser, ...prev]);
+              setShowAdminForm(false);
+            }}
+          />
+        </div>
+      )}
+
+      {/* ✅ Search bar UNDER the Add Admin Card */}
       <div className="mt-4 flex flex-row gap-2 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -179,11 +203,7 @@ function handleConfirmDelete() {
           </svg>
         </button>
       </div>
-      {showAdminForm && (<AddAdminCard onClose={() => setShowAdminForm(false)}onSave={(admin) => {
-        setShowAdminForm(false);
-    }}
-  />
-)}
+
       {showFilters && (
         <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -206,29 +226,6 @@ function handleConfirmDelete() {
                 <option value="">All</option>
                 <option value="Super Admin">Super Admin</option>
                 <option value="Admin">Admin</option>
-                <option value="Student">Student</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                University
-              </label>
-              <select
-                value={filters.university}
-                onChange={(e) =>
-                  setFilters((p) => ({ ...p, university: e.target.value }))
-                }
-                className="w-full h-10 rounded-md border border-gray-300 px-3 text-sm
-                  focus:outline-none focus:border-[#6155F5]
-                  focus:ring-2 focus:ring-[#6155F5]"
-              >
-                <option value="">All</option>
-                {universities.map((uni) => (
-                  <option key={uni} value={uni}>
-                    {uni}
-                  </option>
-                ))}
               </select>
             </div>
 
@@ -249,6 +246,7 @@ function handleConfirmDelete() {
           </div>
         </div>
       )}
+
       <div className="hidden md:block mt-6 rounded-xl border border-gray-200 bg-white overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
@@ -263,7 +261,7 @@ function handleConfirmDelete() {
           </thead>
 
           <tbody>
-            {filteredUsers.map((u) => (
+            {displayUsers.map((u) => (
               <tr
                 key={u.id}
                 className="border-t border-gray-100 hover:bg-gray-50"
@@ -271,8 +269,14 @@ function handleConfirmDelete() {
                 <td className="px-4 py-3">
                   <div className="font-medium text-gray-900">{u.name}</div>
                 </td>
+
                 <td className="px-4 py-3">
-                  <div className="px-4 py-3 text-gray-700 max-w-[220px] truncate" title={u.email}>{u.email}</div>
+                  <div
+                    className="text-gray-700 max-w-[220px] truncate"
+                    title={u.email}
+                  >
+                    {u.email}
+                  </div>
                 </td>
 
                 <td className="px-4 py-3">{u.university}</td>
@@ -305,14 +309,15 @@ function handleConfirmDelete() {
           </tbody>
         </table>
 
-        {filteredUsers.length === 0 && (
+        {displayUsers.length === 0 && (
           <div className="py-10 text-center text-sm text-gray-500">
             No users found.
           </div>
         )}
       </div>
+
       <div className="md:hidden mt-6 flex flex-col gap-4">
-        {filteredUsers.map((u) => (
+        {displayUsers.map((u) => (
           <div
             key={u.id}
             className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
@@ -356,7 +361,7 @@ function handleConfirmDelete() {
           </div>
         ))}
 
-        {filteredUsers.length === 0 && (
+        {displayUsers.length === 0 && (
           <p className="text-gray-500 text-center">No users found.</p>
         )}
       </div>
@@ -376,20 +381,13 @@ function RolePill({ role }: { role: UserRow["role"] }) {
     );
   }
 
-  if (role === "Admin") {
-    return (
-      <span className={`${base} bg-blue-50 text-blue-700 border-blue-100`}>
-        {role}
-      </span>
-    );
-  }
-
   return (
-    <span className={`${base} bg-green-50 text-green-700 border-green-100`}>
+    <span className={`${base} bg-blue-50 text-blue-700 border-blue-100`}>
       {role}
     </span>
   );
 }
+
 function ConfirmModal({
   title,
   description,
@@ -409,7 +407,6 @@ function ConfirmModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      
       <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white shadow-xl">
         <div className="p-5">
           <h2 className="text-base font-semibold text-gray-900">{title}</h2>
