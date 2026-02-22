@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const fullName = body?.fullName;
     const email = body?.email;
     const password = body?.password;
-    const universityName = body?.universityName; 
+    const universityId = body?.universityId; 
 
     if (!fullName || typeof fullName !== "string") {
       return NextResponse.json(
@@ -32,14 +32,6 @@ export async function POST(req: Request) {
       );
     }
 
-    
-    if (universityName && typeof universityName !== "string") {
-      return NextResponse.json(
-        { success: false, message: "universityName must be a string" },
-        { status: 400 }
-      );
-    }
-
     if (!email.includes("@")) {
       return NextResponse.json(
         { success: false, message: "email must be valid" },
@@ -50,6 +42,17 @@ export async function POST(req: Request) {
     if (password.length < 6) {
       return NextResponse.json(
         { success: false, message: "password must be at least 6 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      universityId !== null &&
+      universityId !== undefined &&
+      typeof universityId !== "number"
+    ) {
+      return NextResponse.json(
+        { success: false, message: "universityId must be a number" },
         { status: 400 }
       );
     }
@@ -66,11 +69,25 @@ export async function POST(req: Request) {
       );
     }
 
+    if (universityId) {
+      const [uni]: any = await pool.query(
+        "SELECT university_id FROM university WHERE university_id = ? LIMIT 1",
+        [universityId]
+      );
+
+      if (uni.length === 0) {
+        return NextResponse.json(
+          { success: false, message: "Invalid university selected" },
+          { status: 400 }
+        );
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const [result]: any = await pool.query(
-      "INSERT INTO `user` (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-      [fullName, email, hashedPassword, "student"]
+      "INSERT INTO `user` (full_name, email, password, role, university_id) VALUES (?, ?, ?, ?, ?)",
+      [fullName, email, hashedPassword, "student", universityId || null]
     );
 
     return NextResponse.json(
@@ -81,10 +98,12 @@ export async function POST(req: Request) {
           id: result.insertId,
           fullName,
           email,
+          universityId: universityId || null,
         },
       },
       { status: 201 }
     );
+
   } catch (error: any) {
     console.error("SIGNUP ERROR:", error);
     return NextResponse.json(
