@@ -58,6 +58,7 @@ const initialUsers: UserRow[] = [
 ];
 
 export default function AdminUsersPage() {
+  const [pendingDelete, setPendingDelete] = useState<UserRow | null>(null);
   const [showAdminForm, setShowAdminForm] = useState(false);
   const [users, setUsers] = useState<UserRow[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,10 +92,14 @@ export default function AdminUsersPage() {
     });
   }, [users, searchQuery, filters]);
   function handleDelete(user: UserRow) {
-    if (user.protected) return;
-    alert(`Delete ${user.email} (connect later)`);
-
-  }
+  if (user.protected) return;
+  setPendingDelete(user);
+}
+function handleConfirmDelete() {
+  if (!pendingDelete) return;
+  setUsers((prev) => prev.filter((u) => u.id !== pendingDelete.id));
+  setPendingDelete(null);
+}
 
   function resetFilters() {
     setFilters({ role: "", university: "" });
@@ -103,6 +108,26 @@ export default function AdminUsersPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      {pendingDelete && (
+      <ConfirmModal
+        title="Delete user?"
+        description={
+          <>
+            Are you sure you want to delete{" "}
+            <span className="font-medium text-gray-700">
+              {pendingDelete.name}
+            </span>{" "}
+            (<span className="font-mono text-gray-600">{pendingDelete.email}</span>)?
+            This action cannot be undone.
+          </>
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
+    )}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-black">User Management</h1>
@@ -363,5 +388,54 @@ function RolePill({ role }: { role: UserRow["role"] }) {
     <span className={`${base} bg-green-50 text-green-700 border-green-100`}>
       {role}
     </span>
+  );
+}
+function ConfirmModal({
+  title,
+  description,
+  confirmText = "Delete",
+  cancelText = "Cancel",
+  variant = "danger",
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  description: React.ReactNode;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: "danger" | "primary";
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      
+      <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white shadow-xl">
+        <div className="p-5">
+          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          <div className="mt-2 text-sm text-gray-500">{description}</div>
+        </div>
+
+        <div className="flex justify-end gap-3 px-5 py-4 border-t border-gray-100">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+          >
+            {cancelText}
+          </button>
+
+          <button
+            onClick={onConfirm}
+            className={`px-4 py-2 text-sm rounded-md text-white transition ${
+              variant === "danger"
+                ? "bg-red-500 hover:bg-red-600"
+                : "bg-[#6155F5] hover:bg-[#4f45d4]"
+            }`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
