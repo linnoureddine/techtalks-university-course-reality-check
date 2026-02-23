@@ -1,28 +1,77 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import HowItWorks from "@/components/HowItWorks";
 import StatsSection from "@/components/StatsSection";
 import Link from "next/link";
 
-const statsData = {
-  reviews: 50000,
-  students: 15000,
-  universities: 200,
-  rating: 4.3,
+type StatsApiResponse = {
+  totalReviews: number;
+  totalStudents: number;
+  totalUniversities: number;
+  wouldRecommendPercentage: number;
 };
 
 export default function AboutPage() {
+  const [statsData, setStatsData] = useState<StatsApiResponse>({
+    totalReviews: 0,
+    totalStudents: 0,
+    totalUniversities: 0,
+    wouldRecommendPercentage: 0,
+  });
+
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStats() {
+      try {
+        setLoadingStats(true);
+        setStatsError(null);
+
+        const res = await fetch("/api/stats", { method: "GET" });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `Request failed: ${res.status}`);
+        }
+
+        const data: StatsApiResponse = await res.json();
+
+        if (!cancelled) {
+          setStatsData({
+            totalReviews: Number(data.totalReviews || 0),
+            totalStudents: Number(data.totalStudents || 0),
+            totalUniversities: Number(data.totalUniversities || 0),
+            wouldRecommendPercentage: Number(data.wouldRecommendPercentage || 0),
+          });
+        }
+      } catch (e: any) {
+        console.error(e);
+        if (!cancelled) setStatsError(e?.message || "Failed to fetch stats");
+      } finally {
+        if (!cancelled) setLoadingStats(false);
+      }
+    }
+
+    loadStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <main className="bg-[#FFFFFF]">
       <section className="py-20 px-6 pt-40">
-        <div className="max-w-4xl mx-auto text-center ">
+        <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl text-[#111827] sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
             Making Course Selection{" "}
             <span className="bg-gradient-to-r from-[#6155F5] to-teal-500 bg-clip-text text-transparent">
               Transparent
             </span>
-            {""}
           </h1>
 
           <p className="text-l sm:text-l md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
@@ -60,9 +109,7 @@ export default function AboutPage() {
         <HowItWorks />
 
         <div className="rounded-xl p-8 transition-shadow hover:shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">
-            What Makes Us Different
-          </h2>
+          <h2 className="text-xl font-semibold mb-4">What Makes Us Different</h2>
 
           <p className="text-gray-700 mb-6 leading-7">
             We&apos;ve built features that prioritize honesty, utility, and
@@ -155,7 +202,24 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <StatsSection stats={statsData} />
+        {statsError ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Failed to load statistics: {statsError}
+          </div>
+        ) : loadingStats ? (
+          <div className="text-center py-10 text-gray-400 text-sm">
+            Loading statistics...
+          </div>
+        ) : (
+          <StatsSection
+            stats={{
+              reviews: statsData.totalReviews,
+              students: statsData.totalStudents,
+              universities: statsData.totalUniversities,
+              rating: statsData.wouldRecommendPercentage, // % (0-100)
+            }}
+          />
+        )}
 
         <div className="text-center pt-10">
           <h2 className="text-3xl font-bold mb-2">
