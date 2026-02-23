@@ -5,7 +5,7 @@ import Button from "@/components/Button";
 import SearchableDropdownField from "@/components/SearchableDropdown";
 import { useState } from "react";
 
-type Course = {
+export type AddCourseFormData = {
   slug: string;
   code: string;
   title: string;
@@ -20,7 +20,7 @@ type Course = {
 
 type Props = {
   onClose: () => void;
-  onSave: (course: Course) => void;
+  onSave: (course: AddCourseFormData) => void;
 };
 
 const university = [
@@ -35,7 +35,7 @@ const level = ["Undergraduate", "Graduate", "PhD"];
 const language = ["English", "French", "Arabic"];
 
 export default function AddCourseCard({ onClose, onSave }: Props) {
-  const [formData, setFormData] = useState<Course>({
+  const [formData, setFormData] = useState<AddCourseFormData>({
     slug: "",
     code: "",
     title: "",

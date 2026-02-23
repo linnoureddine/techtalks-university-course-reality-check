@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import AddCourseCard from "@/components/admin/AddCourseCard";
+import AddCourseCard,{ AddCourseFormData } from "@/components/admin/AddCourseCard";
 import Button from "@/components/Button";
 import {
   Pencil,
@@ -38,6 +38,10 @@ type Course = {
 };
 
 type SortKey = "rating_high" | "rating_low" | "reviews_most";
+type NewCoursePayload = Omit<
+  Course,
+  "course_id" | "rating" | "number_of_reviews" | "metrics"
+>;
 
 function unique<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
@@ -475,26 +479,39 @@ export default function AdminCoursesPage() {
     sortKey,
   ]);
 
-  // TO INTEGRATE: POST /api/admin/courses
-  function handleSaveCourse(
-    course: Omit<
-      Course,
-      "course_id" | "rating" | "number_of_reviews" | "metrics"
-    >,
-  ) {
-    setCourses((prev) => [
-      {
-        ...course,
-        course_id: Date.now(),
-        rating: 0,
-        number_of_reviews: 0,
-        metrics: { exam: 0, workload: 0, attendance: 0, grading: 0 },
-        deleted_at: null,
-      },
-      ...prev,
-    ]);
-    setShowForm(false);
-  }
+ 
+  const handleSaveCourse = useCallback((course: AddCourseFormData) => {
+  const creditsNum = Number(
+    String(course.credits).replace(/[^\d.]/g, ""),
+  );
+  const mappedLevel: Course["level"] =
+    course.level.toLowerCase() === "graduate"
+      ? "graduate"
+      : course.level.toLowerCase() === "phd"
+        ? "doctoral"
+        : "undergraduate";
+
+  const normalized: Course = {
+    course_id: Date.now(),
+    code: course.code,
+    title: course.title,
+    description: course.description,
+    credits: Number.isFinite(creditsNum) ? creditsNum : 0,
+    level: mappedLevel,
+    language: course.language,
+    university_id: 0,
+    department_id: 0,
+    university: course.university || "N/A",
+    department: course.department || "N/A",
+    deleted_at: null,
+    rating: 0,
+    number_of_reviews: 0,
+    metrics: { exam: 0, workload: 0, attendance: 0, grading: 0 },
+  };
+
+  setCourses((prev) => [normalized, ...prev]);
+  setShowForm(false);
+}, []);
 
   // TO INTEGRATE: DELETE /api/admin/courses/:course_id
   function handleConfirmDelete() {
@@ -706,7 +723,7 @@ export default function AdminCoursesPage() {
       )}
 
       <div className="hidden md:block mt-2 rounded-xl border border-gray-200 bg-white overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-fixed">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="text-left px-4 py-3 whitespace-nowrap">Course</th>
@@ -719,7 +736,8 @@ export default function AdminCoursesPage() {
               </th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Credits</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Rating</th>
-              <th className="text-left px-4 py-3 whitespace-nowrap">Metrics</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap w-[150px]">
+                Metrics</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">
                 Description
               </th>
@@ -792,18 +810,18 @@ export default function AdminCoursesPage() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="grid grid-cols-1 gap-1">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
+                  <td className="px-4 py-3 align-top">
+                    <div className="flex flex-wrap gap-1.5 max-w-[180px]">
+                      <span className="inline-flex w-fit items-center rounded-md bg-blue-100 text-blue-800 px-1.5 py-0.5 text-xs font-medium">
                         Exam: {course.metrics.exam}
                       </span>
-                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
+                      <span className="inline-flex w-fit items-center rounded-md bg-green-100 text-green-800 px-1.5 py-0.5 text-xs font-medium">
                         Workload: {course.metrics.workload}
                       </span>
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
+                      <span className="inline-flex w-fit items-center rounded-md bg-yellow-100 text-yellow-800 px-1.5 py-0.5 text-xs font-medium">
                         Attendance: {course.metrics.attendance}
                       </span>
-                      <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
+                      <span className="inline-flex w-fit items-center rounded-md bg-purple-100 text-purple-800 px-1.5 py-0.5 text-xs font-medium">
                         Grading: {course.metrics.grading}
                       </span>
                     </div>
