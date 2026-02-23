@@ -79,27 +79,27 @@ export async function GET(
 
     const [rows]: any = await pool.query(
       `SELECT
-         r.review_id,
-         r.user_id,
-         r.semester_taken,
-         r.instructor_name,
-         r.overall_rating,
-         r.review_text,
-         r.exam_difficulty_rating,
-         r.workload_rating,
-         r.attendance_rating,
-         r.grading_rating,
-         r.created_at,
-         COALESCE(SUM(CASE WHEN rv.vote_value =  1 THEN 1 ELSE 0 END), 0) AS upvotes,
-         COALESCE(SUM(CASE WHEN rv.vote_value = -1 THEN 1 ELSE 0 END), 0) AS downvotes
-       FROM review r
-       LEFT JOIN review_vote rv ON rv.review_id = r.review_id
-       WHERE r.course_id = ? AND r.deleted_at IS NULL
-       GROUP BY
-         r.review_id, r.user_id, r.semester_taken, r.instructor_name,
-         r.overall_rating, r.review_text, r.exam_difficulty_rating,
-         r.workload_rating, r.attendance_rating, r.grading_rating, r.created_at
-       ORDER BY ${orderBy}`,
+          r.review_id,
+          r.user_id,
+          r.semester_taken,
+          r.instructor_name,
+          r.overall_rating,
+          r.review_text,
+          r.exam_difficulty_rating,
+          r.workload_rating,
+          r.attendance_rating,
+          r.grading_rating,
+          r.created_at,
+          COALESCE(SUM(CASE WHEN rv.vote_value =  1 THEN 1 ELSE 0 END), 0) AS upvotes,
+          COALESCE(SUM(CASE WHEN rv.vote_value = -1 THEN 1 ELSE 0 END), 0) AS downvotes
+        FROM review r
+        LEFT JOIN review_vote rv ON rv.review_id = r.review_id
+        WHERE r.course_id = ? AND r.deleted_at IS NULL
+        GROUP BY
+          r.review_id, r.user_id, r.semester_taken, r.instructor_name,
+          r.overall_rating, r.review_text, r.exam_difficulty_rating,
+          r.workload_rating, r.attendance_rating, r.grading_rating, r.created_at
+        ORDER BY ${orderBy}`,
       [courseId],
     );
 
@@ -237,10 +237,10 @@ export async function POST(
     try {
       await pool.query(
         `INSERT INTO review
-           (user_id, course_id, semester_taken, review_text, instructor_name,
+            (user_id, course_id, semester_taken, review_text, instructor_name,
             overall_rating, exam_difficulty_rating, attendance_rating,
             workload_rating, grading_rating)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           user.userId,
           courseId,
