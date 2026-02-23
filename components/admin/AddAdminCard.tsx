@@ -46,8 +46,7 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
       return;
     }
 
-    onSave({ ...formData, name, email: email.toLowerCase() });
-    onClose();
+    onSave(formData);
   }
 
   return (
