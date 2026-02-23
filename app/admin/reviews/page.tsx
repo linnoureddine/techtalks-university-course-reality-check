@@ -11,8 +11,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-
-// Matches: review JOIN user JOIN course JOIN department JOIN university + aggregated review_vote counts
+import ConfirmModal from "@/components/admin/ConfirmModal";
 type ReviewRow = {
   review_id: string;
   reviewer_name: string;
@@ -72,7 +71,6 @@ function VoteDisplay({
     </div>
   );
 }
-
 function MetricBadge({
   label,
   value,
@@ -84,7 +82,7 @@ function MetricBadge({
 }) {
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${color}`}
+      className={`inline-flex w-fit items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${color}`}
     >
       {label}: {value}
     </span>
@@ -94,11 +92,11 @@ function MetricBadge({
 function ReviewDetailModal({
   review,
   onClose,
-  onDelete,
+  onRequestDelete,
 }: {
   review: ReviewRow;
   onClose: () => void;
-  onDelete: (id: string) => void;
+  onRequestDelete: (review: ReviewRow) => void;
 }) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -141,9 +139,7 @@ function ReviewDetailModal({
           <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Reviewer</p>
-              <p className="text-gray-800 font-medium">
-                {review.reviewer_name}
-              </p>
+              <p className="text-gray-800 font-medium">{review.reviewer_name}</p>
               <p className="text-xs text-gray-400">{review.reviewer_email}</p>
             </div>
             <div>
@@ -154,9 +150,7 @@ function ReviewDetailModal({
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Semester</p>
-              <p className="text-gray-800 font-medium">
-                {review.semester_taken}
-              </p>
+              <p className="text-gray-800 font-medium">{review.semester_taken}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Submitted</p>
@@ -220,10 +214,7 @@ function ReviewDetailModal({
                   color: "bg-purple-100 text-purple-800",
                 },
               ].map((m) => (
-                <div
-                  key={m.label}
-                  className={`rounded-lg px-3 py-2 ${m.color}`}
-                >
+                <div key={m.label} className={`rounded-lg px-3 py-2 ${m.color}`}>
                   <p className="text-[11px] opacity-70">{m.label}</p>
                   <p className="text-base font-semibold">
                     {m.value}{" "}
@@ -242,10 +233,7 @@ function ReviewDetailModal({
 
         <div className="flex justify-end gap-3 px-5 py-4 border-t border-gray-100">
           <button
-            onClick={() => {
-              onDelete(review.review_id);
-              onClose();
-            }}
+            onClick={() => onRequestDelete(review)}
             className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md text-red-600 border border-red-200 hover:bg-red-50 transition"
           >
             <Trash2 size={14} /> Delete review
@@ -256,11 +244,6 @@ function ReviewDetailModal({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Seed data — defined at module level so it is referentially stable.
-// TO INTEGRATE: remove SEED_REVIEWS entirely and initialise reviews state
-// from your API: useState<ReviewRow[]>([]) + useEffect fetch call below.
-// ---------------------------------------------------------------------------
 const SEED_REVIEWS: ReviewRow[] = [
   {
     review_id: "r1",
@@ -337,26 +320,19 @@ export default function AdminReviewsPage() {
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [semesterFilter, setSemesterFilter] = useState("all");
   const [sortKey, setSortKey] = useState<SortKey>("newest");
-  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ReviewRow | null>(null);
+
   const [detailReview, setDetailReview] = useState<ReviewRow | null>(null);
 
-  // Stable state — React Compiler can track this correctly as a useMemo dependency.
-  // TO INTEGRATE: replace SEED_REVIEWS with [] and add:
-  //   useEffect(() => {
-  //     fetch("/api/admin/reviews")
-  //       .then((r) => r.json())
-  //       .then((data: ReviewRow[]) => setReviews(data))
-  //       .catch(() => {/* handle error */});
-  //   }, []);
   const [reviews, setReviews] = useState<ReviewRow[]>(SEED_REVIEWS);
 
   const universities = unique(reviews.map((r) => r.university));
   const departments = unique(
     reviews
       .filter(
-        (r) => universityFilter === "all" || r.university === universityFilter,
+        (r) => universityFilter === "all" || r.university === universityFilter
       )
-      .map((r) => r.department),
+      .map((r) => r.department)
   );
   const semesters = unique(reviews.map((r) => r.semester_taken));
 
@@ -378,6 +354,7 @@ export default function AdminReviewsPage() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
+
     let result = reviews.filter((r) => {
       const matchesSearch =
         !q ||
@@ -388,6 +365,7 @@ export default function AdminReviewsPage() {
         r.university.toLowerCase().includes(q) ||
         r.department.toLowerCase().includes(q) ||
         r.review_text.toLowerCase().includes(q);
+
       return (
         matchesSearch &&
         (ratingFilter === "all" ||
@@ -397,6 +375,7 @@ export default function AdminReviewsPage() {
         (semesterFilter === "all" || r.semester_taken === semesterFilter)
       );
     });
+
     return [...result].sort((a, b) => {
       switch (sortKey) {
         case "newest":
@@ -427,25 +406,51 @@ export default function AdminReviewsPage() {
     sortKey,
   ]);
 
-  // TO INTEGRATE: replace body with fetch DELETE then remove from state, e.g.:
-  //   await fetch(`/api/admin/reviews/${review_id}`, { method: "DELETE" });
-  //   setReviews((prev) => prev.filter((r) => r.review_id !== review_id));
-  function handleDelete(review_id: string) {
+  function requestDelete(review: ReviewRow) {
+    setPendingDelete(review);
+  }
+
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    setReviews((prev) => prev.filter((r) => r.review_id !== pendingDelete.review_id));
     setPendingDelete(null);
-    setReviews((prev) => prev.filter((r) => r.review_id !== review_id));
   }
 
   const closeDetail = useCallback(() => setDetailReview(null), []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      {pendingDelete && (
+        <ConfirmModal
+          title="Delete review?"
+          description={
+            <>
+              Are you sure you want to delete the review for{" "}
+              <span className="font-medium text-gray-700">
+                {pendingDelete.course_code} — {pendingDelete.course_title}
+              </span>{" "}
+              by{" "}
+              <span className="font-medium text-gray-700">
+                {pendingDelete.reviewer_name}
+              </span>
+              ? This action cannot be undone.
+            </>
+          }
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
+
       {detailReview && (
         <ReviewDetailModal
           review={detailReview}
           onClose={closeDetail}
-          onDelete={(id) => {
+          onRequestDelete={(r) => {
             setDetailReview(null);
-            handleDelete(id);
+            requestDelete(r);
           }}
         />
       )}
@@ -472,6 +477,7 @@ export default function AdminReviewsPage() {
             className="w-full h-11 pl-10 pr-4 text-gray-900 placeholder-gray-400 rounded-md border border-gray-300 transition-colors focus:outline-none focus:border-[#6155F5] focus:ring-2 focus:ring-[#6155F5]"
           />
         </div>
+
         <div className="relative hidden sm:block">
           <select
             value={sortKey}
@@ -489,6 +495,7 @@ export default function AdminReviewsPage() {
             size={15}
           />
         </div>
+
         <button
           onClick={() => setShowFilters((p) => !p)}
           className="relative h-11 px-3 flex items-center justify-center gap-1.5 rounded-md border border-gray-300 hover:bg-gray-50 transition text-sm text-gray-700"
@@ -575,6 +582,7 @@ export default function AdminReviewsPage() {
                 </div>
               </div>
             ))}
+
             <div className="flex flex-col gap-1 sm:hidden">
               <label className="text-xs text-gray-500 font-medium">
                 Sort by
@@ -597,6 +605,7 @@ export default function AdminReviewsPage() {
                 />
               </div>
             </div>
+
             {activeFilterCount > 0 && (
               <button
                 onClick={resetFilters}
@@ -637,6 +646,7 @@ export default function AdminReviewsPage() {
               </th>
             </tr>
           </thead>
+
           <tbody>
             {filtered.length === 0 ? (
               <tr>
@@ -665,33 +675,34 @@ export default function AdminReviewsPage() {
                       {r.department}
                     </p>
                   </td>
+
                   <td className="px-4 py-3">
                     <p className="whitespace-nowrap font-medium text-gray-800">
                       {r.reviewer_name}
                     </p>
-                    <p className="text-xs text-gray-400 truncate max-w-37.5">
+                    <p className="text-xs text-gray-400 truncate max-w-40">
                       {r.reviewer_email}
                     </p>
                   </td>
+
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
-                    <p className="whitespace-nowrap font-medium text-gray-800">
-                      {r.instructor_name}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate max-w-37.5">
-                      {r.university}
-                    </p>
+                    {r.instructor_name}
                   </td>
+
                   <td className="px-4 py-3 whitespace-nowrap text-gray-700">
                     {r.semester_taken}
                   </td>
+
                   <td className="px-4 py-3 max-w-50">
                     <p className="text-gray-600 text-xs line-clamp-2">
                       {r.review_text}
                     </p>
                   </td>
+
                   <td className="px-4 py-3">
                     <RatingStars value={r.overall_rating} />
                   </td>
+
                   <td className="px-4 py-3">
                     <div className="grid grid-cols-1 gap-1">
                       <MetricBadge
@@ -716,19 +727,22 @@ export default function AdminReviewsPage() {
                       />
                     </div>
                   </td>
+
                   <td className="px-4 py-3">
                     <VoteDisplay upvotes={r.upvotes} downvotes={r.downvotes} />
                   </td>
+
                   <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-xs">
                     {r.created_at}
                   </td>
+
                   <td className="px-4 py-3">
                     <div
                       className="flex justify-end"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
-                        onClick={() => handleDelete(r.review_id)}
+                        onClick={() => requestDelete(r)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
                         aria-label="Delete review"
                       >
@@ -767,7 +781,7 @@ export default function AdminReviewsPage() {
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
                   <button
-                    onClick={() => handleDelete(r.review_id)}
+                    onClick={() => requestDelete(r)} 
                     className="text-gray-400 hover:text-red-500 transition-colors p-1"
                     aria-label="Delete review"
                   >
@@ -775,6 +789,7 @@ export default function AdminReviewsPage() {
                   </button>
                 </div>
               </div>
+
               <div className="mt-3 text-sm text-gray-600 space-y-1">
                 <p>
                   <span className="text-gray-400">Reviewer:</span>{" "}
@@ -797,13 +812,16 @@ export default function AdminReviewsPage() {
                   <span className="text-gray-400">Date:</span> {r.created_at}
                 </p>
               </div>
+
               <p className="mt-3 text-sm text-gray-600 line-clamp-2">
                 {r.review_text}
               </p>
+
               <div className="mt-3 flex items-center gap-4">
                 <RatingStars value={r.overall_rating} />
                 <VoteDisplay upvotes={r.upvotes} downvotes={r.downvotes} />
               </div>
+
               <div className="mt-3 flex flex-wrap gap-2">
                 <MetricBadge
                   label="Exam"
