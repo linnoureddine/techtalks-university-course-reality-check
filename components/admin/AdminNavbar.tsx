@@ -293,6 +293,18 @@ export default function AdminNavbar() {
                 <Star size={18} className="shrink-0" />
                 Reviews
               </Link>
+
+              <Link
+                href="/admin/feedback"
+                className={`${mobileItem} ${
+                  isActive(pathname, "/admin/feedback")
+                    ? activePill
+                    : inactivePill
+                }`}
+              >
+                <MessageSquare size={18} className="shrink-0" />
+                Feedback
+              </Link>
             </div>
           </div>
         </div>
