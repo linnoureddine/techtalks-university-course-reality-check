@@ -149,7 +149,6 @@ export default function AdminUsersPage() {
         </Button>
       </div>
 
-      {/* Add Admin Card */}
       {showAdminForm && (
         <div className="mt-4">
           <AddAdminCard
@@ -190,65 +189,97 @@ export default function AdminUsersPage() {
           focus:border-[#6155F5]"
         />
       </div>
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead className="bg-gray-50 text-gray-500">
-            <tr className="border-b border-gray-200">
-              <th className="text-left px-4 py-3">User</th>
-              <th className="text-left px-4 py-3">Email</th>
-              <th className="text-left px-4 py-3">Role</th>
-              <th className="text-left px-4 py-3">Joined</th>
-              <th className="text-right px-4 py-3">Actions</th>
-            </tr>
-          </thead>
+      {/* Desktop Table */}
+<div className="mt-6 hidden md:block rounded-xl border border-gray-200 bg-white overflow-x-auto">
+  <table className="w-full text-sm border-collapse">
+    <thead className="bg-gray-50 text-gray-500">
+      <tr className="border-b border-gray-200">
+        <th className="text-left px-4 py-3">User</th>
+        <th className="text-left px-4 py-3">Email</th>
+        <th className="text-left px-4 py-3">Role</th>
+        <th className="text-left px-4 py-3">Joined</th>
+        <th className="text-right px-4 py-3">Actions</th>
+      </tr>
+    </thead>
 
-          <tbody>
-            {displayUsers.map((u) => (
-              <tr
-                key={u.id}
-                className="border-t border-gray-200 hover:bg-gray-50"
+    <tbody>
+      {displayUsers.map((u) => (
+        <tr
+          key={u.id}
+          className="border-t border-gray-200 hover:bg-gray-50"
+        >
+          <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
+          <td className="px-4 py-3 text-gray-700">{u.email}</td>
+          <td className="px-4 py-3">
+            <RolePill role={u.role} />
+          </td>
+          <td className="px-4 py-3 text-gray-700">{u.joined}</td>
+          <td className="px-4 py-3 text-right">
+            {u.protected ? (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                <Shield size={16} /> Protected
+              </span>
+            ) : (
+              <button
+                onClick={() => handleDelete(u)}
+                className="hover:text-red-500"
+                aria-label="Delete user"
               >
-                <td className="px-4 py-3 font-medium text-gray-900">
-                  {u.name}
-                </td>
+                <Trash2 size={16} />
+              </button>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
 
-                <td className="px-4 py-3 text-gray-700">
-                  {u.email}
-                </td>
+  {displayUsers.length === 0 && (
+    <div className="py-8 text-center text-gray-500">No users found.</div>
+  )}
+</div>
 
-                <td className="px-4 py-3">
-                  <RolePill role={u.role} />
-                </td>
-
-                <td className="px-4 py-3 text-gray-700">
-                  {u.joined}
-                </td>
-
-                <td className="px-4 py-3 text-right">
-                  {u.protected ? (
-                    <span className="inline-flex items-center gap-1 text-xs text-gray-400">
-                      <Shield size={16} /> Protected
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => handleDelete(u)}
-                      className="hover:text-red-500"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {displayUsers.length === 0 && (
-          <div className="py-8 text-center text-gray-500">
-            No users found.
+{/* Mobile Cards */}
+<div className="mt-6 md:hidden flex flex-col gap-3">
+  {displayUsers.length === 0 ? (
+    <div className="py-8 text-center text-gray-500">No users found.</div>
+  ) : (
+    displayUsers.map((u) => (
+      <div
+        key={u.id}
+        className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-900 truncate">{u.name}</p>
+            <p className="text-sm text-gray-600 truncate">{u.email}</p>
           </div>
-        )}
+
+          <div className="shrink-0">
+            {u.protected ? (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                <Shield size={16} /> Protected
+              </span>
+            ) : (
+              <button
+                onClick={() => handleDelete(u)}
+                className="text-gray-400 hover:text-red-500 transition"
+                aria-label="Delete user"
+              >
+                <Trash2 size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between">
+          <RolePill role={u.role} />
+          <span className="text-xs text-gray-500">Joined: {u.joined}</span>
+        </div>
       </div>
+    ))
+  )}
+</div>
     </div>
   );
 }
