@@ -12,6 +12,7 @@ export async function GET(req: Request) {
         feedback_id,
         message,
         user_id,
+        rating,
         created_at
       FROM feedback
       WHERE message IS NOT NULL AND message <> ''
@@ -25,13 +26,14 @@ export async function GET(req: Request) {
       feedbackId: r.feedback_id,
       text: r.message,
       username: r.user_id ? `student#${r.user_id}` : "anonymous",
-      createdAt: r.created_at
+      rating: r.rating ?? 0,
+      createdAt: r.created_at,
     }));
 
     return NextResponse.json({
       success: true,
       count: testimonials.length,
-      testimonials
+      testimonials,
     });
   } catch (error: any) {
     console.error("TESTIMONIALS ERROR:", error);

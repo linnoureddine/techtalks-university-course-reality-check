@@ -3,14 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import FeedbackModal from "./FeedbackModal";
 import Button from "./Button";
+import StarRating from "./StarRating";
 
 type Feedback = {
   quote: string;
   user: string;
+  rating: number;
   createdAt?: string;
 };
 
-function QuoteCard({ quote, user }: Feedback) {
+function QuoteCard({ quote, user, rating }: Feedback) {
   return (
     <div
       className="
@@ -21,6 +23,9 @@ function QuoteCard({ quote, user }: Feedback) {
         hover:-translate-y-1
       "
     >
+      {/* ⭐ Rating (same component styling) */}
+      <StarRating value={Number(rating) || 0} readOnly className="mb-2" />
+
       <p className="text-[13px] font-bold text-gray-900 leading-snug">
         “{quote}”
       </p>
@@ -36,7 +41,6 @@ export default function FeedbackCarousel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔥 this triggers refetch after submit
   const [reloadKey, setReloadKey] = useState(0);
 
   const rowRef = useRef<HTMLDivElement | null>(null);
@@ -59,6 +63,7 @@ export default function FeedbackCarousel() {
         const mapped: Feedback[] = (data.testimonials || []).map((t: any) => ({
           quote: t.text,
           user: t.username,
+          rating: Number(t.rating) || 0,
           createdAt: t.createdAt,
         }));
 
@@ -119,7 +124,12 @@ export default function FeedbackCarousel() {
               !error &&
               feedbacks.map((f, idx) => (
                 <div key={idx} className="shrink-0">
-                  <QuoteCard quote={f.quote} user={f.user} />
+                  <QuoteCard
+                    quote={f.quote}
+                    user={f.user}
+                    rating={f.rating}
+                    createdAt={f.createdAt}
+                  />
                 </div>
               ))}
           </div>
@@ -146,7 +156,7 @@ export default function FeedbackCarousel() {
           onClose={() => setFeedbackOpen(false)}
           onSubmitted={() => {
             setFeedbackOpen(false);
-            setReloadKey((k) => k + 1); 
+            setReloadKey((k) => k + 1);
           }}
         />
       )}
