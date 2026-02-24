@@ -7,6 +7,7 @@ export async function POST(req: Request) {
 
     const rating = body?.rating;
     const message = body?.message;
+    const name = body?.name; 
 
     // Validate message
     if (!message || typeof message !== "string" || message.trim().length < 3) {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validate rating
+    // Validate rating 
     let normalizedRating: number | null = null;
     if (rating !== undefined && rating !== null) {
       const r = Number(rating);
@@ -29,9 +30,15 @@ export async function POST(req: Request) {
       normalizedRating = r;
     }
 
+    // Validate name 
+    let cleanName: string | null = null;
+    if (name && typeof name === "string" && name.trim().length > 0) {
+      cleanName = name.trim();
+    }
+
     const [result]: any = await pool.query(
-      "INSERT INTO feedback (rating, message, user_id) VALUES (?, ?, NULL)",
-      [normalizedRating, message.trim()]
+      "INSERT INTO feedback (name, rating, message, user_id) VALUES (?, ?, ?, NULL)",
+      [cleanName, normalizedRating, message.trim()]
     );
 
     return NextResponse.json(
