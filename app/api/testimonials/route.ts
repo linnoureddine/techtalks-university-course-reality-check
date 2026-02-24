@@ -10,7 +10,6 @@ export async function GET(req: Request) {
       `
       SELECT
         feedback_id,
-        name,
         message,
         user_id,
         created_at
@@ -25,12 +24,7 @@ export async function GET(req: Request) {
     const testimonials = rows.map((r: any) => ({
       feedbackId: r.feedback_id,
       text: r.message,
-      username:
-        r.name && String(r.name).trim().length > 0
-          ? r.name
-          : r.user_id
-            ? `student#${r.user_id}`
-            : "anonymous",
+      username: r.user_id ? `student#${r.user_id}` : "anonymous",
       createdAt: r.created_at
     }));
 
