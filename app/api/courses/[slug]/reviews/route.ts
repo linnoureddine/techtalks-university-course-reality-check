@@ -23,11 +23,11 @@ function anonymousName(userId: number): string {
 // ---------------------------------------------------------------------------
 async function courseIdFromSlug(slug: string): Promise<number | null> {
   // Convert slug back to the code format stored in DB: "cmps-214" → "CMPS 214"
-  const code = slug.replace(/-/g, " ").toUpperCase();
+  const normalizedSlug = slug.toUpperCase().replace(/-/g, " ");
 
   const [rows]: any = await pool.query(
-    "SELECT course_id FROM course WHERE UPPER(code) = ? AND deleted_at IS NULL LIMIT 1",
-    [code],
+    "SELECT course_id FROM course WHERE REPLACE(UPPER(code), '-', ' ') = ? LIMIT 1",
+    [normalizedSlug],
   );
 
   return rows.length > 0 ? rows[0].course_id : null;
@@ -94,7 +94,7 @@ export async function GET(
           COALESCE(SUM(CASE WHEN rv.vote_value = -1 THEN 1 ELSE 0 END), 0) AS downvotes
         FROM review r
         LEFT JOIN review_vote rv ON rv.review_id = r.review_id
-        WHERE r.course_id = ? AND r.deleted_at IS NULL
+        WHERE r.course_id = ?
         GROUP BY
           r.review_id, r.user_id, r.semester_taken, r.instructor_name,
           r.overall_rating, r.review_text, r.exam_difficulty_rating,

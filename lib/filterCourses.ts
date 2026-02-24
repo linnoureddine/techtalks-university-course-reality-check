@@ -19,22 +19,33 @@ export function filterCourses(
   }: CourseFilters,
 ): Course[] {
   const normalizedQuery = query.toLowerCase().trim();
+  const normalizedUniversity = university.toLowerCase().trim();
+  const normalizedDepartment = department.toLowerCase().trim();
+  const normalizedLanguage = language.toLowerCase().trim();
+  const normalizedLevel = level.toLowerCase().trim();
 
   return courses.filter((course) => {
-    const matchesUniversity = !university || course.university === university;
+    const matchesUniversity =
+      !normalizedUniversity ||
+      course.university.toLowerCase() === normalizedUniversity;
 
-    const matchesDepartment = !department || course.department === department;
+    const matchesDepartment =
+      !normalizedDepartment ||
+      course.department.toLowerCase() === normalizedDepartment;
 
-    const matchesLanguage = !language || course.language === language;
+    const matchesLanguage =
+      !normalizedLanguage ||
+      course.language.toLowerCase() === normalizedLanguage;
 
-    const matchesLevel = !level || course.level === level;
+    const matchesLevel =
+      !normalizedLevel || course.level.toLowerCase() === normalizedLevel;
 
     const matchesQuery =
       !normalizedQuery ||
-      course.title.toLowerCase().includes(normalizedQuery.toLowerCase()) ||
-      course.code.toLowerCase().includes(normalizedQuery.toLowerCase()) ||
-      course.university.toLowerCase().includes(normalizedQuery.toLowerCase()) ||
-      course.department.toLowerCase().includes(normalizedQuery.toLowerCase());
+      course.title.toLowerCase().includes(normalizedQuery) ||
+      course.code.toLowerCase().includes(normalizedQuery) ||
+      course.university.toLowerCase().includes(normalizedQuery) ||
+      course.department.toLowerCase().includes(normalizedQuery);
 
     return (
       matchesUniversity &&

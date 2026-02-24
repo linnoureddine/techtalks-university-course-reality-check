@@ -186,4 +186,6 @@ CREATE TABLE IF NOT EXISTS `password_reset_token` (
     ON DELETE CASCADE
 );
 
+
+
 COMMIT;

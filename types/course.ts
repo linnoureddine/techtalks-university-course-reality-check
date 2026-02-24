@@ -1,19 +1,21 @@
 export interface Course {
-  slug: string;
+  courseId: number;
+  slug?: string;
   code: string;
   title: string;
   university: string;
   department: string;
   description: string;
-  credits: string;
+  credits: string | number;
   level: string;
   language: string;
-  rating: number;
-  metrics: {
-    exam: number;
-    workload: number;
-    attendance: number;
-    grading: number;
+  averageRating: number | null;
+  ratings: {
+    exam: number | null;
+    workload: number | null;
+    attendance: number | null;
+    grading: number | null;
   };
-  reviewsLabel: string;
+  reviewCount: number;
+  prerequisites?: { course_id: number; code: string; title: string }[];
 }

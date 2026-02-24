@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/db";
 
-/**
- * GET /api/courses/[slug]
- *
- * Returns a single course's full details for the course detail page.
- * Slug format: course code lowercased with spaces → hyphens
- * e.g. "CMPS 214" → "cmps-214"
- */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
@@ -15,8 +8,12 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    // Reverse slug → DB code: "cmps-214" → "CMPS 214"
-    const code = slug.replace(/-/g, " ").toUpperCase();
+    // Normalize slug: "csc-326" → "CSC 326"
+    // Also normalize stored code in SQL so "CSC-326" and "CSC 326" both match.
+    const normalizedSlug = slug.toUpperCase().replace(/-/g, " ");
+
+    console.log("[slug route] raw slug:", slug);
+    console.log("[slug route] normalizedSlug:", normalizedSlug);
 
     const [rows]: any = await pool.query(
       `
@@ -43,19 +40,21 @@ export async function GET(
       FROM course c
       INNER JOIN department d ON d.department_id = c.department_id
       INNER JOIN university u ON u.university_id  = d.university_id
-      LEFT JOIN review r
-        ON r.course_id   = c.course_id
-        AND r.deleted_at IS NULL
+      LEFT JOIN review r ON r.course_id = c.course_id
 
-      WHERE UPPER(c.code) = ? AND c.deleted_at IS NULL
+      WHERE REPLACE(UPPER(c.code), '-', ' ') = ?
 
       GROUP BY
         c.course_id, c.code, c.title, c.description,
         c.credits, c.level, c.language,
         d.name, d.department_id, u.name, u.university_id
       `,
-      [code],
+      [normalizedSlug],
     );
+
+    console.log("[slug route] rows returned:", rows?.length ?? 0);
+    if (rows?.length > 0)
+      console.log("[slug route] matched code:", rows[0].code);
 
     if (!rows || rows.length === 0) {
       return NextResponse.json(
@@ -71,7 +70,7 @@ export async function GET(
       `SELECT c.course_id, c.code, c.title
        FROM course_prerequisite cp
        JOIN course c ON c.course_id = cp.prereq_course_id
-       WHERE cp.course_id = ? AND c.deleted_at IS NULL`,
+       WHERE cp.course_id = ?`,
       [row.course_id],
     );
 
@@ -92,32 +91,30 @@ export async function GET(
         universityId: row.university_id,
         reviewCount: Number(row.reviewCount) || 0,
         averageRating:
-          row.avgOverall === null
+          row.avgOverall == null
             ? null
             : Number(Number(row.avgOverall).toFixed(2)),
         ratings: {
           exam:
-            row.avgExam === null
-              ? null
-              : Number(Number(row.avgExam).toFixed(2)),
+            row.avgExam == null ? null : Number(Number(row.avgExam).toFixed(2)),
           workload:
-            row.avgWorkload === null
+            row.avgWorkload == null
               ? null
               : Number(Number(row.avgWorkload).toFixed(2)),
           attendance:
-            row.avgAttendance === null
+            row.avgAttendance == null
               ? null
               : Number(Number(row.avgAttendance).toFixed(2)),
           grading:
-            row.avgGrading === null
+            row.avgGrading == null
               ? null
               : Number(Number(row.avgGrading).toFixed(2)),
         },
-        prerequisites: prereqs,
+        prerequisites: prereqs ?? [],
       },
     });
   } catch (error: any) {
-    console.error("GET COURSE BY SLUG ERROR:", error);
+    console.error("GET COURSE BY SLUG ERROR:", error.message, error.stack);
     return NextResponse.json(
       { success: false, message: "Failed to fetch course" },
       { status: 500 },
