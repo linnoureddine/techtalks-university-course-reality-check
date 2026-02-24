@@ -5,14 +5,19 @@ import StarRating from "./StarRating";
 import Button from "./Button";
 import { useToast } from "./toast/Toastprovider";
 
+type Props = {
+  onClose: () => void;
+  onSubmitted: () => void;
+};
 
-export default function FeedbackModal({ onClose }: { onClose: () => void }) {
+export default function FeedbackModal({ onClose, onSubmitted }: Props) {
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { toast } = useToast();
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!feedback.trim()) {
       toast("Please write some feedback before submitting.", "error");
       return;
@@ -22,13 +27,34 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    console.log({ rating, feedback });
+    try {
+      setLoading(true);
 
-    toast("Thanks! Your feedback was submitted.", "success");
-    onClose();
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating,
+          message: feedback.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Failed to submit feedback");
+      }
+
+      toast("Thanks! Your feedback was submitted.", "success");
+      onSubmitted();
+    } catch (err: any) {
+      toast(err.message || "Failed to submit feedback", "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const isDisabled = !feedback.trim() || rating === 0;
+  const isDisabled = loading || !feedback.trim() || rating === 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
@@ -38,6 +64,7 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
           className="absolute right-4 top-4 text-gray-500 hover:text-gray-900"
           aria-label="Close"
           type="button"
+          disabled={loading}
         >
           ✕
         </button>
@@ -58,14 +85,13 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
         />
 
         <div className="mt-4 flex justify-end">
-          {/* same Button, but block click when disabled */}
           <div
             className={isDisabled ? "opacity-50 cursor-not-allowed" : ""}
             onClick={() => {
               if (!isDisabled) handleSubmit();
             }}
           >
-            <Button>Submit</Button>
+            <Button>{loading ? "Submitting..." : "Submit"}</Button>
           </div>
         </div>
       </div>

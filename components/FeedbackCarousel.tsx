@@ -1,41 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FeedbackModal from "./FeedbackModal";
 import Button from "./Button";
 
 type Feedback = {
   quote: string;
   user: string;
+  createdAt?: string;
 };
-
-const FEEDBACKS: Feedback[] = [
-  {
-    quote:
-      "This platform helped me avoid choosing the wrong course. The student reviews were honest and super helpful.",
-    user: "student2189",
-  },
-  {
-    quote:
-      "This platform helped me avoid choosing the wrong course. The student reviews were honest and super helpful.",
-    user: "student2189",
-  },
-  {
-    quote:
-      "This platform helped me avoid choosing the wrong course. The student reviews were honest and super helpful.",
-    user: "student2189",
-  },
-  {
-    quote:
-      "This platform helped me avoid choosing the wrong course. The student reviews were honest and super helpful.",
-    user: "student2189",
-  },
-  {
-    quote:
-      "This platform helped me avoid choosing the wrong course. The student reviews were honest and super helpful.",
-    user: "student2189",
-  },
-];
 
 function QuoteCard({ quote, user }: Feedback) {
   return (
@@ -59,7 +32,46 @@ function QuoteCard({ quote, user }: Feedback) {
 export default function FeedbackCarousel() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // 🔥 this triggers refetch after submit
+  const [reloadKey, setReloadKey] = useState(0);
+
   const rowRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch("/api/testimonials?limit=12", {
+          cache: "no-store",
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.message || "Failed to fetch testimonials");
+        }
+
+        const mapped: Feedback[] = (data.testimonials || []).map((t: any) => ({
+          quote: t.text,
+          user: t.username,
+          createdAt: t.createdAt,
+        }));
+
+        setFeedbacks(mapped);
+      } catch (e: any) {
+        setError(e.message || "Failed to fetch testimonials");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, [reloadKey]);
 
   function slideLeft() {
     if (!rowRef.current) return;
@@ -79,7 +91,7 @@ export default function FeedbackCarousel() {
         </h2>
 
         <div className="relative mt-8">
-            <button
+          <button
             type="button"
             onClick={slideLeft}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50"
@@ -93,11 +105,23 @@ export default function FeedbackCarousel() {
             className="flex gap-6 overflow-x-auto flex-nowrap px-12"
             style={{ scrollbarWidth: "none" }}
           >
-            {FEEDBACKS.map((f, idx) => (
-              <div key={idx} className="shrink-0">
-                <QuoteCard quote={f.quote} user={f.user} />
-              </div>
-            ))}
+            {loading && <p className="text-gray-500 px-2">Loading…</p>}
+
+            {!loading && error && (
+              <p className="text-red-500 px-2">{error}</p>
+            )}
+
+            {!loading && !error && feedbacks.length === 0 && (
+              <p className="text-gray-500 px-2">No feedback yet.</p>
+            )}
+
+            {!loading &&
+              !error &&
+              feedbacks.map((f, idx) => (
+                <div key={idx} className="shrink-0">
+                  <QuoteCard quote={f.quote} user={f.user} />
+                </div>
+              ))}
           </div>
 
           <button
@@ -117,8 +141,15 @@ export default function FeedbackCarousel() {
         </div>
       </div>
 
-      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
+      {feedbackOpen && (
+        <FeedbackModal
+          onClose={() => setFeedbackOpen(false)}
+          onSubmitted={() => {
+            setFeedbackOpen(false);
+            setReloadKey((k) => k + 1); 
+          }}
+        />
+      )}
     </section>
   );
 }
-// carousel tweak update 
