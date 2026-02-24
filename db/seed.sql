@@ -1,6 +1,6 @@
 /*  Initial seed data for Coursality */
 
-USE course_checker;
+USE coursality;
 SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
 

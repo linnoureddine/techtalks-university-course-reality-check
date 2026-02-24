@@ -1,72 +1,178 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import StarRating from "@/components/StarRating";
 import ReviewFooterBar from "@/components/ReviewFooterBar";
 import { FileText, Briefcase, MapPin, Scale } from "lucide-react";
 
-export default function StudentReviews() {
+type Review = {
+  review_id: number;
+  anonymous_name: string;
+  semester_taken: string;
+  instructor_name: string;
+  overall_rating: number;
+  review_text: string;
+  exam_difficulty_rating: number;
+  workload_rating: number;
+  attendance_rating: number;
+  grading_rating: number;
+  upvotes: number;
+  downvotes: number;
+  net_votes: number;
+  created_at: string;
+};
+
+const SORT_OPTIONS = [
+  { label: "Most Popular", value: "popular" },
+  { label: "Newest", value: "newest" },
+  { label: "Highest Rated", value: "rating_high" },
+  { label: "Lowest Rated", value: "rating_low" },
+];
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  const weeks = Math.floor(days / 7);
+  const months = Math.floor(days / 30);
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  if (weeks < 4) return `${weeks}w ago`;
+  return `${months}mo ago`;
+}
+
+interface Props {
+  slug: string;
+  refreshKey?: number; // increment to force a refetch after new review submitted
+}
+
+export default function StudentReviews({ slug, refreshKey = 0 }: Props) {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [sort, setSort] = useState("popular");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchReviews = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`/api/courses/${slug}/reviews?sort=${sort}`);
+      if (!res.ok) throw new Error("Failed to load reviews");
+      const data = await res.json();
+      setReviews(data.reviews ?? []);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }, [slug, sort]);
+
+  // Refetch when sort changes or parent signals a new review was submitted
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews, refreshKey]);
+
   return (
     <section className="mt-10">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">
           Student Reviews{" "}
-          <span className="text-gray-500 font-normal">(2)</span>
+          {!loading && (
+            <span className="text-gray-500 font-normal">
+              ({reviews.length})
+            </span>
+          )}
         </h2>
 
-        <select className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6155F5]">
-          <option>Most Popular</option>
-          <option>Newest</option>
-          <option>Highest Rated</option>
-          <option>Lowest Rated</option>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#6155F5]"
+        >
+          {SORT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
         </select>
       </div>
 
-      <div className="space-y-4">
-        <div className="rounded-xl bg-white p-7 shadow-sm border border-gray-100">
-          <div className="flex items-start justify-between gap-6">
-            <div>
-              <h3 className="font-semibold text-gray-900 text-lg">
-                Student352372
-              </h3>
-              <p className="text-sm text-gray-500 mt-0.5">
-                Taken Fall 2023 · Instructor: Dr. Lama Affara
+      {loading && (
+        <p className="text-gray-400 text-center py-10">Loading reviews…</p>
+      )}
+
+      {!loading && error && (
+        <p className="text-red-500 text-center py-10">{error}</p>
+      )}
+
+      {!loading && !error && reviews.length === 0 && (
+        <p className="text-gray-400 text-center py-10">
+          No reviews yet. Be the first to review this course!
+        </p>
+      )}
+
+      {!loading && !error && reviews.length > 0 && (
+        <div className="space-y-4">
+          {reviews.map((r) => (
+            <div
+              key={r.review_id}
+              className="rounded-xl bg-white p-7 shadow-sm border border-gray-100"
+            >
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-lg">
+                    {r.anonymous_name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Taken {r.semester_taken} · Instructor: {r.instructor_name}
+                  </p>
+                </div>
+                <StarRating value={r.overall_rating} readOnly />
+              </div>
+
+              <p className="mt-4 text-gray-700 leading-7 text-[15px]">
+                {r.review_text}
               </p>
+
+              <div className="mt-6 rounded-xl border border-gray-200 bg-white px-6 py-4">
+                <div className="grid grid-cols-2 gap-y-4 md:grid-cols-4">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <FileText className="h-5 w-5 text-gray-400" />
+                    <span className="text-base">
+                      Exam: {r.exam_difficulty_rating}/5
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Briefcase className="h-5 w-5 text-gray-400" />
+                    <span className="text-base">
+                      Workload: {r.workload_rating}/5
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <MapPin className="h-5 w-5 text-gray-400" />
+                    <span className="text-base">
+                      Attendance: {r.attendance_rating}/5
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Scale className="h-5 w-5 text-gray-400" />
+                    <span className="text-base">
+                      Grading: {r.grading_rating}/5
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <ReviewFooterBar
+                initialVotes={r.net_votes}
+                timeAgo={timeAgo(r.created_at)}
+              />
             </div>
-
-            <StarRating value={5} readOnly />
-          </div>
-
-          <p className="mt-4 text-gray-700 leading-7 text-[15px]">
-            The Animation Tools course was manageable in terms of difficulty and
-            well-structured for beginners. The material was explained clearly,
-            and the assignments helped reinforce what we learned...
-          </p>
-
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white px-6 py-4">
-            <div className="grid grid-cols-2 gap-y-4 md:grid-cols-4">
-              <div className="flex items-center gap-3 text-gray-600">
-                <FileText className="h-5 w-5 text-gray-400" />
-                <span className="text-base">Exam: 4/5</span>
-              </div>
-
-              <div className="flex items-center gap-3 text-gray-600">
-                <Briefcase className="h-5 w-5 text-gray-400" />
-                <span className="text-base">Workload: 4/5</span>
-              </div>
-
-              <div className="flex items-center gap-3 text-gray-600">
-                <MapPin className="h-5 w-5 text-gray-400" />
-                <span className="text-base">Attendance: 3/5</span>
-              </div>
-
-              <div className="flex items-center gap-3 text-gray-600">
-                <Scale className="h-5 w-5 text-gray-400" />
-                <span className="text-base">Grading: 5/5</span>
-              </div>
-            </div>
-          </div>
-
-          <ReviewFooterBar initialVotes={24} timeAgo="2 weeks ago" />
+          ))}
         </div>
-      </div>
+      )}
     </section>
   );
 }

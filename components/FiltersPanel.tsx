@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/Button";
 import { Filters } from "@/types/filters";
 
@@ -17,7 +17,12 @@ export default function FiltersPanel({
   onApply,
   onReset,
 }: FiltersPanelProps) {
-  const [draftFilters, setDraftFilters] = useState(filters);
+  const [draftFilters, setDraftFilters] = useState<Filters>(filters);
+
+  // Keep draft in sync if parent resets filters externally
+  useEffect(() => {
+    setDraftFilters(filters);
+  }, [filters]);
 
   const handleDraftChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -26,15 +31,19 @@ export default function FiltersPanel({
 
   const handleApply = () => {
     setFilters(draftFilters);
-    setDraftFilters(draftFilters);
     onApply?.();
   };
 
   const handleReset = () => {
-    const reset = { university: "", department: "", language: "", level: "" };
+    const reset: Filters = {
+      university: "",
+      department: "",
+      language: "",
+      level: "",
+    };
     setFilters(reset);
     setDraftFilters(reset);
-    setFilters(reset);
+    onReset?.();
   };
 
   return (
@@ -48,12 +57,24 @@ export default function FiltersPanel({
             className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
           >
             <option value="">All Universities</option>
-            <option>American University of Beirut</option>
-            <option>University of Balamand</option>
-            <option>Lebanese American University</option>
-            <option>Beirut Arab University</option>
-            <option>Lebanese International University</option>
-            <option>Université Saint-Joseph de Beyrouth</option>
+            <option value="American University of Beirut">
+              American University of Beirut
+            </option>
+            <option value="University of Balamand">
+              University of Balamand
+            </option>
+            <option value="Lebanese American University">
+              Lebanese American University
+            </option>
+            <option value="Beirut Arab University">
+              Beirut Arab University
+            </option>
+            <option value="Lebanese International University">
+              Lebanese International University
+            </option>
+            <option value="Université Saint-Joseph de Beyrouth">
+              Université Saint-Joseph de Beyrouth
+            </option>
           </select>
 
           <select
@@ -63,8 +84,8 @@ export default function FiltersPanel({
             className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
           >
             <option value="">All Departments</option>
-            <option>Computer Science</option>
-            <option>Mathematics</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Mathematics">Mathematics</option>
           </select>
 
           <select
@@ -74,9 +95,9 @@ export default function FiltersPanel({
             className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
           >
             <option value="">Any Language</option>
-            <option>English</option>
-            <option>Arabic</option>
-            <option>French</option>
+            <option value="English">English</option>
+            <option value="Arabic">Arabic</option>
+            <option value="French">French</option>
           </select>
 
           <select
@@ -86,9 +107,9 @@ export default function FiltersPanel({
             className="w-full lg:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 focus:border-[#6155F5] focus:outline-none"
           >
             <option value="">Any Level</option>
-            <option>Undergraduate</option>
-            <option>Graduate</option>
-            <option>Phd</option>
+            <option value="Undergraduate">Undergraduate</option>
+            <option value="Graduate">Graduate</option>
+            <option value="Phd">Phd</option>
           </select>
         </div>
 
@@ -97,10 +118,7 @@ export default function FiltersPanel({
             Apply
           </Button>
           <Button
-            onClick={(e) => {
-              handleReset();
-              if (onReset) onReset();
-            }}
+            onClick={handleReset}
             className="text-sm w-full lg:w-auto"
             variant="elevated"
           >

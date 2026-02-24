@@ -6,11 +6,13 @@ import StarRating from "@/components/StarRating";
 import SliderRow from "@/components/SliderRow";
 
 type WriteReviewCardProps = {
+  slug: string;
   onSubmit: () => void;
   onCancel: () => void;
 };
 
 export default function WriteReviewCard({
+  slug,
   onSubmit,
   onCancel,
 }: WriteReviewCardProps) {
@@ -22,12 +24,11 @@ export default function WriteReviewCard({
   const [workload, setWorkload] = useState(3);
   const [gradingFairness, setGradingFairness] = useState(3);
   const [review, setReview] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const canSubmit =
-    overallRating > 0 &&
-    instructor.trim() &&
-    semester.trim() &&
-    review.trim();
+    overallRating > 0 && instructor.trim() && semester.trim() && review.trim();
 
   function resetForm() {
     setOverallRating(0);
@@ -38,26 +39,46 @@ export default function WriteReviewCard({
     setWorkload(3);
     setGradingFairness(3);
     setReview("");
+    setError(null);
   }
 
-  function handleSubmit() {
-    if (!canSubmit) return;
+  async function handleSubmit() {
+    if (!canSubmit || submitting) return;
 
-    const payload = {
-      overallRating,
-      instructor: instructor.trim(),
-      semester: semester.trim(),
-      examDifficulty,
-      attendanceStrictness,
-      workload,
-      gradingFairness,
-      review: review.trim(),
-    };
+    setSubmitting(true);
+    setError(null);
 
-    console.log(payload);
+    try {
+      const res = await fetch(`/api/courses/${slug}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          overallRating,
+          instructor: instructor.trim(),
+          semester: semester.trim(),
+          examDifficulty,
+          attendanceStrictness,
+          workload,
+          gradingFairness,
+          review: review.trim(),
+        }),
+      });
 
-    resetForm();
-    onSubmit();
+      const data = await res.json();
+
+      if (!res.ok) {
+        // 401 = not logged in, 409 = already reviewed, 400 = validation
+        setError(data.message ?? "Failed to submit review");
+        return;
+      }
+
+      resetForm();
+      onSubmit(); // tells parent to close the form and refresh reviews
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleCancel() {
@@ -67,9 +88,13 @@ export default function WriteReviewCard({
 
   return (
     <div className="w-full rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
-      <h2 className="text-xl font-semibold text-gray-900">
-        Leave Your Review
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900">Leave Your Review</h2>
+
+      {error && (
+        <div className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
 
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">
         <div className="space-y-2">
@@ -81,7 +106,7 @@ export default function WriteReviewCard({
 
         <div className="space-y-2">
           <div className="text-sm font-medium text-gray-700">
-            Instructor’s Name
+            Instructor's Name
           </div>
           <input
             value={instructor}
@@ -134,9 +159,7 @@ export default function WriteReviewCard({
       </div>
 
       <div className="mt-6 space-y-2">
-        <div className="text-sm font-medium text-gray-700">
-          Your Review
-        </div>
+        <div className="text-sm font-medium text-gray-700">Your Review</div>
         <textarea
           value={review}
           onChange={(e) => setReview(e.target.value)}
@@ -146,20 +169,18 @@ export default function WriteReviewCard({
       </div>
 
       <div className="mt-6 flex justify-end gap-3">
-        <Button
-          variant="elevated"
-          onClick={handleCancel}
-        >
+        <Button variant="elevated" onClick={handleCancel} disabled={submitting}>
           Cancel
         </Button>
-
         <Button
           variant="primary"
           onClick={handleSubmit}
-          disabled={!canSubmit}
-          className={!canSubmit ? "opacity-50 cursor-not-allowed" : ""}
+          disabled={!canSubmit || submitting}
+          className={
+            !canSubmit || submitting ? "opacity-50 cursor-not-allowed" : ""
+          }
         >
-          Submit Review
+          {submitting ? "Submitting…" : "Submit Review"}
         </Button>
       </div>
     </div>
