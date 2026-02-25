@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StarRating from "./StarRating";
 
 type Testimonial = {
   feedbackId: number;
   text: string;
   username: string;
+  rating: number;
   createdAt: string;
 };
 
@@ -63,7 +65,14 @@ export default function TestimonialsSection({ limit = 8 }: { limit?: number }) {
               key={t.feedbackId}
               className="rounded-2xl border bg-white p-5 shadow-sm"
             >
-              <p className="text-gray-700 leading-relaxed">"{t.text}"</p>
+              {/* ⭐ Rating */}
+              <StarRating
+                value={Number(t.rating) || 0}
+                readOnly
+                className="mb-2"
+              />
+
+              <p className="text-gray-700 leading-relaxed">“{t.text}”</p>
 
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-sm font-medium">{t.username}</span>
