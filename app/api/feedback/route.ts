@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const rating = body?.rating;
+    const rating = Number(body?.rating);
     const message = body?.message;
 
     // Validate message
@@ -16,36 +16,28 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validate rating
-    let normalizedRating: number | null = null;
-    if (rating !== undefined && rating !== null) {
-      const r = Number(rating);
-      if (!Number.isInteger(r) || r < 1 || r > 5) {
-        return NextResponse.json(
-          { success: false, message: "rating must be an integer between 1 and 5" },
-          { status: 400 }
-        );
-      }
-      normalizedRating = r;
+    // Validate rating (1..5)
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { success: false, message: "rating must be an integer between 1 and 5" },
+        { status: 400 }
+      );
     }
 
+    // anonymous feedback => user_id = NULL (requires DB to allow NULL)
     const [result]: any = await pool.query(
-      "INSERT INTO feedback (rating, message, user_id) VALUES (?, ?, NULL)",
-      [normalizedRating, message.trim()]
+      "INSERT INTO feedback (rating, message, user_id) VALUES (?, ?, ?)",
+      [rating, message.trim(), null]
     );
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "Feedback submitted",
-        feedbackId: result.insertId
-      },
+      { success: true, message: "Feedback submitted", feedbackId: result.insertId },
       { status: 201 }
     );
   } catch (error: any) {
     console.error("FEEDBACK POST ERROR:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to submit feedback" },
+      { success: false, message: error?.message || "Failed to submit feedback" },
       { status: 500 }
     );
   }
