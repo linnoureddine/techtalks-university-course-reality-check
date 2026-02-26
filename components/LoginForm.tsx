@@ -28,7 +28,8 @@ export default function LoginForm() {
         },
         body: JSON.stringify({
           email,
-          password
+          password,
+          remember 
         })
       });
 
@@ -39,17 +40,6 @@ export default function LoginForm() {
         return;
       }
 
-      // Store token
-      if (remember) {
-        localStorage.setItem("token", data.token);
-      } else {
-        sessionStorage.setItem("token", data.token);
-      }
-
-      // Optionally store user info
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      // Redirect
       router.push("/");
 
     } catch (error) {
