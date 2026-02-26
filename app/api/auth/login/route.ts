@@ -9,36 +9,35 @@ export async function POST(req: Request) {
 
     const email = body?.email;
     const password = body?.password;
+    const remember = body?.remember === true; 
 
-    // 1) Validation
     if (!email || typeof email !== "string") {
       return NextResponse.json(
-        { success: false, message: "email is required" },
+        { success: false, message: "Email is required" },
         { status: 400 }
       );
     }
 
     if (!password || typeof password !== "string") {
       return NextResponse.json(
-        { success: false, message: "password is required" },
+        { success: false, message: "Password is required" },
         { status: 400 }
       );
     }
 
     if (!email.includes("@")) {
       return NextResponse.json(
-        { success: false, message: "email must be valid" },
+        { success: false, message: "Email must be valid" },
         { status: 400 }
       );
     }
 
-    // 2) Find user by email
     const [rows]: any = await pool.query(
       "SELECT user_id, full_name, email, password, role FROM `user` WHERE email = ? LIMIT 1",
       [email]
     );
 
-    if (rows.length === 0) {
+    if (!rows || rows.length === 0) {
       return NextResponse.json(
         { success: false, message: "Invalid email or password" },
         { status: 401 }
@@ -47,8 +46,8 @@ export async function POST(req: Request) {
 
     const user = rows[0];
 
-    // 3) Compare password
     const passwordMatches = await bcrypt.compare(password, user.password);
+
     if (!passwordMatches) {
       return NextResponse.json(
         { success: false, message: "Invalid email or password" },
@@ -56,8 +55,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 4) Generate JWT
     const secret = process.env.JWT_SECRET;
+
     if (!secret) {
       return NextResponse.json(
         { success: false, message: "Server misconfigured: JWT_SECRET missing" },
@@ -69,31 +68,41 @@ export async function POST(req: Request) {
       {
         userId: user.user_id,
         email: user.email,
-        role: user.role
+        role: user.role,
       },
       secret,
-      { expiresIn: "2h" }
+      { expiresIn: "2h" } // JWT expiration
     );
 
-    // 5) Return token + user
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: "Login successful",
-      token,
       user: {
         id: user.user_id,
         fullName: user.full_name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
+
+    response.cookies.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}), 
+    });
+
+    return response;
+
   } catch (error: any) {
     console.error("LOGIN ERROR:", error);
+
     return NextResponse.json(
       {
         success: false,
         message: "Login failed",
-        error: error?.message || String(error)
+        error: error?.message || String(error),
       },
       { status: 500 }
     );
