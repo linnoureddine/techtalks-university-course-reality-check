@@ -28,7 +28,10 @@ export default function WriteReviewCard({
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit =
-    overallRating > 0 && instructor.trim() && semester.trim() && review.trim();
+    overallRating > 0 &&
+    instructor.trim().length > 0 &&
+    semester.trim().length > 0 &&
+    review.trim().length > 0;
 
   function resetForm() {
     setOverallRating(0);
@@ -49,9 +52,18 @@ export default function WriteReviewCard({
     setError(null);
 
     try {
+      const token = localStorage.getItem("token"); // MUST exist for auth
+      if (!token) {
+        setError("You must be logged in to leave a review.");
+        return;
+      }
+
       const res = await fetch(`/api/courses/${slug}/reviews`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           overallRating,
           instructor: instructor.trim(),
@@ -64,16 +76,15 @@ export default function WriteReviewCard({
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({} as any));
 
       if (!res.ok) {
-        // 401 = not logged in, 409 = already reviewed, 400 = validation
-        setError(data.message ?? "Failed to submit review");
+        setError(data?.message ?? "Failed to submit review");
         return;
       }
 
       resetForm();
-      onSubmit(); // tells parent to close the form and refresh reviews
+      onSubmit();
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -106,7 +117,7 @@ export default function WriteReviewCard({
 
         <div className="space-y-2">
           <div className="text-sm font-medium text-gray-700">
-            Instructor's Name
+            Instructor&apos;s Name
           </div>
           <input
             value={instructor}
