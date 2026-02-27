@@ -162,16 +162,17 @@ CREATE TABLE `review_vote` (
 -- --------------------------------------------------------
 CREATE TABLE `feedback` (
   `feedback_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` INT UNSIGNED NOT NULL,
-  `rating` DECIMAL(3,2) NOT NULL CHECK (`rating` BETWEEN 0 AND 5),  -- aligned with review ratings
+  `user_id` INT UNSIGNED NULL,  
+  `rating` DECIMAL(3,2) NOT NULL CHECK (`rating` BETWEEN 0 AND 5),
   `message` TEXT NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`feedback_id`),
   KEY `idx_feedback_user` (`user_id`),
   CONSTRAINT `fk_feedback_user`
     FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ON DELETE SET NULL     
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `password_reset_token` (
   `user_id`    INT          NOT NULL,
