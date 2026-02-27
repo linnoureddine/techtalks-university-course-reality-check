@@ -24,7 +24,6 @@ Future students can make **informed decisions** instead of choosing courses blin
   - University
   - Department
   - Difficulty level
-- Moderation and reporting system to prevent abuse and false reviews
 
 ---
 
