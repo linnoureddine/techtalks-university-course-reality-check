@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 const AUTH_COOKIE = "auth_token";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const secret = process.env.JWT_SECRET;
   if (!secret) return NextResponse.next();
 
+  const encodedSecret = new TextEncoder().encode(secret);
   const token = req.cookies.get(AUTH_COOKIE)?.value;
   const pathname = req.nextUrl.pathname;
 
@@ -18,8 +19,7 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/profile");
 
   const isAuthPage =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup");
+    pathname.startsWith("/login") || pathname.startsWith("/signup");
 
   if (isProtectedRoute) {
     if (!token) {
@@ -27,13 +27,11 @@ export function middleware(req: NextRequest) {
     }
 
     try {
-      const payload = jwt.verify(token, secret) as {
-        userId: number;
-        email: string;
-        role: string;
-      };
+      const { payload } = await jwtVerify(token, encodedSecret);
 
-      if (isAdminRoute && payload.role !== "super_admin") {
+      const role = (payload as { role?: string }).role;
+      const isAdminRole = role === "admin" || role === "super_admin";
+      if (isAdminRoute && !isAdminRole) {
         return NextResponse.redirect(new URL("/", req.url));
       }
     } catch {
@@ -43,10 +41,9 @@ export function middleware(req: NextRequest) {
 
   if (isAuthPage && token) {
     try {
-      jwt.verify(token, secret);
+      await jwtVerify(token, encodedSecret);
       return NextResponse.redirect(new URL("/", req.url));
-    } catch {
-    }
+    } catch {}
   }
 
   return NextResponse.next();
