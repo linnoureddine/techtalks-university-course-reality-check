@@ -213,11 +213,11 @@ export default function AboutPage() {
           </div>
         ) : (
           <StatsSection
-            stats={{
-              reviews: statsData.totalReviews,
-              students: statsData.totalStudents,
-              universities: statsData.totalUniversities,
-              rating: statsData.wouldRecommendPercentage, // % (0-100)
+             stats={{
+             reviews: statsData.totalReviews,
+             students: statsData.totalStudents,
+             universities: statsData.totalUniversities,
+             rating: statsData.wouldRecommendPercentage, 
             }}
           />
         )}
