@@ -1,38 +1,71 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 
-const universities = [
-  "Lebanese University",
-  "American University of Beirut",
-  "Lebanese American University",
-  "Beirut Arab University",
-  "Saint Joseph University",
-  "University of Balamand",
-  "Lebanese International University",
-];
+interface Profile {
+  full_name: string;
+  email: string;
+  university_name: string | null;
+}
 
 export default function AccountPage() {
-  const [formData, setFormData] = useState({
-    fullName: "Lin Noureddine",
-    university: "Lebanese University",
-    email: "lin@example.com",
-  });
+  const router = useRouter();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await fetch("/api/profile");
+        const data = await res.json();
+
+        if (!res.ok) throw new Error("Unauthorized");
+
+        setProfile(data.data);
+      } catch {
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProfile();
+  }, [router]);
+
+  const handleDeleteAccount = async () => {
+    const confirmed = confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch("/api/profile/delete", {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Delete failed");
+
+      alert("Account deleted successfully.");
+
+      // 🔥 Full reload to reset auth state everywhere
+      window.location.href = "/";
+    } catch {
+      alert("Something went wrong. Please try again.");
+    }
   };
 
-  const handleSave = () => {
-    console.log("Saving", formData);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
 
-  //when the user wants to change either uni or email, we have to confirm that they match (email domain and uni name)
-
-  const handlePasswordChange = () => {};
-  const handleDeleteAccount = () => {};
+  if (!profile) return null;
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center py-12 px-4">
@@ -42,29 +75,35 @@ export default function AccountPage() {
 
       <section className="w-full max-w-md rounded-xl bg-white border border-gray-200 p-6 shadow-lg">
         <h2 className="text-xl font-medium mb-6 text-gray-700">Profile</h2>
+
         <div className="flex flex-col gap-5">
           <label className="flex flex-col text-gray-600">
             Full Name
             <input
               type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="mt-2 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6155F5]"
+              value={profile.full_name}
+              disabled
+              className="mt-2 border border-gray-300 rounded-lg px-3 py-2 bg-gray-100"
             />
           </label>
 
           <label className="flex flex-col text-gray-600">
-            <UniversityField />
+            University
+            <input
+              type="text"
+              value={profile.university_name ?? "No university"}
+              disabled
+              className="mt-2 border border-gray-300 rounded-lg px-3 py-2 bg-gray-100"
+            />
           </label>
 
           <label className="flex flex-col text-gray-600">
             Email
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              className="mt-2 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6155F5]"
+              value={profile.email}
+              disabled
+              className="mt-2 border border-gray-300 rounded-lg px-3 py-2 bg-gray-100"
             />
           </label>
 
@@ -72,10 +111,11 @@ export default function AccountPage() {
             <Button
               variant="primary"
               className="flex-1"
-              onClick={handlePasswordChange}
+              onClick={() => router.push("/forgot-password")}
             >
               Change Password
             </Button>
+
             <Button
               variant="plain"
               className="flex-1 text-red-600 border border-red-600 hover:bg-red-50 hover:ring-0 focus:ring-0"
@@ -86,76 +126,6 @@ export default function AccountPage() {
           </div>
         </div>
       </section>
-
-      <div className="flex gap-4 mt-6">
-        <Button
-          variant="elevated"
-          onClick={() => console.log("Cancel changes")}
-        >
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>Save Changes</Button>
-      </div>
     </div>
-  );
-}
-
-export function UniversityField() {
-  const [formData, setFormData] = useState({ university: "" });
-  const [showDropdown, setShowDropdown] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-
-        if (!formData.university) {
-          setFormData({ university: universities[0] });
-        }
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [formData.university]);
-
-  const handleSelect = (uni: string) => {
-    setFormData({ university: uni });
-    setShowDropdown(false);
-  };
-
-  return (
-    <label className="flex flex-col text-gray-600">
-      University
-      <div ref={wrapperRef} className="relative w-full">
-        <input
-          type="text"
-          name="university"
-          value={formData.university}
-          onChange={(e) => setFormData({ university: e.target.value })}
-          onFocus={() => setShowDropdown(true)}
-          autoComplete="off"
-          className="mt-2 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6155F5] w-full"
-        />
-        {showDropdown && (
-          <ul className="absolute top-full left-0 z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-auto">
-            {universities.map((uni) => (
-              <li
-                key={uni}
-                onMouseDown={() => handleSelect(uni)}
-                className="px-3 py-2 hover:bg-[#6155F5] hover:text-white cursor-pointer"
-              >
-                {uni}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </label>
   );
 }
