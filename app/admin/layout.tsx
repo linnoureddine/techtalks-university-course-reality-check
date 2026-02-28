@@ -9,7 +9,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div className="flex">
         <div className="hidden md:block w-(--admin-sidebar-width) transition-all duration-300" />
 
-        <main className="flex-1 p-6 md:p-10 transition-all duration-300">
+        <main className="flex-1 min-w-0 p-6 md:p-10 transition-all duration-300">
           {children}
         </main>
       </div>
