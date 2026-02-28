@@ -5,19 +5,15 @@ import Link from "next/link";
 import Image from "next/image";
 import NavLink from "./NavLink";
 import Button from "./Button";
-import { User, LogOut } from "lucide-react";
-
-type User = {
-  name: string;
-};
+import { User, LogOut, ChevronDown, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const [user, setUser] = useState<User | null>(null);
-
   const [accountOpen, setAccountOpen] = useState(false);
   const accountRef = useRef<HTMLDivElement | null>(null);
+
+  const { user, loading, logout } = useAuth();
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -27,19 +23,19 @@ export default function NavBar() {
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
-  useEffect(() => {
-    (window as any).__login = () => setUser({ name: "Student" });
-    (window as any).__logout = () => setUser(null);
-  }, []);
 
   function handleLogout() {
-    setUser(null);
     setAccountOpen(false);
+    setMenuOpen(false);
+    logout();
   }
+
+  const displayName = user?.email.split("@")[0] ?? "";
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center gap-4 w-full">
+        {/* Mobile hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="lg:hidden text-lg text-gray-600"
@@ -56,7 +52,7 @@ export default function NavBar() {
           </span>
         </Link>
 
-        <div className="flex-1 flex justify-center lg:justify-center">
+        <div className="flex-1 flex justify-center">
           <div className="hidden lg:flex gap-6">
             <NavLink href="/">Home</NavLink>
             <NavLink href="/courses">Courses</NavLink>
@@ -65,10 +61,8 @@ export default function NavBar() {
         </div>
 
         <div className="flex items-center gap-2">
-          
-
           <div className="relative" ref={accountRef}>
-            {!user ? (
+            {loading ? null : !user ? (
               <div className="hidden lg:flex gap-2">
                 <Link href="/login">
                   <Button variant="elevated">Login</Button>
@@ -81,36 +75,68 @@ export default function NavBar() {
               <div className="relative">
                 <button
                   onClick={() => setAccountOpen(!accountOpen)}
-                  className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
+                  className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 bg-gray-100 hover:bg-gray-200 transition"
                   aria-label="Account menu"
                 >
-                  <User className="h-5 w-5 text-gray-600" />
+                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#6155F5] text-white text-xs font-semibold uppercase">
+                    {displayName.charAt(0)}
+                  </span>
+                  <span className="hidden sm:inline text-sm font-medium text-gray-700 max-w-[120px] truncate">
+                    {displayName}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className={`text-gray-500 transition-transform ${
+                      accountOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
 
                 {accountOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50 flex flex-col py-1">
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 flex flex-col py-1 overflow-hidden">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-xs text-gray-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+
                     <Link
                       href="/account"
-                      className="px-6 py-2 text-gray-700 rounded-none shadow-none hover:text-[#6155F5] transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#6155F5] transition-colors"
                       onClick={() => setAccountOpen(false)}
                     >
+                      <User size={14} />
                       View Account
                     </Link>
+
+                    {(user.role === "admin" || user.role === "super_admin") && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#6155F5] transition-colors"
+                        onClick={() => setAccountOpen(false)}
+                      >
+                        <LayoutDashboard size={14} />
+                        Admin Dashboard
+                      </Link>
+                    )}
+
                     <Link
-                      href="/account"
-                      className="px-6 py-2 text-gray-700 rounded-none shadow-none hover:text-red-600 transition-colors"
+                      href="/account#report"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={() => setAccountOpen(false)}
                     >
                       Report a Problem
                     </Link>
-                    <Button
-                      variant="plain"
-                      className="px-4 py-2 text-gray-700 text-left hover:text-[#6155F5] rounded-none shadow-none"
+
+                    <div className="border-t border-gray-100 mt-1" />
+
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left"
                       onClick={handleLogout}
                     >
-                      <LogOut className="h-4 w-4 inline-block mr-1" />
+                      <LogOut size={14} />
                       Logout
-                    </Button>
+                    </button>
                   </div>
                 )}
               </div>
@@ -131,7 +157,7 @@ export default function NavBar() {
             <NavLink href="/about">About</NavLink>
           </div>
 
-          {!user ? (
+          {!loading && !user && (
             <div className="flex gap-2 mt-2">
               <Link href="/login" onClick={() => setMenuOpen(false)}>
                 <Button variant="elevated" className="w-full flex-1">
@@ -143,12 +169,6 @@ export default function NavBar() {
                   Sign Up
                 </Button>
               </Link>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 mt-2">
-              <Button className="w-full" onClick={handleLogout}>
-                Logout
-              </Button>
             </div>
           )}
         </div>

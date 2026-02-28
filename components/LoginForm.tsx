@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { refresh } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,13 +26,13 @@ export default function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email,
           password,
-          remember 
-        })
+          remember,
+        }),
       });
 
       const data = await res.json();
@@ -40,8 +42,8 @@ export default function LoginForm() {
         return;
       }
 
+      await refresh();
       router.push("/");
-
     } catch (error) {
       setErrorMsg("Network error. Please try again.");
     } finally {
@@ -60,7 +62,6 @@ export default function LoginForm() {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-
         {errorMsg && (
           <div className="rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 text-center">
             {errorMsg}

@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 import {
+  Globe,
   BookOpen,
   LayoutDashboard,
   Star,
@@ -14,6 +16,8 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
+  LogOut,
+  User,
 } from "lucide-react";
 
 function isActive(pathname: string, href: string) {
@@ -23,6 +27,7 @@ function isActive(pathname: string, href: string) {
 
 export default function AdminNavbar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,10 +45,9 @@ export default function AdminNavbar() {
   }, [collapsed]);
 
   useEffect(() => {
-    const sidebarWidth = collapsed ? "72px" : "220px";
     document.documentElement.style.setProperty(
       "--admin-sidebar-width",
-      sidebarWidth,
+      collapsed ? "72px" : "220px",
     );
   }, [collapsed]);
 
@@ -70,9 +74,13 @@ export default function AdminNavbar() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  const displayName = user?.email?.split("@")[0] ?? "Admin";
+  const avatarLetter = displayName.charAt(0).toUpperCase();
+
+  const itemBase = `flex items-center gap-3 px-3 py-2 text-sm transition rounded-lg ${
+    collapsed ? "justify-center" : ""
+  }`;
   const mobileItem = `flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition w-full`;
-  const itemBase = `flex items-center gap-3 px-3 py-2 text-sm transition rounded-lg
-  ${collapsed ? "justify-center" : ""}`;
   const activePill = "bg-[#C9C6FF] text-[#5B5BFF] font-medium";
   const inactivePill = "text-gray-600 hover:bg-gray-50";
 
@@ -100,13 +108,15 @@ export default function AdminNavbar() {
               className="flex items-center gap-3 rounded-lg px-2 py-1 hover:bg-gray-50"
               onClick={() => setUserMenuOpen((v) => !v)}
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6155F5] text-sm font-semibold text-white">
-                AD
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6155F5] text-sm font-semibold text-white uppercase">
+                {avatarLetter}
               </div>
 
               <div className="hidden md:block text-left leading-tight">
-                <div className="text-sm font-semibold">Admin User</div>
-                <div className="text-xs text-gray-500">admin@example.com</div>
+                <div className="text-sm font-semibold capitalize">
+                  {displayName}
+                </div>
+                <div className="text-xs text-gray-500">{user?.email}</div>
               </div>
 
               <ChevronDown
@@ -118,14 +128,23 @@ export default function AdminNavbar() {
             </button>
 
             {userMenuOpen && (
-              <div className="absolute right-0 mt-2 w-40 rounded-xl border border-gray-200 bg-white shadow-lg">
+              <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+                <div className="md:hidden px-4 py-2 border-b border-gray-100">
+                  <p className="text-xs text-gray-400 truncate">
+                    {user?.email}
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100" />
+
                 <button
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
                   onClick={() => {
                     setUserMenuOpen(false);
-                    alert("Logout clicked");
+                    logout();
                   }}
                 >
+                  <LogOut size={14} />
                   Logout
                 </button>
               </div>
@@ -133,10 +152,9 @@ export default function AdminNavbar() {
           </div>
         </div>
       </header>
-
       <aside
         className={`hidden md:block fixed left-0 top-16 h-[calc(100vh-64px)] bg-white border-r border-gray-200
-        ${collapsed ? "w-18" : "w-55"} transition-all duration-300`}
+        ${collapsed ? "w-[72px]" : "w-[220px]"} transition-all duration-300`}
       >
         <div className={`${collapsed ? "p-3" : "p-6"} space-y-2`}>
           <div
@@ -147,7 +165,6 @@ export default function AdminNavbar() {
                 NAVIGATION
               </span>
             )}
-
             <button
               onClick={() => setCollapsed((v) => !v)}
               className="p-2 rounded-lg hover:bg-gray-100"
@@ -213,32 +230,37 @@ export default function AdminNavbar() {
             <MessageSquare size={18} />
             {!collapsed && "Feedback"}
           </Link>
+
+          <div className="pt-4 border-t border-gray-100 mt-2">
+            <Link
+              href="/"
+              className={`${itemBase} text-gray-500 hover:bg-gray-50 hover:text-[#6155F5]`}
+            >
+              <Globe size={18} />
+              {!collapsed && "Back to Website"}
+            </Link>
+          </div>
         </div>
       </aside>
 
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-60">
+        <div className="md:hidden fixed inset-0 z-[60]">
           <button
             className="absolute inset-0 bg-black/40"
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           />
 
-          <div
-            className={`absolute left-0 top-0 h-full w-55 bg-white border-r border-grey-200`}
-          >
-            <div
-              className={`h-16 border-b border-grey-200 flex items-center px-4`}
-            >
+          <div className="absolute left-0 top-0 h-full w-[220px] bg-white border-r border-gray-200">
+            <div className="h-16 border-b border-gray-200 flex items-center px-4 gap-3">
               <button
                 type="button"
-                className="mr-3 inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100"
                 aria-label="Close menu"
                 onClick={() => setMobileOpen(false)}
               >
                 ✕
               </button>
-
               <div className="flex items-center gap-2">
                 <Image src="/favicon.ico" alt="Logo" width={28} height={28} />
                 <span className="text-xl font-bold text-[#6155F5]">
@@ -305,6 +327,16 @@ export default function AdminNavbar() {
                 <MessageSquare size={18} className="shrink-0" />
                 Feedback
               </Link>
+
+              <div className="border-t border-gray-100 pt-3 mt-3">
+                <Link
+                  href="/"
+                  className={`${mobileItem} text-gray-500 hover:bg-gray-50 hover:text-[#6155F5]`}
+                >
+                  <Globe size={18} className="shrink-0" />
+                  Back to Website
+                </Link>
+              </div>
             </div>
           </div>
         </div>
