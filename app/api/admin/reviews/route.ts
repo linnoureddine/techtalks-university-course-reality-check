@@ -83,7 +83,10 @@ export async function GET(req: NextRequest) {
       oldest: "r.created_at ASC",
       rating_high: "r.overall_rating DESC",
       rating_low: "r.overall_rating ASC",
-      most_votes: "(upvotes + downvotes) DESC",
+      most_votes: `(
+  COALESCE(SUM(CASE WHEN rv.vote_value =  1 THEN 1 ELSE 0 END), 0) +
+  COALESCE(SUM(CASE WHEN rv.vote_value = -1 THEN 1 ELSE 0 END), 0)
+) DESC`,
     };
     const orderBy = sortClause[sort] ?? "r.created_at DESC";
 

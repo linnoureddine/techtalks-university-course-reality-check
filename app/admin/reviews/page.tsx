@@ -12,8 +12,9 @@ import {
   X,
 } from "lucide-react";
 import ConfirmModal from "@/components/admin/ConfirmModal";
+
 type ReviewRow = {
-  review_id: string;
+  review_id: string; // keep as string to match existing UI usage
   reviewer_name: string;
   reviewer_email: string;
   course_code: string;
@@ -71,6 +72,7 @@ function VoteDisplay({
     </div>
   );
 }
+
 function MetricBadge({
   label,
   value,
@@ -150,7 +152,9 @@ function ReviewDetailModal({
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Semester</p>
-              <p className="text-gray-800 font-medium">{review.semester_taken}</p>
+              <p className="text-gray-800 font-medium">
+                {review.semester_taken}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-0.5">Submitted</p>
@@ -244,72 +248,6 @@ function ReviewDetailModal({
   );
 }
 
-const SEED_REVIEWS: ReviewRow[] = [
-  {
-    review_id: "r1",
-    reviewer_name: "Aya Harb",
-    reviewer_email: "aya.harb@aub.edu.lb",
-    course_code: "CMPS 214",
-    course_title: "Data Structures and Algorithms",
-    university: "American University of Beirut",
-    department: "Computer Science",
-    semester_taken: "Fall 2023",
-    review_text:
-      "This course was tough but rewarding. Dr. Mitchell is passionate about the subject and genuinely wants students to succeed. The assignments pushed me to think algorithmically in ways I hadn't before. Office hours were incredibly helpful and the TAs were knowledgeable.",
-    instructor_name: "Dr. Sarah Mitchell",
-    overall_rating: 4.6,
-    grading_rating: 5.0,
-    workload_rating: 4.0,
-    attendance_rating: 3.0,
-    exam_difficulty_rating: 4.0,
-    upvotes: 47,
-    downvotes: 23,
-    created_at: "2024-01-15",
-  },
-  {
-    review_id: "r2",
-    reviewer_name: "Nour Haddad",
-    reviewer_email: "nour.haddad@aub.edu.lb",
-    course_code: "MATH 201",
-    course_title: "Calculus II",
-    university: "American University of Beirut",
-    department: "Mathematics",
-    semester_taken: "Spring 2024",
-    review_text:
-      "Great explanations and lots of practice problems. Highly recommended for anyone serious about math. Dr. Smith breaks down complex topics in an approachable way and the weekly problem sets are well designed.",
-    instructor_name: "Dr. John Smith",
-    overall_rating: 4.2,
-    grading_rating: 4.0,
-    workload_rating: 4.0,
-    attendance_rating: 2.0,
-    exam_difficulty_rating: 3.0,
-    upvotes: 31,
-    downvotes: 6,
-    created_at: "2024-02-03",
-  },
-  {
-    review_id: "r3",
-    reviewer_name: "Rami Khoury",
-    reviewer_email: "rami.khoury@lau.edu.lb",
-    course_code: "ECON 101",
-    course_title: "Principles of Microeconomics",
-    university: "Lebanese American University",
-    department: "Economics",
-    semester_taken: "Fall 2023",
-    review_text:
-      "Dry material but the professor made it engaging. Exams were tricky and required deep understanding beyond memorization. Grading was harsh on partial credit.",
-    instructor_name: "Dr. Lara Nassar",
-    overall_rating: 2.8,
-    grading_rating: 2.0,
-    workload_rating: 3.0,
-    attendance_rating: 4.0,
-    exam_difficulty_rating: 2.0,
-    upvotes: 8,
-    downvotes: 14,
-    created_at: "2024-03-10",
-  },
-];
-
 export default function AdminReviewsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -321,20 +259,135 @@ export default function AdminReviewsPage() {
   const [semesterFilter, setSemesterFilter] = useState("all");
   const [sortKey, setSortKey] = useState<SortKey>("newest");
   const [pendingDelete, setPendingDelete] = useState<ReviewRow | null>(null);
-
   const [detailReview, setDetailReview] = useState<ReviewRow | null>(null);
 
-  const [reviews, setReviews] = useState<ReviewRow[]>(SEED_REVIEWS);
+  const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const universities = unique(reviews.map((r) => r.university));
-  const departments = unique(
-    reviews
-      .filter(
-        (r) => universityFilter === "all" || r.university === universityFilter
-      )
-      .map((r) => r.department)
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  const [total, setTotal] = useState(0);
+
+  const fetchReviews = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+
+      const q = searchQuery.trim();
+      if (q) params.set("q", q);
+
+      if (ratingFilter !== "all") params.set("rating", ratingFilter);
+      if (universityFilter !== "all") params.set("university", universityFilter);
+      if (departmentFilter !== "all") params.set("department", departmentFilter);
+      if (semesterFilter !== "all") params.set("semester", semesterFilter);
+
+      params.set("sort", sortKey);
+
+      const res = await fetch(`/api/admin/reviews?${params.toString()}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Failed to fetch reviews");
+      }
+
+      const mapped: ReviewRow[] = (data.reviews || []).map((r: any) => ({
+        ...r,
+        review_id: String(r.review_id),
+      }));
+
+      setReviews(mapped);
+      setTotal(data.pagination?.total ?? 0);
+    } catch (e: any) {
+      setError(e?.message || "Something went wrong");
+      setReviews([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    page,
+    limit,
+    searchQuery,
+    ratingFilter,
+    universityFilter,
+    departmentFilter,
+    semesterFilter,
+    sortKey,
+  ]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchQuery,
+    ratingFilter,
+    universityFilter,
+    departmentFilter,
+    semesterFilter,
+    sortKey,
+  ]);
+
+  function requestDelete(review: ReviewRow) {
+    setPendingDelete(review);
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+
+    try {
+      const res = await fetch(`/api/admin/reviews/${pendingDelete.review_id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Failed to delete review");
+      }
+
+      setPendingDelete(null);
+      setDetailReview(null);
+
+      const isLastItemOnPage = reviews.length === 1 && page > 1;
+      if (isLastItemOnPage) setPage((p) => p - 1);
+      else fetchReviews();
+    } catch (e: any) {
+      alert(e?.message || "Delete failed");
+    }
+  }
+
+  const closeDetail = useCallback(() => setDetailReview(null), []);
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  const universities = useMemo(() => unique(reviews.map((r) => r.university)), [reviews]);
+
+  const departments = useMemo(
+    () =>
+      unique(
+        reviews
+          .filter((r) => universityFilter === "all" || r.university === universityFilter)
+          .map((r) => r.department)
+      ),
+    [reviews, universityFilter]
   );
-  const semesters = unique(reviews.map((r) => r.semester_taken));
+
+  const semesters = useMemo(() => unique(reviews.map((r) => r.semester_taken)), [reviews]);
 
   const activeFilterCount = [
     ratingFilter !== "all",
@@ -352,71 +405,7 @@ export default function AdminReviewsPage() {
     setSortKey("newest");
   }
 
-  const filtered = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-
-    let result = reviews.filter((r) => {
-      const matchesSearch =
-        !q ||
-        r.course_title.toLowerCase().includes(q) ||
-        r.course_code.toLowerCase().includes(q) ||
-        r.reviewer_name.toLowerCase().includes(q) ||
-        r.instructor_name.toLowerCase().includes(q) ||
-        r.university.toLowerCase().includes(q) ||
-        r.department.toLowerCase().includes(q) ||
-        r.review_text.toLowerCase().includes(q);
-
-      return (
-        matchesSearch &&
-        (ratingFilter === "all" ||
-          Math.floor(r.overall_rating).toString() === ratingFilter) &&
-        (universityFilter === "all" || r.university === universityFilter) &&
-        (departmentFilter === "all" || r.department === departmentFilter) &&
-        (semesterFilter === "all" || r.semester_taken === semesterFilter)
-      );
-    });
-
-    return [...result].sort((a, b) => {
-      switch (sortKey) {
-        case "newest":
-          return (
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-        case "oldest":
-          return (
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          );
-        case "rating_high":
-          return b.overall_rating - a.overall_rating;
-        case "rating_low":
-          return a.overall_rating - b.overall_rating;
-        case "most_votes":
-          return b.upvotes + b.downvotes - (a.upvotes + a.downvotes);
-        default:
-          return 0;
-      }
-    });
-  }, [
-    reviews,
-    searchQuery,
-    ratingFilter,
-    universityFilter,
-    departmentFilter,
-    semesterFilter,
-    sortKey,
-  ]);
-
-  function requestDelete(review: ReviewRow) {
-    setPendingDelete(review);
-  }
-
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    setReviews((prev) => prev.filter((r) => r.review_id !== pendingDelete.review_id));
-    setPendingDelete(null);
-  }
-
-  const closeDetail = useCallback(() => setDetailReview(null), []);
+  const filtered = reviews;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -457,12 +446,8 @@ export default function AdminReviewsPage() {
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-black">
-            Review Management
-          </h1>
-          <p className="text-sm text-gray-500">
-            Moderate and manage student reviews
-          </p>
+          <h1 className="text-2xl font-semibold text-black">Review Management</h1>
+          <p className="text-sm text-gray-500">Moderate and manage student reviews</p>
         </div>
       </div>
 
@@ -509,6 +494,14 @@ export default function AdminReviewsPage() {
           )}
         </button>
       </div>
+
+      {error && (
+        <div className="mt-3 p-3 rounded-md border border-red-200 bg-red-50 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {loading && <p className="mt-3 text-sm text-gray-400">Loading reviews...</p>}
 
       {showFilters && (
         <div className="mt-3 p-4 rounded-xl border border-gray-200 bg-gray-50">
@@ -558,15 +551,11 @@ export default function AdminReviewsPage() {
               },
             ].map(({ label, value, onChange, options }) => (
               <div key={label} className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 font-medium">
-                  {label}
-                </label>
+                <label className="text-xs text-gray-500 font-medium">{label}</label>
                 <div className="relative">
                   <select
                     value={value}
-                    onChange={(e) =>
-                      (onChange as (v: string) => void)(e.target.value)
-                    }
+                    onChange={(e) => (onChange as (v: string) => void)(e.target.value)}
                     className="h-9 pl-3 pr-8 rounded-md border border-gray-300 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:border-[#6155F5]"
                   >
                     {options.map((o) => (
@@ -584,9 +573,7 @@ export default function AdminReviewsPage() {
             ))}
 
             <div className="flex flex-col gap-1 sm:hidden">
-              <label className="text-xs text-gray-500 font-medium">
-                Sort by
-              </label>
+              <label className="text-xs text-gray-500 font-medium">Sort by</label>
               <div className="relative">
                 <select
                   value={sortKey}
@@ -618,42 +605,50 @@ export default function AdminReviewsPage() {
         </div>
       )}
 
-      <p className="mt-3 text-xs text-gray-400">
-        {filtered.length} review{filtered.length !== 1 ? "s" : ""} found
-      </p>
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          Showing page {page} of {totalPages} ({total} total)
+        </p>
+
+        <div className="flex gap-2">
+          <button
+            disabled={page <= 1 || loading}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="h-9 px-3 rounded-md border border-gray-300 bg-white text-sm disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <button
+            disabled={page >= totalPages || loading}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            className="h-9 px-3 rounded-md border border-gray-300 bg-white text-sm disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
 
       <div className="hidden md:block mt-2 rounded-xl border border-gray-200 bg-white overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="text-left px-4 py-3 whitespace-nowrap">Course</th>
-              <th className="text-left px-4 py-3 whitespace-nowrap">
-                Reviewer
-              </th>
-              <th className="text-left px-4 py-3 whitespace-nowrap">
-                Instructor
-              </th>
-              <th className="text-left px-4 py-3 whitespace-nowrap">
-                Semester
-              </th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Reviewer</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Instructor</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Semester</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Review</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Overall</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Metrics</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Votes</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Date</th>
-              <th className="text-right px-4 py-3 whitespace-nowrap">
-                Actions
-              </th>
+              <th className="text-right px-4 py-3 whitespace-nowrap">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {filtered.length === 0 ? (
+            {!loading && filtered.length === 0 ? (
               <tr>
-                <td
-                  colSpan={10}
-                  className="px-4 py-12 text-center text-gray-400 text-sm"
-                >
+                <td colSpan={10} className="px-4 py-12 text-center text-gray-400 text-sm">
                   No reviews match your search or filters.
                 </td>
               </tr>
@@ -737,10 +732,7 @@ export default function AdminReviewsPage() {
                   </td>
 
                   <td className="px-4 py-3">
-                    <div
-                      className="flex justify-end"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => requestDelete(r)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
@@ -758,7 +750,7 @@ export default function AdminReviewsPage() {
       </div>
 
       <div className="md:hidden mt-2 flex flex-col gap-4">
-        {filtered.length === 0 ? (
+        {!loading && filtered.length === 0 ? (
           <p className="text-gray-400 text-sm text-center py-8">
             No reviews match your search or filters.
           </p>
@@ -771,9 +763,7 @@ export default function AdminReviewsPage() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {r.course_code}
-                  </h3>
+                  <h3 className="font-semibold text-gray-900">{r.course_code}</h3>
                   <p className="text-sm text-gray-500">{r.course_title}</p>
                   <p className="text-xs text-gray-400">
                     {r.department} · {r.university}
@@ -781,7 +771,7 @@ export default function AdminReviewsPage() {
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
                   <button
-                    onClick={() => requestDelete(r)} 
+                    onClick={() => requestDelete(r)}
                     className="text-gray-400 hover:text-red-500 transition-colors p-1"
                     aria-label="Delete review"
                   >
@@ -793,29 +783,23 @@ export default function AdminReviewsPage() {
               <div className="mt-3 text-sm text-gray-600 space-y-1">
                 <p>
                   <span className="text-gray-400">Reviewer:</span>{" "}
-                  <span className="font-medium text-gray-800">
-                    {r.reviewer_name}
-                  </span>
+                  <span className="font-medium text-gray-800">{r.reviewer_name}</span>
                   <span className="text-gray-400 text-xs ml-1">
                     ({r.reviewer_email})
                   </span>
                 </p>
                 <p>
-                  <span className="text-gray-400">Instructor:</span>{" "}
-                  {r.instructor_name}
+                  <span className="text-gray-400">Instructor:</span> {r.instructor_name}
                 </p>
                 <p>
-                  <span className="text-gray-400">Semester:</span>{" "}
-                  {r.semester_taken}
+                  <span className="text-gray-400">Semester:</span> {r.semester_taken}
                 </p>
                 <p>
                   <span className="text-gray-400">Date:</span> {r.created_at}
                 </p>
               </div>
 
-              <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                {r.review_text}
-              </p>
+              <p className="mt-3 text-sm text-gray-600 line-clamp-2">{r.review_text}</p>
 
               <div className="mt-3 flex items-center gap-4">
                 <RatingStars value={r.overall_rating} />
