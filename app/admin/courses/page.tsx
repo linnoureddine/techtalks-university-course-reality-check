@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import AddCourseCard,{ AddCourseFormData } from "@/components/admin/AddCourseCard";
+import AddCourseCard, {
+  AddCourseFormData,
+} from "@/components/admin/AddCourseCard";
 import Button from "@/components/Button";
 import {
   Pencil,
@@ -479,39 +481,36 @@ export default function AdminCoursesPage() {
     sortKey,
   ]);
 
- 
   const handleSaveCourse = useCallback((course: AddCourseFormData) => {
-  const creditsNum = Number(
-    String(course.credits).replace(/[^\d.]/g, ""),
-  );
-  const mappedLevel: Course["level"] =
-    course.level.toLowerCase() === "graduate"
-      ? "graduate"
-      : course.level.toLowerCase() === "phd"
-        ? "doctoral"
-        : "undergraduate";
+    const creditsNum = Number(String(course.credits).replace(/[^\d.]/g, ""));
+    const mappedLevel: Course["level"] =
+      course.level.toLowerCase() === "graduate"
+        ? "graduate"
+        : course.level.toLowerCase() === "phd"
+          ? "doctoral"
+          : "undergraduate";
 
-  const normalized: Course = {
-    course_id: Date.now(),
-    code: course.code,
-    title: course.title,
-    description: course.description,
-    credits: Number.isFinite(creditsNum) ? creditsNum : 0,
-    level: mappedLevel,
-    language: course.language,
-    university_id: 0,
-    department_id: 0,
-    university: course.university || "N/A",
-    department: course.department || "N/A",
-    deleted_at: null,
-    rating: 0,
-    number_of_reviews: 0,
-    metrics: { exam: 0, workload: 0, attendance: 0, grading: 0 },
-  };
+    const normalized: Course = {
+      course_id: Date.now(),
+      code: course.code,
+      title: course.title,
+      description: course.description,
+      credits: Number.isFinite(creditsNum) ? creditsNum : 0,
+      level: mappedLevel,
+      language: course.language,
+      university_id: 0,
+      department_id: 0,
+      university: course.university || "N/A",
+      department: course.department || "N/A",
+      deleted_at: null,
+      rating: 0,
+      number_of_reviews: 0,
+      metrics: { exam: 0, workload: 0, attendance: 0, grading: 0 },
+    };
 
-  setCourses((prev) => [normalized, ...prev]);
-  setShowForm(false);
-}, []);
+    setCourses((prev) => [normalized, ...prev]);
+    setShowForm(false);
+  }, []);
 
   // TO INTEGRATE: DELETE /api/admin/courses/:course_id
   function handleConfirmDelete() {
@@ -737,7 +736,8 @@ export default function AdminCoursesPage() {
               <th className="text-left px-4 py-3 whitespace-nowrap">Credits</th>
               <th className="text-left px-4 py-3 whitespace-nowrap">Rating</th>
               <th className="text-left px-4 py-3 whitespace-nowrap w-[150px]">
-                Metrics</th>
+                Metrics
+              </th>
               <th className="text-left px-4 py-3 whitespace-nowrap">
                 Description
               </th>

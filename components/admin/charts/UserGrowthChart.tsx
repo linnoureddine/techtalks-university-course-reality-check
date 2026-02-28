@@ -10,16 +10,11 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const chartData = [
-  { date: "Feb 12", users: 40 },
-  { date: "Feb 13", users: 55 },
-  { date: "Feb 14", users: 48 },
-  { date: "Feb 15", users: 70 },
-  { date: "Feb 16", users: 66 },
-  { date: "Feb 17", users: 90 },
-];
+type ChartPoint = { date: string; count: number };
 
-export default function UserGrowthChart() {
+export default function UserGrowthChart({ data }: { data: ChartPoint[] }) {
+  const chartData = data.map((d) => ({ date: d.date, users: d.count }));
+
   return (
     <div className="rounded-xl border border-gray-300 bg-white p-4 shadow-sm">
       <h3 className="text-sm font-semibold mb-4 text-gray-700">User Growth</h3>
