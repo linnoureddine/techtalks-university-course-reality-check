@@ -8,7 +8,7 @@ export async function GET(req: Request) {
 
     const [rows]: any = await pool.query(
       `
-      SELECT feedback_id, message, user_id, created_at
+      SELECT feedback_id, message, user_id, rating, created_at
       FROM feedback
       WHERE message IS NOT NULL AND message <> ''
       ORDER BY created_at DESC
@@ -21,10 +21,15 @@ export async function GET(req: Request) {
       feedbackId: r.feedback_id,
       text: r.message,
       username: r.user_id ? `student#${r.user_id}` : "anonymous",
+      rating: Number(r.rating) || 0,
       createdAt: r.created_at,
     }));
 
-    return NextResponse.json({ success: true, count: testimonials.length, testimonials });
+    return NextResponse.json({
+      success: true,
+      count: testimonials.length,
+      testimonials,
+    });
   } catch (error: any) {
     console.error("TESTIMONIALS ERROR:", error);
     return NextResponse.json(
