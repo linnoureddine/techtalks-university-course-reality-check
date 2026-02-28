@@ -2,15 +2,20 @@
 
 import { PieChart, Pie, Tooltip, ResponsiveContainer } from "recharts";
 
-const ratingsData = [
-  { name: "5★", value: 820, fill: "#2F80ED" },
-  { name: "4★", value: 540, fill: "#EB5757" },
-  { name: "3★", value: 210, fill: "#F2C94C" },
-  { name: "2★", value: 90, fill: "#27AE60" },
-  { name: "1★", value: 45, fill: "#6366F1" },
-];
+type RatingPoint = { rating: number; count: number };
 
-export default function MetricsPieChart() {
+const COLORS = ["#2F80ED", "#EB5757", "#F2C94C", "#27AE60", "#6366F1"];
+
+export default function MetricsPieChart({ data }: { data: RatingPoint[] }) {
+  // Sort descending so 5★ comes first, map to recharts shape
+  const chartData = [...data]
+    .sort((a, b) => b.rating - a.rating)
+    .map((d, i) => ({
+      name: `${d.rating}★`,
+      value: d.count,
+      fill: COLORS[i % COLORS.length],
+    }));
+
   return (
     <div className="rounded-xl border border-gray-300 bg-white p-4 shadow-sm">
       <h3 className="text-sm font-semibold mb-4 text-gray-700">
@@ -21,7 +26,7 @@ export default function MetricsPieChart() {
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={ratingsData}
+              data={chartData}
               dataKey="value"
               nameKey="name"
               outerRadius={90}

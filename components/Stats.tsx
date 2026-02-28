@@ -1,9 +1,33 @@
-//will be changed to display the stats of the website, fetched from the database via API
+"use client";
+
+import { useEffect, useState } from "react";
+import type { HeroStatsResponse } from "@/app/api/hero-stats/route";
+
+const DEFAULTS: HeroStatsResponse = { universities: 0, courses: 0 };
 
 export default function HeroStats() {
+  const [stats, setStats] = useState<HeroStatsResponse>(DEFAULTS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/hero-stats");
+        if (!res.ok) throw new Error("Failed to fetch");
+        setStats(await res.json());
+      } catch (err) {
+        console.error("[HeroStats] Could not load stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
   return (
     <div className="mt-18 flex flex-wrap justify-center gap-6 text-sm text-gray-600">
       <Stat
+        loading={loading}
         icon={
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -11,12 +35,7 @@ export default function HeroStats() {
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={1.5}
-            className="
-            h-5 w-5 
-            sm:h-6 sm:w-6 
-            text-[#6155F5] 
-            shrink-0
-          "
+            className="h-5 w-5 sm:h-6 sm:w-6 text-[#6155F5] shrink-0"
           >
             <path
               strokeLinecap="round"
@@ -25,21 +44,17 @@ export default function HeroStats() {
             />
           </svg>
         }
-        text="50+ Universities"
+        text={`${stats.universities}+ Universities`}
       />
 
       <Stat
+        loading={false} // static — no API needed
         icon={
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="
-            h-5 w-5
-            sm:h-6 sm:w-6
-            text-[#6155F5]
-            shrink-0
-          "
+            className="h-5 w-5 sm:h-6 sm:w-6 text-[#6155F5] shrink-0"
           >
             <path
               fillRule="evenodd"
@@ -52,32 +67,40 @@ export default function HeroStats() {
       />
 
       <Stat
+        loading={loading}
         icon={
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="
-            h-5 w-5
-            sm:h-6 sm:w-6
-            text-[#6155F5]
-            shrink-0
-          "
+            className="h-5 w-5 sm:h-6 sm:w-6 text-[#6155F5] shrink-0"
           >
             <path d="M11.25 4.533A9.707 9.707 0 0 0 6 3a9.735 9.735 0 0 0-3.25.555.75.75 0 0 0-.5.707v14.25a.75.75 0 0 0 1 .707A8.237 8.237 0 0 1 6 18.75c1.995 0 3.823.707 5.25 1.886V4.533ZM12.75 20.636A8.214 8.214 0 0 1 18 18.75c.966 0 1.89.166 2.75.47a.75.75 0 0 0 1-.708V4.262a.75.75 0 0 0-.5-.707A9.735 9.735 0 0 0 18 3a9.707 9.707 0 0 0-5.25 1.533v16.103Z" />
           </svg>
         }
-        text="500+ Courses"
+        text={`${Math.floor(stats.courses / 10) * 10}+ Courses`}
       />
     </div>
   );
 }
 
-function Stat({ icon, text }: { icon: React.ReactNode; text: string }) {
+function Stat({
+  icon,
+  text,
+  loading,
+}: {
+  icon: React.ReactNode;
+  text: string;
+  loading: boolean;
+}) {
   return (
     <div className="flex items-center gap-2">
       {icon}
-      <span className="text-lg">{text}</span>
+      {loading ? (
+        <span className="h-5 w-28 animate-pulse rounded bg-gray-200" />
+      ) : (
+        <span className="text-lg">{text}</span>
+      )}
     </div>
   );
 }
