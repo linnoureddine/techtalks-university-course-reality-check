@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import AddCourseCard, {
-  AddCourseFormData,
-} from "@/components/admin/AddCourseCard";
+import AddCourseCard from "@/components/admin/AddCourseCard";
 import Button from "@/components/Button";
+import SearchableDropdownField from "@/components/SearchableDropdown";
 import {
   Pencil,
   Trash2,
@@ -40,14 +39,229 @@ type Course = {
 };
 
 type SortKey = "rating_high" | "rating_low" | "reviews_most";
-type NewCoursePayload = Omit<
-  Course,
-  "course_id" | "rating" | "number_of_reviews" | "metrics"
->;
 
 function unique<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }
+
+// ─── Edit Modal ──────────────────────────────────────────────────────────────
+
+const VALID_LEVELS = [
+  "undergraduate",
+  "graduate",
+  "doctoral",
+  "professional",
+] as const;
+const VALID_LANGUAGES = [
+  "English",
+  "Arabic",
+  "French",
+  "German",
+  "Spanish",
+  "Other",
+];
+
+function EditCourseModal({
+  course,
+  onClose,
+  onSaved,
+}: {
+  course: Course;
+  onClose: () => void;
+  onSaved: (updated: Partial<Course> & { course_id: number }) => void;
+}) {
+  const [form, setForm] = useState({
+    title: course.title,
+    description: course.description,
+    credits: String(course.credits),
+    language: course.language,
+    level: course.level as string,
+  });
+  const [saving, setSaving] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  function handleChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function handleSave() {
+    setApiError(null);
+    const creditsNum = Number(form.credits);
+    if (isNaN(creditsNum) || creditsNum < 1 || creditsNum > 9) {
+      setApiError("Credits must be between 1 and 9.");
+      return;
+    }
+    if (!form.title.trim()) {
+      setApiError("Title is required.");
+      return;
+    }
+
+    const payload: Record<string, any> = {
+      title: form.title.trim(),
+      description: form.description.trim(),
+      credits: creditsNum,
+      language: form.language,
+      level: form.level,
+    };
+
+    try {
+      setSaving(true);
+      const res = await fetch(`/api/admin/courses/${course.course_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setApiError(data.message ?? "Failed to update course.");
+        return;
+      }
+      onSaved({ course_id: course.course_id, ...payload });
+      onClose();
+    } catch {
+      setApiError("Network error. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-4 p-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">
+              Edit {course.code}
+            </h2>
+            <p className="text-sm text-gray-400">
+              Course code cannot be changed
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-3">
+          {apiError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
+              {apiError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-3">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Title</label>
+              <input
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+                  focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Credits
+                </label>
+                <input
+                  name="credits"
+                  value={form.credits}
+                  onChange={handleChange}
+                  type="number"
+                  min={1}
+                  max={9}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+                    focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Level
+                </label>
+                <SearchableDropdownField
+                  value={form.level}
+                  options={[...VALID_LEVELS]}
+                  placeholder="Select level"
+                  onChange={(v) => setForm((prev) => ({ ...prev, level: v }))}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">
+                Language
+              </label>
+              <SearchableDropdownField
+                value={form.language}
+                options={VALID_LANGUAGES}
+                placeholder="Select language"
+                onChange={(v) => setForm((prev) => ({ ...prev, language: v }))}
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+                  focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent resize-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 px-5 py-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 text-sm rounded-md text-white bg-[#6155F5] hover:bg-[#4f45d4] transition disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Course Detail Modal ─────────────────────────────────────────────────────
 
 function CourseDetailModal({
   course,
@@ -253,12 +467,16 @@ function CourseDetailModal({
   );
 }
 
+// ─── Delete Confirm Modal ────────────────────────────────────────────────────
+
 function DeleteConfirmModal({
   courseName,
+  deleting,
   onConfirm,
   onCancel,
 }: {
   courseName: string;
+  deleting: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -275,21 +493,25 @@ function DeleteConfirmModal({
         <div className="mt-5 flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+            disabled={deleting}
+            className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+            disabled={deleting}
+            className="px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-50"
           >
-            Delete
+            {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+// ─── Filter Select ───────────────────────────────────────────────────────────
 
 function FilterSelect({
   label,
@@ -327,6 +549,8 @@ function FilterSelect({
   );
 }
 
+// ─── Page ────────────────────────────────────────────────────────────────────
+
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -335,7 +559,9 @@ export default function AdminCoursesPage() {
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Course | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [detailCourse, setDetailCourse] = useState<Course | null>(null);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [universityFilter, setUniversityFilter] = useState("all");
@@ -347,67 +573,21 @@ export default function AdminCoursesPage() {
   >("all");
   const [sortKey, setSortKey] = useState<SortKey>("rating_high");
 
-  // TO INTEGRATE: replace seed useEffect with:
-  //   fetch("/api/admin/courses").then(r=>r.json()).then(setCourses).catch(…).finally(…)
+  // ── Fetch all courses ──────────────────────────────────────────────────────
   useEffect(() => {
-    const seed: Course[] = [
-      {
-        course_id: 1,
-        code: "CMPS 101",
-        title: "Introduction to Computer Science",
-        description:
-          "Introduces the skills, concepts, and capabilities needed for effective use of information technology. Topics include hardware, software, networks, databases, and security fundamentals.",
-        credits: 3,
-        level: "undergraduate",
-        language: "English",
-        department_id: 1,
-        department: "Computer Science",
-        university_id: 1,
-        university: "American University of Beirut",
-        deleted_at: null,
-        rating: 4.2,
-        number_of_reviews: 120,
-        metrics: { exam: 4, workload: 4, attendance: 3, grading: 5 },
-      },
-      {
-        course_id: 2,
-        code: "MATH 201",
-        title: "Calculus II",
-        description:
-          "Continuation of Calculus I covering integration techniques, sequences, series, polar coordinates, and applications in physics and engineering.",
-        credits: 3,
-        level: "undergraduate",
-        language: "English",
-        department_id: 2,
-        department: "Mathematics",
-        university_id: 1,
-        university: "American University of Beirut",
-        deleted_at: null,
-        rating: 3.8,
-        number_of_reviews: 85,
-        metrics: { exam: 3, workload: 4, attendance: 2, grading: 4 },
-      },
-      {
-        course_id: 3,
-        code: "ECON 101",
-        title: "Principles of Microeconomics",
-        description:
-          "Introduction to economic analysis of individual decision-making by consumers, firms, and markets. Covers supply and demand, elasticity, market structures, and welfare economics.",
-        credits: 3,
-        level: "undergraduate",
-        language: "English",
-        department_id: 3,
-        department: "Economics",
-        university_id: 2,
-        university: "Lebanese American University",
-        deleted_at: "2024-03-01T00:00:00.000Z",
-        rating: 2.9,
-        number_of_reviews: 40,
-        metrics: { exam: 2, workload: 3, attendance: 4, grading: 2 },
-      },
-    ];
-    setCourses(seed);
-    setLoading(false);
+    setLoading(true);
+    setError(null);
+    fetch("/api/admin/courses")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) {
+          setCourses(data.courses);
+        } else {
+          setError(data.message ?? "Failed to load courses.");
+        }
+      })
+      .catch(() => setError("Network error. Could not load courses."))
+      .finally(() => setLoading(false));
   }, []);
 
   const universities = unique(courses.map((c) => c.university));
@@ -481,53 +661,52 @@ export default function AdminCoursesPage() {
     sortKey,
   ]);
 
-  const handleSaveCourse = useCallback((course: AddCourseFormData) => {
-    const creditsNum = Number(String(course.credits).replace(/[^\d.]/g, ""));
-    const mappedLevel: Course["level"] =
-      course.level.toLowerCase() === "graduate"
-        ? "graduate"
-        : course.level.toLowerCase() === "phd"
-          ? "doctoral"
-          : "undergraduate";
-
-    const normalized: Course = {
-      course_id: Date.now(),
-      code: course.code,
-      title: course.title,
-      description: course.description,
-      credits: Number.isFinite(creditsNum) ? creditsNum : 0,
-      level: mappedLevel,
-      language: course.language,
-      university_id: 0,
-      department_id: 0,
-      university: course.university || "N/A",
-      department: course.department || "N/A",
-      deleted_at: null,
-      rating: 0,
-      number_of_reviews: 0,
-      metrics: { exam: 0, workload: 0, attendance: 0, grading: 0 },
-    };
-
-    setCourses((prev) => [normalized, ...prev]);
+  // ── Create ─────────────────────────────────────────────────────────────────
+  // AddCourseCard now calls the API itself and passes back the created Course object
+  const handleSaveCourse = useCallback((newCourse: Course) => {
+    setCourses((prev) => [newCourse, ...prev]);
     setShowForm(false);
   }, []);
 
-  // TO INTEGRATE: DELETE /api/admin/courses/:course_id
-  function handleConfirmDelete() {
+  // ── Delete ─────────────────────────────────────────────────────────────────
+  async function handleConfirmDelete() {
     if (!pendingDelete) return;
-    setCourses((prev) =>
-      prev.map((c) =>
-        c.course_id === pendingDelete.course_id
-          ? { ...c, deleted_at: new Date().toISOString() }
-          : c,
-      ),
-    );
-    setPendingDelete(null);
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/courses/${pendingDelete.course_id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.message ?? "Failed to delete course.");
+        return;
+      }
+      setCourses((prev) =>
+        prev.map((c) =>
+          c.course_id === pendingDelete.course_id
+            ? { ...c, deleted_at: new Date().toISOString() }
+            : c,
+        ),
+      );
+    } catch {
+      setError("Network error. Could not delete course.");
+    } finally {
+      setDeleting(false);
+      setPendingDelete(null);
+    }
   }
 
-  // TO INTEGRATE: open edit form/drawer with course data
+  // ── Edit ───────────────────────────────────────────────────────────────────
   function handleEdit(course: Course) {
-    alert(`Edit course_id=${course.course_id} — wire to your edit form`);
+    setEditingCourse(course);
+  }
+
+  function handleEditSaved(updated: Partial<Course> & { course_id: number }) {
+    setCourses((prev) =>
+      prev.map((c) =>
+        c.course_id === updated.course_id ? { ...c, ...updated } : c,
+      ),
+    );
   }
 
   const closeDetail = useCallback(() => setDetailCourse(null), []);
@@ -549,8 +728,20 @@ export default function AdminCoursesPage() {
       {pendingDelete && (
         <DeleteConfirmModal
           courseName={`${pendingDelete.code} — ${pendingDelete.title}`}
+          deleting={deleting}
           onConfirm={handleConfirmDelete}
           onCancel={() => setPendingDelete(null)}
+        />
+      )}
+
+      {editingCourse && (
+        <EditCourseModal
+          course={editingCourse}
+          onClose={() => setEditingCourse(null)}
+          onSaved={(updated) => {
+            handleEditSaved(updated);
+            setEditingCourse(null);
+          }}
         />
       )}
 
@@ -721,6 +912,7 @@ export default function AdminCoursesPage() {
         </div>
       )}
 
+      {/* ── Desktop table ── */}
       <div className="hidden md:block mt-2 rounded-xl border border-gray-200 bg-white overflow-x-auto">
         <table className="w-full text-sm table-fixed">
           <thead className="bg-gray-50 text-gray-500">
@@ -875,6 +1067,7 @@ export default function AdminCoursesPage() {
         </table>
       </div>
 
+      {/* ── Mobile cards ── */}
       <div className="md:hidden mt-2 flex flex-col gap-4">
         {loading ? (
           <p className="text-gray-400 text-sm text-center py-8">
