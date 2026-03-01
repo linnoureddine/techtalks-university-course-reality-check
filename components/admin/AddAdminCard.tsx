@@ -8,6 +8,7 @@ import { useState } from "react";
 export type AdminUser = {
   name: string;
   email: string;
+  password: string;
   role: "Super Admin" | "Admin";
 };
 
@@ -22,11 +23,12 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
   const [formData, setFormData] = useState<AdminUser>({
     name: "",
     email: "",
+    password: "",
     role: "Admin",
   });
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -36,8 +38,8 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
     const name = formData.name.trim();
     const email = formData.email.trim();
 
-    if (!name || !email || !formData.role) {
-      alert("Please fill required fields");
+    if (!name || !email || formData.password.length < 6 || !formData.role) {
+      alert("Please fill required fields (password min 6 chars)");
       return;
     }
 
@@ -46,7 +48,11 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
       return;
     }
 
-    onSave(formData);
+    onSave({
+      ...formData,
+      name,
+      email,
+    });
   }
 
   return (
@@ -93,12 +99,26 @@ export default function AddAdminCard({ onClose, onSave }: Props) {
             focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
         />
 
+        <input
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Password (min 6 chars)"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
+            focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent transition"
+        />
+
         <SearchableDropdownField
           value={formData.role}
           options={roles}
           placeholder="Select role"
           onChange={(value) =>
-            setFormData((prev) => ({ ...prev, role: value as AdminUser["role"] }))
+            setFormData((prev) => ({
+              ...prev,
+              role: value as AdminUser["role"],
+            }))
           }
         />
       </div>
