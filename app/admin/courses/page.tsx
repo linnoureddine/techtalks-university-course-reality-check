@@ -2,7 +2,9 @@
 
 // Renders the admin courses page.
 import { useState, useMemo, useEffect, useCallback } from "react";
-import AddCourseCard from "@/components/admin/AddCourseCard";
+import AddCourseCard, {
+  type PrerequisiteCourseOption,
+} from "@/components/admin/AddCourseCard";
 import Button from "@/components/Button";
 import SearchableDropdownField from "@/components/SearchableDropdown";
 import { useAuth } from "@/context/AuthContext";
@@ -43,6 +45,7 @@ type Course = {
   university_id: number;
   university: string;
   deleted_at: string | null;
+  prerequisites?: PrerequisiteCourse[];
   rating: number;
   number_of_reviews: number;
   metrics: {
@@ -51,6 +54,12 @@ type Course = {
     attendance: number;
     grading: number;
   };
+};
+
+type PrerequisiteCourse = {
+  course_id: number;
+  code: string;
+  title: string;
 };
 
 type UniversityOption = {
@@ -93,6 +102,10 @@ function getCourseVideoStatus(course: Pick<Course, "videoUrl" | "university" | "
   return "none";
 }
 
+function formatPrerequisiteOption(course: PrerequisiteCourseOption) {
+  return `${course.code} - ${course.title} (${course.department})`;
+}
+
 function CourseVideoBadge({ course }: { course: Course }) {
   const status = getCourseVideoStatus(course);
 
@@ -130,10 +143,12 @@ const VALID_LANGUAGES = [
 
 function EditCourseModal({
   course,
+  courseOptions,
   onClose,
   onSaved,
 }: {
   course: Course;
+  courseOptions: PrerequisiteCourseOption[];
   onClose: () => void;
   onSaved: (updated: Partial<Course> & { course_id: number }) => void;
 }) {
@@ -146,9 +161,63 @@ function EditCourseModal({
     language: course.language,
     level: course.level as string,
   });
+  const [prerequisiteInput, setPrerequisiteInput] = useState("");
+  const [selectedPrerequisiteIds, setSelectedPrerequisiteIds] = useState<
+    number[]
+  >(() => (course.prerequisites ?? []).map((prereq) => prereq.course_id));
   const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const levelLabel = formatCourseLevel(form.level);
+
+  const prerequisiteCourseById = useMemo(
+    () =>
+      new Map(
+        courseOptions.map((option) => [option.course_id, option] as const),
+      ),
+    [courseOptions],
+  );
+
+  const selectedPrerequisites = useMemo(
+    () =>
+      selectedPrerequisiteIds
+        .map(
+          (courseId) =>
+            prerequisiteCourseById.get(courseId) ??
+            (course.prerequisites ?? []).find(
+              (prereq) => prereq.course_id === courseId,
+            ),
+        )
+        .filter((prereq): prereq is PrerequisiteCourse => Boolean(prereq)),
+    [course.prerequisites, prerequisiteCourseById, selectedPrerequisiteIds],
+  );
+
+  const eligiblePrerequisiteCourses = useMemo(
+    () =>
+      courseOptions
+        .filter(
+          (option) =>
+            option.university_id === course.university_id &&
+            option.course_id !== course.course_id &&
+            !selectedPrerequisiteIds.includes(option.course_id),
+        )
+        .sort((a, b) => {
+          const aSameDepartment = a.department_id === course.department_id;
+          const bSameDepartment = b.department_id === course.department_id;
+
+          if (aSameDepartment !== bSameDepartment) {
+            return aSameDepartment ? -1 : 1;
+          }
+
+          return a.code.localeCompare(b.code);
+        }),
+    [
+      course.course_id,
+      course.department_id,
+      course.university_id,
+      courseOptions,
+      selectedPrerequisiteIds,
+    ],
+  );
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -167,6 +236,32 @@ function EditCourseModal({
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  function handleAddPrerequisite() {
+    const selected = prerequisiteInput.trim();
+    const match = eligiblePrerequisiteCourses.find(
+      (option) =>
+        formatPrerequisiteOption(option).toLowerCase() ===
+        selected.toLowerCase(),
+    );
+
+    if (!match) {
+      setApiError("Select a prerequisite course from the list before adding.");
+      return;
+    }
+
+    setSelectedPrerequisiteIds((prev) =>
+      prev.includes(match.course_id) ? prev : [...prev, match.course_id],
+    );
+    setPrerequisiteInput("");
+    setApiError(null);
+  }
+
+  function handleRemovePrerequisite(courseId: number) {
+    setSelectedPrerequisiteIds((prev) =>
+      prev.filter((selectedId) => selectedId !== courseId),
+    );
+  }
+
   async function handleSave() {
     setApiError(null);
     const creditsNum = Number(form.credits);
@@ -178,6 +273,10 @@ function EditCourseModal({
       setApiError("Title is required.");
       return;
     }
+    if (prerequisiteInput.trim()) {
+      setApiError("Click Add Prerequisite or clear the prerequisite field.");
+      return;
+    }
 
     const payload: {
       title: string;
@@ -187,6 +286,7 @@ function EditCourseModal({
       credits: number;
       language: string;
       level: Course["level"];
+      prerequisite_course_ids: number[];
     } = {
       title: form.title.trim(),
       description: form.description.trim(),
@@ -195,6 +295,7 @@ function EditCourseModal({
       credits: creditsNum,
       language: form.language,
       level: form.level as Course["level"],
+      prerequisite_course_ids: selectedPrerequisiteIds,
     };
 
     try {
@@ -209,7 +310,17 @@ function EditCourseModal({
         setApiError(data.message ?? "Failed to update course.");
         return;
       }
-      onSaved({ course_id: course.course_id, ...payload });
+      onSaved({
+        course_id: course.course_id,
+        title: payload.title,
+        description: payload.description,
+        videoUrl: payload.videoUrl,
+        videoTitle: payload.videoTitle,
+        credits: payload.credits,
+        language: payload.language,
+        level: payload.level,
+        prerequisites: data.course?.prerequisites ?? selectedPrerequisites,
+      });
       onClose();
     } catch {
       setApiError("Network error. Please try again.");
@@ -351,6 +462,66 @@ function EditCourseModal({
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
                   focus:outline-none focus:ring-2 focus:ring-[#6155F5] focus:border-transparent"
               />
+            </div>
+
+            <div className="border-t border-gray-100 pt-3">
+              <div className="mb-2">
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Prerequisite courses
+                </label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <SearchableDropdownField
+                    value={prerequisiteInput}
+                    options={eligiblePrerequisiteCourses.map(
+                      formatPrerequisiteOption,
+                    )}
+                    placeholder={
+                      eligiblePrerequisiteCourses.length === 0
+                        ? "No available prerequisite courses"
+                        : "Search prerequisite course"
+                    }
+                    onChange={setPrerequisiteInput}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddPrerequisite}
+                    disabled={eligiblePrerequisiteCourses.length === 0}
+                    className="inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-[#6155F5] px-3 text-sm font-medium text-[#4f45d4] transition hover:bg-[#EEF2FF] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                  >
+                    <Plus size={14} />
+                    Add Prerequisite
+                  </button>
+                </div>
+              </div>
+
+              {selectedPrerequisites.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedPrerequisites.map((prereq) => (
+                    <span
+                      key={prereq.course_id}
+                      className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700"
+                    >
+                      <span className="truncate">
+                        {prereq.code} - {prereq.title}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleRemovePrerequisite(prereq.course_id)
+                        }
+                        className="shrink-0 rounded text-gray-400 transition hover:text-red-500"
+                        aria-label={`Remove ${prereq.code} prerequisite`}
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">
+                  No prerequisites selected.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -554,6 +725,28 @@ function CourseDetailModal({
             )}
           </div>
 
+          <div>
+            <p className="text-xs text-gray-400 mb-1.5">
+              Prerequisite courses
+            </p>
+            {(course.prerequisites ?? []).length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {(course.prerequisites ?? []).map((prereq) => (
+                  <span
+                    key={prereq.course_id}
+                    className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700"
+                  >
+                    {prereq.code} - {prereq.title}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">
+                No prerequisites assigned.
+              </p>
+            )}
+          </div>
+
           <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2.5 text-xs text-gray-400 space-y-0.5">
             <p>
               course_id:{" "}
@@ -707,6 +900,9 @@ export default function AdminCoursesPage() {
     DepartmentOption[]
   >([]);
   const [catalogMajors, setCatalogMajors] = useState<MajorOption[]>([]);
+  const [catalogCourseOptions, setCatalogCourseOptions] = useState<
+    PrerequisiteCourseOption[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -772,11 +968,15 @@ export default function AdminCoursesPage() {
         setCatalogUniversities((data.universities ?? []) as UniversityOption[]);
         setCatalogDepartments((data.departments ?? []) as DepartmentOption[]);
         setCatalogMajors((data.majors ?? []) as MajorOption[]);
+        setCatalogCourseOptions(
+          (data.courses ?? []) as PrerequisiteCourseOption[],
+        );
       }
     } catch {
       setCatalogUniversities([]);
       setCatalogDepartments([]);
       setCatalogMajors([]);
+      setCatalogCourseOptions([]);
     }
   }, []);
 
@@ -1070,6 +1270,7 @@ export default function AdminCoursesPage() {
       {editingCourse && (
         <EditCourseModal
           course={editingCourse}
+          courseOptions={catalogCourseOptions}
           onClose={() => setEditingCourse(null)}
           onSaved={(updated) => {
             handleEditSaved(updated);
@@ -1115,6 +1316,7 @@ export default function AdminCoursesPage() {
 
       {showForm && isUniversityAdmin && (
         <AddCourseCard
+          courseOptions={catalogCourseOptions}
           onClose={() => setShowForm(false)}
           onSave={handleSaveCourse}
         />
@@ -1372,6 +1574,14 @@ export default function AdminCoursesPage() {
                         ? course.majors.join(", ")
                         : "No major linked"}
                     </p>
+                    {(course.prerequisites ?? []).length > 0 && (
+                      <p className="text-xs text-[#4f45d4] max-w-45 truncate">
+                        Prereq:{" "}
+                        {(course.prerequisites ?? [])
+                          .map((prereq) => prereq.code)
+                          .join(", ")}
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3 max-w-40">
                     <p className="text-gray-700 truncate">
@@ -1568,6 +1778,14 @@ export default function AdminCoursesPage() {
                 <p>
                   <span className="text-gray-400">Reviews:</span>{" "}
                   {course.number_of_reviews}
+                </p>
+                <p>
+                  <span className="text-gray-400">Prerequisites:</span>{" "}
+                  {(course.prerequisites ?? []).length > 0
+                    ? (course.prerequisites ?? [])
+                        .map((prereq) => prereq.code)
+                        .join(", ")
+                    : "None"}
                 </p>
                 <p>
                   <span className="text-gray-400">Video:</span>{" "}

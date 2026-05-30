@@ -39,6 +39,7 @@ type CourseDetailRow = RowDataPacket & {
 // Minimal row used when we only need to prove a course exists.
 type CourseIdRow = RowDataPacket & {
   course_id: number;
+  university_id: number;
 };
 
 // Prerequisite courses are fetched separately so the response can include a list.
@@ -51,7 +52,30 @@ type PrerequisiteRow = RowDataPacket & {
 // Minimal row used to validate a department before moving a course to it.
 type DepartmentIdRow = RowDataPacket & {
   department_id: number;
+  university_id: number;
 };
+
+type PrerequisiteValidationRow = RowDataPacket & {
+  course_id: number;
+  code: string;
+  title: string;
+  university_id: number;
+};
+
+function normalizePrerequisiteIds(value: unknown) {
+  if (value === undefined || value === null) return [];
+
+  if (!Array.isArray(value)) {
+    throw new Error("prerequisite_course_ids must be an array");
+  }
+
+  const ids = value.map((rawId) => Number(rawId));
+  if (ids.some((id) => !Number.isInteger(id) || id <= 0)) {
+    throw new Error("prerequisite_course_ids must contain valid course IDs");
+  }
+
+  return Array.from(new Set(ids));
+}
 
 /**
  * GET /api/admin/courses/[id]
@@ -206,7 +230,12 @@ export async function PATCH(
 
     // Confirm the course exists and is not already soft-deleted.
     const [existing] = await pool.query<CourseIdRow[]>(
-      "SELECT course_id FROM course WHERE course_id = ? AND deleted_at IS NULL LIMIT 1",
+      `SELECT c.course_id, d.university_id
+      FROM course c
+      JOIN department d ON d.department_id = c.department_id
+      WHERE c.course_id = ?
+        AND c.deleted_at IS NULL
+      LIMIT 1`,
       [courseId],
     );
 
@@ -221,10 +250,35 @@ export async function PATCH(
     const { title, description, credits, language, level, department_id } = body;
     const videoUrlInput = body.video_url ?? body.videoUrl;
     const videoTitleInput = body.video_title ?? body.videoTitle;
+    const prerequisitesProvided =
+      Object.prototype.hasOwnProperty.call(body, "prerequisite_course_ids") ||
+      Object.prototype.hasOwnProperty.call(body, "prerequisiteCourseIds");
+    let prerequisiteCourseIds: number[] | null = null;
+    let selectedPrerequisites: PrerequisiteValidationRow[] = [];
 
     // Build the UPDATE statement only from fields that were actually provided.
     const setClauses: string[] = [];
     const values: Array<string | number | null> = [];
+    let targetUniversityId = existing[0].university_id;
+
+    if (prerequisitesProvided) {
+      try {
+        prerequisiteCourseIds = normalizePrerequisiteIds(
+          body.prerequisite_course_ids ?? body.prerequisiteCourseIds,
+        );
+      } catch (error) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : "Invalid prerequisite courses",
+          },
+          { status: 400 },
+        );
+      }
+    }
 
     // Validate and queue a title update when the request includes one.
     if (title !== undefined) {
@@ -350,7 +404,13 @@ export async function PATCH(
         );
       }
       const [deptRows] = await pool.query<DepartmentIdRow[]>(
-        "SELECT department_id FROM department WHERE department_id = ? AND is_active = 1 LIMIT 1",
+        `SELECT d.department_id, d.university_id
+        FROM department d
+        JOIN university u ON u.university_id = d.university_id
+        WHERE d.department_id = ?
+          AND d.is_active = 1
+          AND u.is_active = 1
+        LIMIT 1`,
         [deptId],
       );
       if (!deptRows || deptRows.length === 0) {
@@ -361,26 +421,135 @@ export async function PATCH(
       }
       setClauses.push("department_id = ?");
       values.push(deptId);
+      targetUniversityId = deptRows[0].university_id;
+    }
+
+    if (prerequisiteCourseIds !== null) {
+      if (prerequisiteCourseIds.includes(courseId)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "A course cannot be its own prerequisite",
+          },
+          { status: 400 },
+        );
+      }
+
+      if (prerequisiteCourseIds.length > 0) {
+        const placeholders = prerequisiteCourseIds.map(() => "?").join(", ");
+        const [prereqRows] = await pool.query<PrerequisiteValidationRow[]>(
+          `SELECT
+            c.course_id,
+            c.code,
+            c.title,
+            d.university_id
+          FROM course c
+          JOIN department d ON d.department_id = c.department_id
+          JOIN university u ON u.university_id = d.university_id
+          WHERE c.course_id IN (${placeholders})
+            AND c.deleted_at IS NULL
+            AND d.is_active = 1
+            AND u.is_active = 1`,
+          prerequisiteCourseIds,
+        );
+
+        if (prereqRows.length !== prerequisiteCourseIds.length) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "One or more prerequisite courses were not found",
+            },
+            { status: 400 },
+          );
+        }
+
+        const invalidUniversity = prereqRows.find(
+          (row) => row.university_id !== targetUniversityId,
+        );
+        if (invalidUniversity) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Prerequisite courses must belong to the same university",
+            },
+            { status: 400 },
+          );
+        }
+
+        const prerequisiteById = new Map(
+          prereqRows.map((row) => [row.course_id, row] as const),
+        );
+        selectedPrerequisites = prerequisiteCourseIds
+          .map((prereqId) => prerequisiteById.get(prereqId))
+          .filter((row): row is PrerequisiteValidationRow => Boolean(row));
+      }
     }
 
     // Avoid running an empty UPDATE when the request body had no supported fields.
-    if (setClauses.length === 0) {
+    if (setClauses.length === 0 && prerequisiteCourseIds === null) {
       return NextResponse.json(
         { success: false, message: "No valid fields provided to update" },
         { status: 400 },
       );
     }
 
-    // Append the route id last because it belongs to the WHERE clause.
-    values.push(courseId);
-    await pool.query(
-      `UPDATE course SET ${setClauses.join(", ")} WHERE course_id = ?`,
-      values,
-    );
+    const connection = await pool.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      if (setClauses.length > 0) {
+        // Append the route id last because it belongs to the WHERE clause.
+        values.push(courseId);
+        await connection.query(
+          `UPDATE course SET ${setClauses.join(", ")} WHERE course_id = ?`,
+          values,
+        );
+      }
+
+      if (prerequisiteCourseIds !== null) {
+        await connection.query(
+          "DELETE FROM course_prerequisite WHERE course_id = ?",
+          [courseId],
+        );
+
+        if (prerequisiteCourseIds.length > 0) {
+          const valuesSql = prerequisiteCourseIds.map(() => "(?, ?)").join(", ");
+          const prerequisiteValues = prerequisiteCourseIds.flatMap(
+            (prereqCourseId) => [courseId, prereqCourseId],
+          );
+
+          await connection.query(
+            `INSERT IGNORE INTO course_prerequisite
+              (course_id, prereq_course_id)
+            VALUES ${valuesSql}`,
+            prerequisiteValues,
+          );
+        }
+      }
+
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
 
     return NextResponse.json({
       success: true,
       message: "Course updated successfully",
+      course: {
+        course_id: courseId,
+        prerequisites:
+          prerequisiteCourseIds === null
+            ? undefined
+            : selectedPrerequisites.map((row) => ({
+                course_id: row.course_id,
+                code: row.code,
+                title: row.title,
+              })),
+      },
     });
   } catch (error: unknown) {
     console.error("PATCH COURSE ERROR:", error);

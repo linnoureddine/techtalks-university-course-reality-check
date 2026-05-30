@@ -56,6 +56,20 @@ type MajorCourseRow = RowDataPacket & {
   name: string;
 };
 
+type PrerequisiteCourseRow = RowDataPacket & {
+  course_id: number;
+  code: string;
+  title: string;
+  university_id: number;
+};
+
+type AdminCoursePrerequisiteRow = RowDataPacket & {
+  course_id: number;
+  prereq_course_id: number;
+  code: string;
+  title: string;
+};
+
 type RoadmapIdRow = RowDataPacket & {
   roadmap_id: number;
 };
@@ -63,6 +77,21 @@ type RoadmapIdRow = RowDataPacket & {
 type SequenceRow = RowDataPacket & {
   next_order: number | string | null;
 };
+
+function normalizePrerequisiteIds(value: unknown) {
+  if (value === undefined || value === null) return [];
+
+  if (!Array.isArray(value)) {
+    throw new Error("prerequisite_course_ids must be an array");
+  }
+
+  const ids = value.map((rawId) => Number(rawId));
+  if (ids.some((id) => !Number.isInteger(id) || id <= 0)) {
+    throw new Error("prerequisite_course_ids must contain valid course IDs");
+  }
+
+  return Array.from(new Set(ids));
+}
 
 /**
  * GET /api/admin/courses
@@ -195,6 +224,39 @@ export async function GET(req: NextRequest) {
       params,
     );
 
+    const courseIds = rows.map((row) => row.course_id);
+    const prerequisitesByCourseId = new Map<
+      number,
+      { course_id: number; code: string; title: string }[]
+    >();
+
+    if (courseIds.length > 0) {
+      const placeholders = courseIds.map(() => "?").join(", ");
+      const [prerequisiteRows] = await pool.query<AdminCoursePrerequisiteRow[]>(
+        `SELECT
+          cp.course_id,
+          c.course_id AS prereq_course_id,
+          c.code,
+          c.title
+        FROM course_prerequisite cp
+        JOIN course c ON c.course_id = cp.prereq_course_id
+        WHERE cp.course_id IN (${placeholders})
+          AND c.deleted_at IS NULL
+        ORDER BY cp.course_id ASC, c.code ASC`,
+        courseIds,
+      );
+
+      for (const prereq of prerequisiteRows) {
+        const list = prerequisitesByCourseId.get(prereq.course_id) ?? [];
+        list.push({
+          course_id: prereq.prereq_course_id,
+          code: prereq.code,
+          title: prereq.title,
+        });
+        prerequisitesByCourseId.set(prereq.course_id, list);
+      }
+    }
+
     // Reshape flat metric columns into the nested metrics object the frontend expects
     const courses = rows.map((row) => ({
       course_id: row.course_id,
@@ -218,6 +280,7 @@ export async function GET(req: NextRequest) {
         : [],
       majors: row.majors ? row.majors.split("||").filter(Boolean) : [],
       deleted_at: row.deleted_at,
+      prerequisites: prerequisitesByCourseId.get(row.course_id) ?? [],
       rating: Number(row.rating),
       number_of_reviews: Number(row.number_of_reviews),
       metrics: {
@@ -255,6 +318,7 @@ export async function GET(req: NextRequest) {
  *   level: string,           // freshman | undergraduate | graduate | master_degree | doctoral
  *   department_id: number,
  *   major_id: number,
+ *   prerequisite_course_ids?: number[],
  * }
  */
 export async function POST(req: NextRequest) {
@@ -276,6 +340,24 @@ export async function POST(req: NextRequest) {
     } = body;
     const videoUrlInput = body.video_url ?? body.videoUrl;
     const videoTitleInput = body.video_title ?? body.videoTitle;
+    let prerequisiteCourseIds: number[];
+
+    try {
+      prerequisiteCourseIds = normalizePrerequisiteIds(
+        body.prerequisite_course_ids ?? body.prerequisiteCourseIds,
+      );
+    } catch (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Invalid prerequisite courses",
+        },
+        { status: 400 },
+      );
+    }
 
     if (!code || typeof code !== "string") {
       return NextResponse.json(
@@ -424,6 +506,56 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let prerequisiteRows: PrerequisiteCourseRow[] = [];
+    if (prerequisiteCourseIds.length > 0) {
+      const placeholders = prerequisiteCourseIds.map(() => "?").join(", ");
+      const [rows] = await pool.query<PrerequisiteCourseRow[]>(
+        `SELECT
+          c.course_id,
+          c.code,
+          c.title,
+          d.university_id
+        FROM course c
+        JOIN department d ON d.department_id = c.department_id
+        JOIN university u ON u.university_id = d.university_id
+        WHERE c.course_id IN (${placeholders})
+          AND c.deleted_at IS NULL
+          AND d.is_active = 1
+          AND u.is_active = 1`,
+        prerequisiteCourseIds,
+      );
+
+      if (rows.length !== prerequisiteCourseIds.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "One or more prerequisite courses were not found",
+          },
+          { status: 400 },
+        );
+      }
+
+      const invalidUniversity = rows.find(
+        (row) => row.university_id !== deptRows[0].university_id,
+      );
+      if (invalidUniversity) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Prerequisite courses must belong to the same university",
+          },
+          { status: 400 },
+        );
+      }
+
+      const prerequisiteById = new Map(
+        rows.map((row) => [row.course_id, row] as const),
+      );
+      prerequisiteRows = prerequisiteCourseIds
+        .map((courseId) => prerequisiteById.get(courseId))
+        .filter((row): row is PrerequisiteCourseRow => Boolean(row));
+    }
+
     const yearNumber = getYearFromCourseCode(cleanCode) ?? 1;
     const semester = getSemesterFromCourseCode(cleanCode) ?? "fall";
     const roadmapTitle = `${majorRows[0].name} ${formatCourseLevel(
@@ -493,6 +625,21 @@ export async function POST(req: NextRequest) {
         [roadmapId, courseId, yearNumber, semester, sequenceOrder],
       );
 
+      if (prerequisiteCourseIds.length > 0) {
+        const valuesSql = prerequisiteCourseIds.map(() => "(?, ?)").join(", ");
+        const values = prerequisiteCourseIds.flatMap((prereqCourseId) => [
+          courseId,
+          prereqCourseId,
+        ]);
+
+        await connection.query(
+          `INSERT IGNORE INTO course_prerequisite
+            (course_id, prereq_course_id)
+          VALUES ${valuesSql}`,
+          values,
+        );
+      }
+
       await connection.query(
         `UPDATE roadmap r
         SET total_credits = (
@@ -546,6 +693,11 @@ export async function POST(req: NextRequest) {
           university_id: deptRows[0].university_id,
           university: deptRows[0].university ?? "",
           deleted_at: null,
+          prerequisites: prerequisiteRows.map((row) => ({
+            course_id: row.course_id,
+            code: row.code,
+            title: row.title,
+          })),
           rating: 0,
           number_of_reviews: 0,
           metrics: { exam: 0, workload: 0, attendance: 0, grading: 0 },
