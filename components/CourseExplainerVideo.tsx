@@ -100,6 +100,61 @@ export default function CourseExplainerVideo({
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [customDurationSeconds, setCustomDurationSeconds] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const lastSpokenSceneRef = useRef<number | null>(null);
+
+  function getSceneNarration(index: number) {
+    const scene = explainer.scenes[index] ?? explainer.scenes[0];
+    if (!scene) return explainer.narration;
+
+    return `${scene.title}. ${scene.caption} Key points: ${scene.bullets.join(
+      ", ",
+    )}.`;
+  }
+
+  function stopNarration() {
+    if (!canUseSpeech()) return;
+    window.speechSynthesis.cancel();
+    lastSpokenSceneRef.current = null;
+  }
+
+  function pauseNarration() {
+    if (!canUseSpeech()) return;
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause();
+    }
+  }
+
+  function speakText(text: string, force = false) {
+    if ((!voiceEnabled && !force) || !canUseSpeech()) return;
+
+    window.speechSynthesis.cancel();
+    const narration = new SpeechSynthesisUtterance(text);
+    narration.rate = 0.96;
+    narration.pitch = 1;
+    narration.volume = 1;
+    window.speechSynthesis.speak(narration);
+  }
+
+  function speakSceneNarration(index: number, force = false) {
+    lastSpokenSceneRef.current = index;
+    speakText(getSceneNarration(index), force);
+  }
+
+  function resumeOrStartSceneNarration(index: number) {
+    if (!voiceEnabled || !canUseSpeech()) return;
+
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      return;
+    }
+
+    if (
+      !window.speechSynthesis.speaking ||
+      lastSpokenSceneRef.current !== index
+    ) {
+      speakSceneNarration(index);
+    }
+  }
 
   useEffect(() => {
     if (!isPlaying || customVideoUrl) return;
@@ -110,9 +165,7 @@ export default function CourseExplainerVideo({
 
         if (nextElapsed >= explainer.durationSeconds) {
           setIsPlaying(false);
-          if (typeof window !== "undefined" && "speechSynthesis" in window) {
-            window.speechSynthesis.cancel();
-          }
+          stopNarration();
           return explainer.durationSeconds;
         }
 
@@ -125,9 +178,7 @@ export default function CourseExplainerVideo({
 
   useEffect(() => {
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      stopNarration();
     };
   }, []);
 
@@ -155,9 +206,13 @@ export default function CourseExplainerVideo({
       if (!video) return;
 
       if (video.paused) {
-        void video.play();
+        void video
+          .play()
+          .then(() => resumeOrStartSceneNarration(currentSceneIndex))
+          .catch(() => {});
       } else {
         video.pause();
+        pauseNarration();
       }
     }
 
@@ -166,7 +221,12 @@ export default function CourseExplainerVideo({
       if (!video) return;
 
       video.currentTime = 0;
-      void video.play();
+      setElapsedSeconds(0);
+      lastSpokenSceneRef.current = null;
+      void video
+        .play()
+        .then(() => speakSceneNarration(0))
+        .catch(() => {});
     }
 
     function handleCustomSceneSelect(index: number) {
@@ -178,6 +238,8 @@ export default function CourseExplainerVideo({
       if (!video) return;
       video.currentTime = nextTime;
       video.pause();
+      setIsPlaying(false);
+      stopNarration();
     }
 
     return (
@@ -239,12 +301,35 @@ export default function CourseExplainerVideo({
                       setCustomDurationSeconds(duration);
                     }
                   }}
-                  onTimeUpdate={(event) =>
-                    setElapsedSeconds(event.currentTarget.currentTime)
-                  }
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onEnded={() => setIsPlaying(false)}
+                  onTimeUpdate={(event) => {
+                    const currentTime = event.currentTarget.currentTime;
+                    const nextSceneIndex = getSceneIndex(
+                      currentTime,
+                      explainer.scenes,
+                      effectiveDuration,
+                    );
+
+                    setElapsedSeconds(currentTime);
+                    if (
+                      voiceEnabled &&
+                      isPlaying &&
+                      lastSpokenSceneRef.current !== nextSceneIndex
+                    ) {
+                      speakSceneNarration(nextSceneIndex);
+                    }
+                  }}
+                  onPlay={() => {
+                    setIsPlaying(true);
+                    resumeOrStartSceneNarration(currentSceneIndex);
+                  }}
+                  onPause={() => {
+                    setIsPlaying(false);
+                    pauseNarration();
+                  }}
+                  onEnded={() => {
+                    setIsPlaying(false);
+                    stopNarration();
+                  }}
                 />
               ) : embedUrl ? (
                 <iframe
@@ -330,7 +415,7 @@ export default function CourseExplainerVideo({
 
                 <button
                   type="button"
-                  onClick={() => setVoiceEnabled((current) => !current)}
+                  onClick={handleVoiceToggle}
                   disabled={!directVideo}
                   className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
                 >
@@ -356,21 +441,14 @@ export default function CourseExplainerVideo({
     );
   }
 
-  function startNarration() {
-    if (!voiceEnabled || !canUseSpeech()) return;
-
-    window.speechSynthesis.cancel();
-    const narration = new SpeechSynthesisUtterance(explainer.narration);
-    narration.rate = 0.96;
-    narration.pitch = 1;
-    narration.volume = 1;
-    window.speechSynthesis.speak(narration);
+  function startNarration(force = false) {
+    speakText(explainer.narration, force);
   }
 
   function handlePlayPause() {
     if (isPlaying) {
       setIsPlaying(false);
-      if (canUseSpeech()) window.speechSynthesis.pause();
+      pauseNarration();
       return;
     }
 
@@ -396,12 +474,13 @@ export default function CourseExplainerVideo({
     const nextValue = !voiceEnabled;
     setVoiceEnabled(nextValue);
 
-    if (!canUseSpeech()) return;
-    window.speechSynthesis.cancel();
+    stopNarration();
     if (nextValue && isPlaying) {
-      const narration = new SpeechSynthesisUtterance(explainer.narration);
-      narration.rate = 0.96;
-      window.speechSynthesis.speak(narration);
+      if (customVideoUrl) {
+        speakSceneNarration(currentSceneIndex, true);
+      } else {
+        startNarration(true);
+      }
     }
   }
 
